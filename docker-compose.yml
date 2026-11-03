@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: osh_global
+      POSTGRES_USER: osh
+      POSTGRES_PASSWORD: osh_dev_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - osh_global_pgdata:/var/lib/postgresql/data
+      - ./backend/sql/001_extensions.sql:/docker-entrypoint-initdb.d/001_extensions.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U osh -d osh_global"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  init:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://osh:osh_dev_password@db:5432/osh_global
+    depends_on:
+      db:
+        condition: service_healthy
+    command: python -m app.init_db
+  web:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://osh:osh_dev_password@db:5432/osh_global
+      CORS_ORIGINS: http://localhost:8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080
+  worker:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://osh:osh_dev_password@db:5432/osh_global
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    command: python -m app.worker
+volumes:
+  osh_global_pgdata:
