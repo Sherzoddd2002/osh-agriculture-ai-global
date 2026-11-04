@@ -17,7 +17,7 @@ npx osh-agriculture-ai-global stop
 npx osh-agriculture-ai-global update
 ```
 
-The default installation is stored outside the current directory under the user's application-data folder. Override it with the `OSH_AGRI_HOME` environment variable. The database, .env secrets and logs are kept separately from the replaceable source tree, so updates preserve local data. Stop the foreground web server with Ctrl+C in its terminal.
+The default installation is stored outside the current directory under the user's application-data folder. Override it with the `OSH_AGRI_HOME` environment variable. The database, .env secrets and logs are kept separately from the replaceable source tree, so updates preserve local data. The `stop` command safely stops both the local web server and background worker. Pressing Ctrl+C in the foreground server terminal also stops the worker.
 
 The local edition uses SQLite and Shapely geometry validation; PostGIS is optional for PostgreSQL deployments. Every local install has its own database. This installer does not publish a shared hosted website.
 
