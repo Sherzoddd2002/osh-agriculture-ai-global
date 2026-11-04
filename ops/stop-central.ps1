@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
-$root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$state = Join-Path $root ".osh-central"
+$centralHome = if ($env:OSH_AGRI_CENTRAL_HOME) { $env:OSH_AGRI_CENTRAL_HOME } else { Join-Path $env:LOCALAPPDATA "OSH\AgricultureAI-Central" }
+$state = Join-Path $centralHome "state"
 
 function Stop-VerifiedProcess($file, $needle, $label) {
     if (-not (Test-Path -LiteralPath $file)) {
