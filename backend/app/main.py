@@ -124,9 +124,12 @@ def create_location(payload: LocationCreate, user: User = Depends(current_user),
                    admin_level=payload.admin_level.upper(), centroid_lat=float(centroid.y), centroid_lon=float(centroid.x),
                    geojson=payload.geojson, source=payload.source)
     db.add(loc); db.flush()
-    geom_json = json.dumps(mapping(geom), separators=(",", ":"))
-    db.execute(text("UPDATE locations SET geom = ST_SetSRID(ST_GeomFromGeoJSON(:geojson), 4326) WHERE id = :id"),
-               {"geojson": geom_json, "id": loc.id})
+
+    if settings.enable_postgis:
+        geom_json = json.dumps(mapping(geom), separators=(",", ":"))
+        db.execute(text("UPDATE locations SET geom = ST_SetSRID(ST_GeomFromGeoJSON(:geojson), 4326) WHERE id = :id"),
+                   {"geojson": geom_json, "id": loc.id})
+
     db.commit(); db.refresh(loc)
     return {"id": loc.id, "name": loc.name, "country_iso3": loc.country_iso3, "admin_level": loc.admin_level,
             "centroid": {"lat": loc.centroid_lat, "lon": loc.centroid_lon}}
