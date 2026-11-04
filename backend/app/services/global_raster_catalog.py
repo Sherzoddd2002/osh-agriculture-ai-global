@@ -174,5 +174,11 @@ def catalog_summary() -> dict:
         "mapspam": {
             key: value for key, value in MAPSPAM.items()
             if key != "assets"
-        } | {"assets": mapspam_cog_assets()},
+        } | {
+            "assets": mapspam_cog_assets(),
+            "crops": [
+                {"code": code, "name": name, "band": index + 1}
+                for index, (code, name) in enumerate(MAPSPAM_CROPS)
+            ],
+        },
     }
