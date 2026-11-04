@@ -257,10 +257,33 @@ async function status() {
   const worker = pid && await pidAlive(pid);
   console.log(`Web: ${web ? "RUNNING" : "STOPPED"}\nWorker: ${worker ? "RUNNING (PID " + pid + ")" : "STOPPED"}\nInstall: ${home}`);
 }
+async function runCentralScript(action) {
+  if (process.platform !== "win32") {
+    throw new Error("Central PostgreSQL host installer currently supports Windows PowerShell only.");
+  }
+  if (!fs.existsSync(p.source)) await downloadSource();
+  const script = path.join(p.source, "ops", `${action}-central.ps1`);
+  await fsp.access(script);
+  const centralHome = path.join(home, "central-server");
+  await fsp.mkdir(centralHome, { recursive: true });
+  const result = spawnSync(
+    "powershell.exe",
+    ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script],
+    {
+      cwd: p.source,
+      stdio: "inherit",
+      windowsHide: false,
+      env: { ...process.env, OSH_AGRI_CENTRAL_HOME: centralHome }
+    }
+  );
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error(`Central server command failed (exit ${result.status}).`);
+}
+
 async function main() {
   if (Number(process.versions.node.split(".")[0]) < 20) throw new Error("Node.js 20+ kerak.");
   if (args.includes("--help") || command === "help") {
-    console.log("OSH Agriculture AI Global CLI\n\nnpx osh-agriculture-ai-global install\nnpx osh-agriculture-ai-global start\nnpx osh-agriculture-ai-global status\nnpx osh-agriculture-ai-global stop\nnpx osh-agriculture-ai-global update\n\nOptions: --no-open");
+    console.log("OSH Agriculture AI Global CLI\n\nLocal isolated mode (SQLite):\nnpx osh-agriculture-ai-global install\nnpx osh-agriculture-ai-global start\nnpx osh-agriculture-ai-global status\nnpx osh-agriculture-ai-global stop\nnpx osh-agriculture-ai-global update\n\nShared central server mode (Windows + existing PostgreSQL):\nnpx osh-agriculture-ai-global server-install\nnpx osh-agriculture-ai-global server-start\nnpx osh-agriculture-ai-global server-status\nnpx osh-agriculture-ai-global server-stop\nnpx osh-agriculture-ai-global server-update\n\nOptions: --no-open");
     return;
   }
   if (command === "install") await install();
@@ -268,6 +291,15 @@ async function main() {
   else if (command === "stop") { await stopServer(); await stopWorker(); }
   else if (command === "status") await status();
   else if (command === "update") await update();
+  else if (command === "server-install" || command === "server-start") await runCentralScript("start");
+  else if (command === "server-status") await runCentralScript("status");
+  else if (command === "server-stop") await runCentralScript("stop");
+  else if (command === "server-update") {
+    await runCentralScript("stop");
+    await fsp.rm(p.source, { recursive: true, force: true });
+    await downloadSource();
+    await runCentralScript("start");
+  }
   else throw new Error("Noma’lum buyruq. --help ni ko‘ring.");
 }
 main().catch(e => { console.error("\nXATO: " + e.message); process.exitCode = 1; });
