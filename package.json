@@ -1,0 +1,25 @@
+{
+  "name": "osh-agriculture-ai-global",
+  "version": "0.1.0",
+  "description": "One-command installer and launcher for OSH Agriculture AI Global",
+  "type": "module",
+  "bin": {
+    "osh-agriculture-ai-global": "./bin/cli.js"
+  },
+  "files": [
+    "bin/cli.js",
+    "README_INSTALLER.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "extract-zip": "^2.0.1"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sherzoddd2002/osh-agriculture-ai-global.git"
+  },
+  "homepage": "https://github.com/Sherzoddd2002/osh-agriculture-ai-global#readme"
+}

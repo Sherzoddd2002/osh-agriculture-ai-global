@@ -77,3 +77,61 @@ def aggregate_weather(df: pd.DataFrame, first_year: int, last_year: int, season_
         # Do not turn missing values into zero. Coverage is carried with every row.
         results.append(row)
     return results
+
+
+def aggregate_calendar_year_weather(df: pd.DataFrame, first_year: int, last_year: int) -> list[dict]:
+    """Aggregate point weather into calendar-year rows, retaining coverage and missingness."""
+    if df.empty:
+        return []
+
+    data = df.copy()
+    data["date"] = pd.to_datetime(data["date"], errors="coerce")
+    data = data.dropna(subset=["date"])
+    results: list[dict] = []
+
+    for year in range(first_year, last_year + 1):
+        part = data[data["date"].dt.year == year].copy()
+        if part.empty:
+            continue
+
+        start = date(year, 1, 1)
+        end = min(date(year, 12, 31), date.today())
+        expected_days = max(0, (end - start).days + 1)
+        observed_days = int(part["T2M"].notna().sum()) if "T2M" in part else 0
+
+        row = {
+            "year": year,
+            "wx_expected_days": expected_days,
+            "wx_observed_days": observed_days,
+            "wx_coverage_pct": round(100 * observed_days / expected_days, 2) if expected_days else None,
+            "aggregation": "CALENDAR_YEAR",
+        }
+        for col, key in [
+            ("T2M", "wx_t2m_mean_c"),
+            ("T2M_MAX", "wx_tmax_mean_c"),
+            ("T2M_MIN", "wx_tmin_mean_c"),
+            ("RH2M", "wx_rh_mean_pct"),
+            ("WS2M", "wx_wind_mean_m_s"),
+            ("ALLSKY_SFC_SW_DWN", "wx_solar_mean_mj_m2_day"),
+        ]:
+            row[key] = float(part[col].mean()) if col in part and part[col].notna().any() else None
+
+        row["wx_precip_sum_mm"] = (
+            float(part["PRECTOTCORR"].sum(min_count=1))
+            if "PRECTOTCORR" in part else None
+        )
+        row["wx_hot_days_ge_35c"] = (
+            int((part["T2M_MAX"] >= 35).sum())
+            if "T2M_MAX" in part else None
+        )
+        row["wx_frost_days_lt_0c"] = (
+            int((part["T2M_MIN"] < 0).sum())
+            if "T2M_MIN" in part else None
+        )
+        row["wx_gdd_base5_cday"] = (
+            float((part["T2M"] - 5).clip(lower=0).sum(min_count=1))
+            if "T2M" in part else None
+        )
+        results.append(row)
+
+    return results

@@ -1,4 +1,6 @@
 .env
+.env.*
+!.env.example
 .venv/
 __pycache__/
 *.py[cod]
@@ -19,3 +21,4 @@ models/artifacts/
 *.tif
 *.tiff
 .DS_Store
+.osh-central/

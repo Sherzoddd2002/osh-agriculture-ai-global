@@ -10,16 +10,68 @@ Bu yangi global loyiha. U sizning mavjud `E:\OSH`, `osh` PostgreSQL bazangiz yok
 - Xarita ustida Polygon/MultiPolygon hududini tanlash va PostGIS’ga saqlash.
 - Hisob yaratish va kirish; yuklangan dataset foydalanuvchi hisobiga bog‘lanadi.
 - CSV orqali tarixiy hosildorlik qatorlarini yuklash, yil/ustun/ekin mavsumi formatini tekshirish.
-- NASA POWER daily API orqali tanlangan hududning vakillik nuqtasi uchun tarixiy ob-havo ma’lumotlarini olish.
+- NASA POWER daily API orqali tanlangan hududning vakillik nuqtasi uchun 2010-yildan boshlab yillik iqlim tarixini olish va SQL’ga yozish.
+- Open-Meteo orqali joriy ob-havo hamda 16 kungacha qisqa muddatli prognozni olish va SQL’da saqlash.
+- Hudud saqlanishi bilan, hosildorlik CSV bo‘lmasa ham, iqlim tahlili avtomatik navbatga tushadi.
 - Ob-havoni foydalanuvchi ko‘rsatgan mavsum va hosil yili bilan birlashtirish.
 - Background worker orqali uzoq davom etadigan ishlarni web so‘rovlaridan ajratish.
-- Kamida 8 ta moslangan kuzatuv bo‘lganda Linear, Ridge, ElasticNet, Random Forest, Extra Trees va HistGradientBoosting modellarini vaqt bo‘yicha expanding validation bilan solishtirish; Persistence benchmark ham ko‘rsatiladi.
+- Hosildorlik CSV yuklanganda ob-havo job’i avtomatik boshlanadi; kamida 8 ta moslangan haqiqiy hosil kuzatuvi va kamida 2 ta usable ob-havo feature bo‘lsa, Linear, Ridge, ElasticNet, Random Forest, Extra Trees va HistGradientBoosting modellarini expanding validation bilan baholaydi va Persistence benchmark bilan solishtiradi.
+- Yetarli hosildorlik ma’lumoti bo‘lmasa, model prognozi yasamaydi; mavjud iqlim tarixi, joriy ob-havo va qisqa muddatli prognozni ko‘rsatadi.
 
 ## Hozircha ulanmagan manbalar
 
 Sentinel-2 NDVI, SMAP va SoilGrids connector statuslari va integratsiya nuqtalari bor, ammo raster qidirish/yuklash, quality mask va poligon bo‘yicha zonal statistikalar hali ulanmagan. Sayt ularni tayyor ma’lumotdek ko‘rsatmaydi.
 
+## Markaziy server — barcha foydalanuvchilar uchun bitta PostgreSQL
+
+Agar barcha odamlarning ma’lumotlari sizning PostgreSQL serveringizga saqlanishi kerak bo‘lsa, lokal SQLite installer emas, markaziy server rejimini ishlating.
+
+**Faqat PostgreSQL 17.11 ishlayotgan sizning Windows kompyuteringizda** (npm paketi e’lon qilingandan keyin):
+
+```powershell
+npx osh-agriculture-ai-global server-install
+npx osh-agriculture-ai-global server-status
+```
+
+Bu rejim:
+- mavjud `osh_agriculture_global` bazasiga `osh_global_app` roli orqali ulanadi;
+- FastAPI web-server va background worker’ni ishga tushiradi;
+- har bir akkauntning hududlari, datasetlari va job natijalarini markaziy PostgreSQL’ga saqlaydi;
+- foydalanuvchilar orasida shaxsiy ma’lumotlarni account ownership orqali ajratadi.
+
+Server boshqaruvi:
+
+```powershell
+npx osh-agriculture-ai-global server-start
+npx osh-agriculture-ai-global server-status
+npx osh-agriculture-ai-global server-stop
+npx osh-agriculture-ai-global server-update
+```
+
+End users uchun bu buyruqlar kerak emas. Ular siz e’lon qilgan HTTPS sayt manziliga brauzerdan kiradi.
+
+**Internetga chiqarish:** Cloudflare Tunnel orqali faqat `http://127.0.0.1:8080` ni e’lon qiling. PostgreSQL `5433` portini internetga ochmang. Vaqtinchalik Quick Tunnel faqat sinov uchun; doimiy domenli tunnel kerak. Batafsil: [docs/CENTRAL_WINDOWS_POSTGRES.md](docs/CENTRAL_WINDOWS_POSTGRES.md).
+
+**Muhim:** barcha foydalanuvchilarning bazasi bitta bo‘lsa-da, hozirgi model tahlili har bir foydalanuvchining o‘z hosildorlik datasetida bajariladi. Boshqa foydalanuvchilar ma’lumotini global modelga qo‘shish rozilik, litsenziya va sifat tekshiruvi bilan alohida boshqarilishi kerak.
+
 ## Lokal ishga tushirish (Windows)
+
+### One-command CLI (npm paket e’lon qilingandan keyin)
+
+```powershell
+npx osh-agriculture-ai-global install
+```
+
+Talablar: Node.js 20+, Python 3.11+ va internet. Lokal CLI har bir kompyuterda alohida SQLite baza yaratadi. Buyruq hozircha npm registry’ga publish qilinmagan; publish qilingach ishlaydi. Boshqa foydalanuvchilarning lokal bazalari sizning kompyuteringizdagi SQL bilan avtomatik birlashmaydi.
+
+CLI boshqaruvi:
+
+```powershell
+npx osh-agriculture-ai-global start
+npx osh-agriculture-ai-global status
+npx osh-agriculture-ai-global stop
+npx osh-agriculture-ai-global update
+```
 
 1. Docker Desktop o‘rnating va ishga tushiring.
 2. Loyihaning asosiy papkasida PowerShell oching.
@@ -57,8 +109,8 @@ year,yield_t_ha,area_ha,production_t
 3. Chegaralarni yuklang va xaritada kerakli hududni bosing.
 4. Hududni saqlang.
 5. Hosildorlik CSV faylini va ustunlarini belgilang, ekin mavsumining boshlanish/tugash sanasini kiriting.
-6. Datasetni yuklang va **Ob-havo ma’lumotlarini yig‘ish** tugmasini bosing.
-7. Job tugagach, qamrovni tekshiring va prognoz laboratoriyasidan foydalaning.
+6. Datasetni yuklang. U SQL bazaga yoziladi va ob-havo bilan birlashtirish job’i avtomatik navbatga tushadi.
+7. Job tugagach, qamrov va avtomatik model tahlilini ko‘ring. Yetarli tarix bo‘lmasa, model ishlatilmaydi va sabab ko‘rsatiladi.
 
 ## Juda muhim ilmiy cheklovlar
 

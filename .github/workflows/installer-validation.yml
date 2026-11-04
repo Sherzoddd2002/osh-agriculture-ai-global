@@ -1,0 +1,85 @@
+name: Installer validation
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: installer-validation-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    env:
+      APP_ENV: development
+      DATABASE_URL: sqlite:///./tests/osh_agri_ci.sqlite3
+      ENABLE_POSTGIS: "false"
+      JWT_SECRET: ci-only-secret-not-for-production-1234567890
+      OSH_AGRI_SOURCE_REF: ${{ github.head_ref || github.ref_name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+  
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install CLI dependencies
+        run: npm install --ignore-scripts
+
+      - name: Validate npm package contents
+        run: npm pack --dry-run
+
+      - name: Validate CLI syntax and help
+        run: |
+          node --check bin/cli.js
+          node bin/cli.js --help
+
+      - name: Validate central PowerShell scripts
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $files = @(
+            "ops/start-central.ps1",
+            "ops/stop-central.ps1",
+            "ops/status-central.ps1"
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Join-Path $PWD $file), [ref]$tokens, [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error $_.ToString() }
+              throw "PowerShell parse failed: $file"
+            }
+            Write-Host "PASS: $file"
+          }
+
+      - name: Install Python dependencies and test runner
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pytest
+
+      - name: Compile backend
+        run: python -m compileall -q backend/app
+
+      - name: Run test suite
+        run: python -m pytest -q
+
+      - name: End-to-end installer lifecycle
+        run: python scripts/ci_installer_smoke.py
