@@ -353,8 +353,6 @@ class GlobalYieldRequest(BaseModel):
     crop_code: str = Field(min_length=2,max_length=64)
     target_year: int = Field(ge=1900,le=2200)
 
-@app.get("/api/v1/global-crops")
-
 class GlobalRasterSummaryRequest(BaseModel):
     geojson: dict
     crop_code: str = Field(min_length=4, max_length=4, pattern="^[a-zA-Z]{4}$")
