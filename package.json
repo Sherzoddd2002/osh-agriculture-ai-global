@@ -1,6 +1,6 @@
 {
   "name": "osh-agriculture-ai-global",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "One-command installer and launcher for OSH Agriculture AI Global",
   "type": "module",
   "bin": {
