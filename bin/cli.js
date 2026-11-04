@@ -65,9 +65,22 @@ async function downloadSource() {
     for (const file of ["requirements.txt", "backend/app/main.py", "frontend/index.html"]) {
       await fsp.access(path.join(root, file));
     }
-    await fsp.rm(p.source, { recursive: true, force: true });
-    await fsp.mkdir(home, { recursive: true });
-    await fsp.rename(root, p.source);
+    // Stage the extracted source on the same volume as the destination.
+    // os.tmpdir() may be on C: while OSH_AGRI_HOME is on E:, and Windows
+    // cannot rename directories across volumes (EXDEV).
+    const sourceParent = path.dirname(p.source);
+    await fsp.mkdir(sourceParent, { recursive: true });
+    const stagedSource = path.join(
+      sourceParent,
+      `.osh-agri-source-${process.pid}-${crypto.randomBytes(6).toString("hex")}`
+    );
+    try {
+      await fsp.cp(root, stagedSource, { recursive: true });
+      await fsp.rm(p.source, { recursive: true, force: true });
+      await fsp.rename(stagedSource, p.source);
+    } finally {
+      await fsp.rm(stagedSource, { recursive: true, force: true });
+    }
   } finally {
     await fsp.rm(tmp, { recursive: true, force: true });
   }
