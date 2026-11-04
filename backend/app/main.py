@@ -484,6 +484,7 @@ def global_raster_mapspam_summary(
     return result
 
 
+@app.get("/api/v1/global-crops")
 def global_crops(db: Session = Depends(get_db)):
     rows=db.execute(text("SELECT crop_code,MIN(crop_name) crop_name,COUNT(*) observations,MIN(year) first_year,MAX(year) last_year,COUNT(DISTINCT country_iso3) countries FROM global_crop_statistics GROUP BY crop_code ORDER BY crop_code")).mappings().all()
     return {"source":"FAOSTAT QCL","loaded":bool(rows),"crops":[dict(x) for x in rows]}
