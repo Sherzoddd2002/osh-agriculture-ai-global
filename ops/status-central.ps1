@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Continue"
-$root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$state = Join-Path $root ".osh-central"
+$centralHome = if ($env:OSH_AGRI_CENTRAL_HOME) { $env:OSH_AGRI_CENTRAL_HOME } else { Join-Path $env:LOCALAPPDATA "OSH\AgricultureAI-Central" }
+$state = Join-Path $centralHome "state"
 foreach ($item in @(@{file="web.pid";needle="uvicorn app.main:app";name="WEB"},@{file="worker.pid";needle="app.worker";name="WORKER"})) {
     $path = Join-Path $state $item.file
     $running = $false
