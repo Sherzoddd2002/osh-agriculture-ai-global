@@ -38,8 +38,23 @@ def health() -> bool:
         return False
 
 
-def wait_health(process: subprocess.Popen, log_path: Path, timeout: int = 360):
+def wait_health(
+    process: subprocess.Popen,
+    log_path: Path,
+    timeout: int = 360,
+    require_restart: bool = False,
+):
     deadline = time.time() + timeout
+
+    # update must stop the previous server before a new healthy server appears.
+    if require_restart:
+        while time.time() < deadline and health():
+            if process.poll() is not None:
+                break
+            time.sleep(1)
+        if health():
+            raise RuntimeError("Update never stopped the already-running web server.")
+
     while time.time() < deadline:
         if health():
             return
@@ -64,7 +79,7 @@ def start_foreground(command: str, env: dict, log_path: Path):
     )
     # The child inherits the OS handle; close the parent's copy.
     log_handle.close()
-    wait_health(process, log_path)
+    wait_health(process, log_path, require_restart=(command == "update"))
     return process
 
 
