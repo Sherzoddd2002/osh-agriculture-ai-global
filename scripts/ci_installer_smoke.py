@@ -121,6 +121,9 @@ def main():
 
     env = os.environ.copy()
     env["OSH_AGRI_HOME"] = str(home / "app")
+    # Do not let CI's pytest DATABASE_URL override the fresh install's own .env.
+    for key in ("APP_ENV", "DATABASE_URL", "ENABLE_POSTGIS", "JWT_SECRET"):
+        env.pop(key, None)
     # On PRs, exercise the exact branch under test, not main before merge.
     env.setdefault("OSH_AGRI_SOURCE_REF", os.getenv("GITHUB_HEAD_REF") or os.getenv("GITHUB_REF_NAME", "main"))
 
