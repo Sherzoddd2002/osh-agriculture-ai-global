@@ -90,9 +90,9 @@ async function configure() {
     const lines = [
       "APP_ENV=development",
       "APP_NAME=OSH Agriculture AI Global",
-      \`DATABASE_URL=\${dbUrl}\`,
+      `DATABASE_URL=${dbUrl}`,
       "ENABLE_POSTGIS=false",
-      \`JWT_SECRET=\${crypto.randomBytes(48).toString("base64url")}\`,
+      `JWT_SECRET=${crypto.randomBytes(48).toString("base64url")}`,
       "JWT_EXPIRE_MINUTES=10080",
       "CORS_ORIGINS=http://127.0.0.1:8080,http://localhost:8080",
       "MAX_UPLOAD_MB=25",
