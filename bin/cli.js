@@ -82,21 +82,26 @@ async function syncRuntime() {
 async function configure() {
   await fsp.mkdir(p.data, { recursive: true });
   await fsp.mkdir(p.logs, { recursive: true });
-  try { await fsp.access(p.env); return; } catch {}
-  const dbPath = path.join(p.data, "agriculture.sqlite3").replaceAll("\\", "/");
-  const dbUrl = `sqlite:///${dbPath}`;
-  const lines = [
-    "APP_ENV=development",
-    "APP_NAME=OSH Agriculture AI Global",
-    `DATABASE_URL=${dbUrl}`,
-    "ENABLE_POSTGIS=false",
-    `JWT_SECRET=${crypto.randomBytes(48).toString("base64url")}`,
-    "JWT_EXPIRE_MINUTES=10080",
-    "CORS_ORIGINS=http://127.0.0.1:8080,http://localhost:8080",
-    "MAX_UPLOAD_MB=25",
-    "WORKER_POLL_SECONDS=3"
-  ];
-  await fsp.writeFile(p.env, lines.join("\n") + "\n", { flag: "wx" });
+  let envExists = true;
+  try { await fsp.access(p.env); } catch { envExists = false; }
+  if (!envExists) {
+    const dbPath = path.join(p.data, "agriculture.sqlite3").replaceAll("\\", "/");
+    const dbUrl = \`sqlite:///\${dbPath}\`;
+    const lines = [
+      "APP_ENV=development",
+      "APP_NAME=OSH Agriculture AI Global",
+      \`DATABASE_URL=\${dbUrl}\`,
+      "ENABLE_POSTGIS=false",
+      \`JWT_SECRET=\${crypto.randomBytes(48).toString("base64url")}\`,
+      "JWT_EXPIRE_MINUTES=10080",
+      "CORS_ORIGINS=http://127.0.0.1:8080,http://localhost:8080",
+      "MAX_UPLOAD_MB=25",
+      "WORKER_POLL_SECONDS=3"
+    ];
+    await fsp.writeFile(p.env, lines.join("\n") + "\n", { flag: "wx" });
+  }
+  // Restrict the generated JWT secret on Unix-like systems.
+  if (process.platform !== "win32") await fsp.chmod(p.env, 0o600);
 }
 async function preparePython(upgrade = false) {
   const [cmd, prefix] = await pythonCommand();
