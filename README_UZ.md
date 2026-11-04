@@ -10,16 +10,36 @@ Bu yangi global loyiha. U sizning mavjud `E:\OSH`, `osh` PostgreSQL bazangiz yok
 - Xarita ustida Polygon/MultiPolygon hududini tanlash va PostGIS’ga saqlash.
 - Hisob yaratish va kirish; yuklangan dataset foydalanuvchi hisobiga bog‘lanadi.
 - CSV orqali tarixiy hosildorlik qatorlarini yuklash, yil/ustun/ekin mavsumi formatini tekshirish.
-- NASA POWER daily API orqali tanlangan hududning vakillik nuqtasi uchun tarixiy ob-havo ma’lumotlarini olish.
+- NASA POWER daily API orqali tanlangan hududning vakillik nuqtasi uchun 2010-yildan boshlab yillik iqlim tarixini olish va SQL’ga yozish.
+- Open-Meteo orqali joriy ob-havo hamda 16 kungacha qisqa muddatli prognozni olish va SQL’da saqlash.
+- Hudud saqlanishi bilan, hosildorlik CSV bo‘lmasa ham, iqlim tahlili avtomatik navbatga tushadi.
 - Ob-havoni foydalanuvchi ko‘rsatgan mavsum va hosil yili bilan birlashtirish.
 - Background worker orqali uzoq davom etadigan ishlarni web so‘rovlaridan ajratish.
-- Kamida 8 ta moslangan kuzatuv bo‘lganda Linear, Ridge, ElasticNet, Random Forest, Extra Trees va HistGradientBoosting modellarini vaqt bo‘yicha expanding validation bilan solishtirish; Persistence benchmark ham ko‘rsatiladi.
+- Hosildorlik CSV yuklanganda ob-havo job’i avtomatik boshlanadi; kamida 8 ta moslangan haqiqiy hosil kuzatuvi va kamida 2 ta usable ob-havo feature bo‘lsa, Linear, Ridge, ElasticNet, Random Forest, Extra Trees va HistGradientBoosting modellarini expanding validation bilan baholaydi va Persistence benchmark bilan solishtiradi.
+- Yetarli hosildorlik ma’lumoti bo‘lmasa, model prognozi yasamaydi; mavjud iqlim tarixi, joriy ob-havo va qisqa muddatli prognozni ko‘rsatadi.
 
 ## Hozircha ulanmagan manbalar
 
 Sentinel-2 NDVI, SMAP va SoilGrids connector statuslari va integratsiya nuqtalari bor, ammo raster qidirish/yuklash, quality mask va poligon bo‘yicha zonal statistikalar hali ulanmagan. Sayt ularni tayyor ma’lumotdek ko‘rsatmaydi.
 
 ## Lokal ishga tushirish (Windows)
+
+### One-command CLI (npm paket e’lon qilingandan keyin)
+
+```powershell
+npx osh-agriculture-ai-global install
+```
+
+Talablar: Node.js 20+, Python 3.11+ va internet. Lokal CLI har bir kompyuterda alohida SQLite baza yaratadi. Buyruq hozircha npm registry’ga publish qilinmagan; publish qilingach ishlaydi. Boshqa foydalanuvchilarning lokal bazalari sizning kompyuteringizdagi SQL bilan avtomatik birlashmaydi.
+
+CLI boshqaruvi:
+
+```powershell
+npx osh-agriculture-ai-global start
+npx osh-agriculture-ai-global status
+npx osh-agriculture-ai-global stop
+npx osh-agriculture-ai-global update
+```
 
 1. Docker Desktop o‘rnating va ishga tushiring.
 2. Loyihaning asosiy papkasida PowerShell oching.
@@ -57,8 +77,8 @@ year,yield_t_ha,area_ha,production_t
 3. Chegaralarni yuklang va xaritada kerakli hududni bosing.
 4. Hududni saqlang.
 5. Hosildorlik CSV faylini va ustunlarini belgilang, ekin mavsumining boshlanish/tugash sanasini kiriting.
-6. Datasetni yuklang va **Ob-havo ma’lumotlarini yig‘ish** tugmasini bosing.
-7. Job tugagach, qamrovni tekshiring va prognoz laboratoriyasidan foydalaning.
+6. Datasetni yuklang. U SQL bazaga yoziladi va ob-havo bilan birlashtirish job’i avtomatik navbatga tushadi.
+7. Job tugagach, qamrov va avtomatik model tahlilini ko‘ring. Yetarli tarix bo‘lmasa, model ishlatilmaydi va sabab ko‘rsatiladi.
 
 ## Juda muhim ilmiy cheklovlar
 
