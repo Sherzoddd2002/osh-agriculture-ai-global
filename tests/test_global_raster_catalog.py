@@ -24,6 +24,13 @@ def test_mapspam_catalog_exposes_12_cogs_and_crop_metadata():
     }
 
 
+def test_mapspam_source_units_match_official_cog_metadata():
+    assert MAPSPAM["variables"]["physical_area"]["unit"] == "ha"
+    assert MAPSPAM["variables"]["harvested_area"]["unit"] == "ha"
+    assert MAPSPAM["variables"]["production"]["unit"] == "t"
+    assert MAPSPAM["variables"]["yield"]["unit"] == "kg/ha"
+
+
 def test_yield_is_not_declared_as_additive():
     assert MAPSPAM["variables"]["yield"]["aggregation"] == "harvested-area-weighted mean"
     assert MAPSPAM["variables"]["production"]["aggregation"] == "sum"
