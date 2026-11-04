@@ -347,6 +347,25 @@ class PredictionRequest(BaseModel):
     model: Optional[str] = None
 
 
+
+class GlobalYieldRequest(BaseModel):
+    country_iso3: str = Field(min_length=3,max_length=3)
+    crop_code: str = Field(min_length=2,max_length=64)
+    target_year: int = Field(ge=1900,le=2200)
+
+@app.get("/api/v1/global-crops")
+def global_crops(db: Session = Depends(get_db)):
+    rows=db.execute(text("SELECT crop_code,MIN(crop_name) crop_name,COUNT(*) observations,MIN(year) first_year,MAX(year) last_year,COUNT(DISTINCT country_iso3) countries FROM global_crop_statistics GROUP BY crop_code ORDER BY crop_code")).mappings().all()
+    return {"source":"FAOSTAT QCL","loaded":bool(rows),"crops":[dict(x) for x in rows]}
+
+@app.post("/api/v1/global-predictions/yield")
+def global_yield(payload: GlobalYieldRequest,user: User=Depends(current_user),db: Session=Depends(get_db)):
+    from .services.global_crops import forecast_global_crop_yield
+    try:
+        return forecast_global_crop_yield(db,payload.country_iso3,payload.crop_code,payload.target_year)
+    except ValueError as exc:
+        raise HTTPException(422,str(exc))
+
 @app.post("/api/v1/predictions")
 def prediction(payload: PredictionRequest, user: User = Depends(current_user), db: Session = Depends(get_db)):
     ds = db.scalar(select(Dataset).where(Dataset.id == payload.dataset_id, Dataset.owner_id == user.id))
