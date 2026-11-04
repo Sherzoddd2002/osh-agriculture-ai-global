@@ -86,7 +86,7 @@ async function configure() {
   try { await fsp.access(p.env); } catch { envExists = false; }
   if (!envExists) {
     const dbPath = path.join(p.data, "agriculture.sqlite3").replaceAll("\\", "/");
-    const dbUrl = \`sqlite:///\${dbPath}\`;
+    const dbUrl = `sqlite:///${dbPath}`;
     const lines = [
       "APP_ENV=development",
       "APP_NAME=OSH Agriculture AI Global",
