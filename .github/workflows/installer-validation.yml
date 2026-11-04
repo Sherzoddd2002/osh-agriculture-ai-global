@@ -3,8 +3,10 @@ name: Installer validation
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [feature/npx-one-command-installer]
+
+concurrency:
+  group: installer-validation-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   validate:
