@@ -6,7 +6,9 @@ Sources:
 """
 from __future__ import annotations
 
+import os
 from itertools import product
+from pathlib import Path
 
 
 CROPGRIDS = {
@@ -99,6 +101,17 @@ MAPSPAM_CROP_CODES_URL = (
     "mapspam2020-v2r2/crop-codes.json"
 )
 
+
+
+def default_global_data_dir() -> Path:
+    """Resolve persistent global data storage without writing into the source tree."""
+    explicit = os.environ.get("OSH_AGRI_DATA_DIR")
+    if explicit:
+        return Path(explicit).expanduser()
+    home = os.environ.get("OSH_AGRI_HOME")
+    if home:
+        return Path(home).expanduser() / "global-data"
+    return Path("data/global")
 
 def mapspam_cog_assets() -> list[dict]:
     """Return the 12 documented COG variable/technology combinations."""
