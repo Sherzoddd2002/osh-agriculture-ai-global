@@ -30,11 +30,59 @@ def _safe_name(value: str) -> str:
 
 
 def _load_boundary(client: httpx.Client, iso3: str, level: str, cache: Path):
+    """Load and cache an administrative boundary from geoBoundaries.
+
+    The geoBoundaries API is preferred. If its website host is unreachable,
+    fall back to the project's official GitHub LFS-backed release archive.
+    """
+    cache.mkdir(parents=True, exist_ok=True)
     cache_file = cache / f"{iso3}_{level}.geojson"
     if cache_file.is_file():
-        return json.loads(cache_file.read_text(encoding="utf-8")), "cache"
+        cached = json.loads(cache_file.read_text(encoding="utf-8"))
+        if (
+            isinstance(cached, dict)
+            and isinstance(cached.get("geojson"), dict)
+            and cached["geojson"].get("type") == "FeatureCollection"
+            and cached["geojson"].get("features")
+        ):
+            return cached, "cache"
+        # Invalid or truncated cache entries are discarded and downloaded again.
+        cache_file.unlink()
 
     errors = []
+
+    def validate_geojson(geojson):
+        if (
+            not isinstance(geojson, dict)
+            or geojson.get("type") != "FeatureCollection"
+            or not isinstance(geojson.get("features"), list)
+            or not geojson["features"]
+        ):
+            raise ValueError("Boundary is not a non-empty GeoJSON FeatureCollection")
+
+        polygon_count = 0
+        for feature in geojson["features"]:
+            if not isinstance(feature, dict) or not feature.get("geometry"):
+                continue
+            geom = shape(feature["geometry"])
+            if not geom.is_empty and geom.geom_type in {"Polygon", "MultiPolygon"}:
+                polygon_count += 1
+        if polygon_count == 0:
+            raise ValueError("Boundary contains no Polygon or MultiPolygon features")
+        return geojson
+
+    def save_boundary(metadata, geojson, source):
+        payload = {"metadata": metadata or {}, "geojson": geojson}
+        # Atomic cache write prevents an interrupted download leaving bad JSON.
+        temp_file = cache_file.with_suffix(cache_file.suffix + ".tmp")
+        temp_file.write_text(
+            json.dumps(payload, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        temp_file.replace(cache_file)
+        return payload, source
+
+    # 1. Preferred official geoBoundaries API endpoints.
     for source in ("gbOpen", "gbHumanitarian"):
         url = f"https://www.geoboundaries.org/api/current/{source}/{iso3}/{level}/"
         try:
@@ -48,21 +96,44 @@ def _load_boundary(client: httpx.Client, iso3: str, level: str, cache: Path):
                 or metadata.get("simplifiedGeometryGeoJSON")
             )
             if not download_url:
+                errors.append(f"{source}: metadata has no GeoJSON download URL")
                 continue
             geo_response = client.get(download_url)
             geo_response.raise_for_status()
-            geojson = geo_response.json()
-            if geojson.get("type") != "FeatureCollection" or not geojson.get("features"):
-                continue
-            cache_file.write_text(
-                json.dumps({"metadata": metadata, "geojson": geojson}),
-                encoding="utf-8",
-            )
-            return {"metadata": metadata, "geojson": geojson}, source
+            geojson = validate_geojson(geo_response.json())
+            return save_boundary(metadata, geojson, source)
         except Exception as exc:
             errors.append(f"{source}: {exc}")
-    raise RuntimeError("; ".join(errors)[:500] or "Boundary unavailable")
 
+    # 2. Official geoBoundaries GitHub release archive. This route resolves
+    # Git LFS objects, unlike raw.githubusercontent.com which may return the
+    # small Git LFS pointer text instead of the GeoJSON payload.
+    github_base = (
+        "https://github.com/wmgeolab/geoBoundaries/raw/refs/heads/main/"
+        f"releaseData/gbOpen/{iso3}/{level}/"
+    )
+    github_candidates = (
+        f"{github_base}geoBoundaries-{iso3}-{level}_simplified.geojson",
+        f"{github_base}geoBoundaries-{iso3}-{level}.geojson",
+    )
+    for github_url in github_candidates:
+        try:
+            response = client.get(github_url)
+            if response.status_code == 404:
+                continue
+            response.raise_for_status()
+            geojson = validate_geojson(response.json())
+            metadata = {
+                "boundaryID": f"gbOpen-{iso3}-{level}",
+                "boundaryYearRepresented": None,
+                "boundarySourceURL": github_url,
+                "boundarySource": "official geoBoundaries GitHub release archive",
+            }
+            return save_boundary(metadata, geojson, "github-gbOpen")
+        except Exception as exc:
+            errors.append(f"github-gbOpen: {exc}")
+
+    raise RuntimeError("; ".join(errors)[:1000] or "Boundary unavailable")
 
 def _countries():
     values = []
