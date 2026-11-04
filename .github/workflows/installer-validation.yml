@@ -19,6 +19,7 @@ jobs:
       DATABASE_URL: sqlite:///./tests/osh_agri_ci.sqlite3
       ENABLE_POSTGIS: "false"
       JWT_SECRET: ci-only-secret-not-for-production-1234567890
+      OSH_AGRI_SOURCE_REF: ${{ github.head_ref || github.ref_name }}
 
     steps:
       - name: Checkout
@@ -53,3 +54,6 @@ jobs:
 
       - name: Run test suite
         run: python -m pytest -q
+
+      - name: End-to-end installer lifecycle
+        run: python scripts/ci_installer_smoke.py
