@@ -24,6 +24,10 @@ def process_one(db: Session, job: AnalysisJob):
     import asyncio
     daily = asyncio.run(fetch_daily_weather(loc.centroid_lat, loc.centroid_lon, start, end))
     rows = aggregate_weather(daily, first, last, ds.season_start, ds.season_end)
+    weather_by_year = {
+        int(row["year"]): {key: value for key, value in row.items() if key != "year"}
+        for row in rows
+    }
     job.progress = 75; job.message = "Ob-havo qatori hosil yillari bilan birlashtirilmoqda"; db.commit()
     for row in rows:
         year = int(row.pop("year"))
@@ -39,7 +43,6 @@ def process_one(db: Session, job: AnalysisJob):
     db.flush()
 
     # Automatically evaluate a local model when enough observed yield years exist.
-    weather_by_year = {int(row["year"]): row for row in rows}
     aligned = []
     for observation in observations:
         weather = weather_by_year.get(int(observation.year))
@@ -123,14 +126,27 @@ def process_location_climate(db: Session, job: LocationClimateJob):
     job.progress = 82
     job.message = "Joriy ob-havo va qisqa muddatli prognoz olinmoqda"
     db.commit()
-    forecast = __import__("asyncio").run(fetch_weather_forecast(loc.centroid_lat, loc.centroid_lon, 16))
+    try:
+        forecast = __import__("asyncio").run(fetch_weather_forecast(loc.centroid_lat, loc.centroid_lon, 16))
+        snapshot_payload = forecast
+        forecast_status = forecast.get("status", "AVAILABLE")
+    except Exception as exc:
+        snapshot_payload = {
+            "status": "FAILED",
+            "source": "Open-Meteo Forecast API",
+            "error": str(exc),
+            "daily": [],
+            "current": {},
+        }
+        forecast_status = "FAILED"
+
     snapshot = db.scalar(select(LocationWeatherSnapshot).where(LocationWeatherSnapshot.location_id == loc.id))
     if snapshot:
-        snapshot.payload = forecast
+        snapshot.payload = snapshot_payload
         snapshot.fetched_at = datetime.now(timezone.utc)
     else:
         db.add(LocationWeatherSnapshot(
-            location_id=loc.id, payload=forecast, fetched_at=datetime.now(timezone.utc)
+            location_id=loc.id, payload=snapshot_payload, fetched_at=datetime.now(timezone.utc)
         ))
 
     job.progress = 100
@@ -139,7 +155,8 @@ def process_location_climate(db: Session, job: LocationClimateJob):
     job.result = {
         "annual_rows": len(annual),
         "historical_period": [str(start), str(end)],
-        "forecast_days": forecast.get("forecast_days_returned", 0),
+        "forecast_days": snapshot_payload.get("forecast_days_returned", 0),
+        "forecast_status": forecast_status,
         "yield_dataset_present": False,
         "model_status": "NOT_RUN_NO_YIELD_DATA",
         "representative_point": {"lat": loc.centroid_lat, "lon": loc.centroid_lon},
