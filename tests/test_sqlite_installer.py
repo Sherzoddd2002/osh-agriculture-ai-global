@@ -52,6 +52,23 @@ def test_sqlite_api_registration_location_and_dataset_flow():
         )
         assert location_response.status_code == 200, location_response.text
         location_id = location_response.json()["id"]
+        climate_job_id = location_response.json()["climate_job_id"]
+        assert location_response.json()["climate_status"] == "QUEUED"
+
+        climate_job = client.get(
+            f"/api/v1/location-climate-jobs/{climate_job_id}",
+            headers=headers,
+        )
+        assert climate_job.status_code == 200
+        assert climate_job.json()["status"] == "QUEUED"
+
+        empty_climate = client.get(
+            f"/api/v1/locations/{location_id}/climate",
+            headers=headers,
+        )
+        assert empty_climate.status_code == 200
+        assert empty_climate.json()["annual"] == []
+        assert empty_climate.json()["weather"] is None
 
         # Verify that GeoJSON is persisted in SQLite JSON, without PostGIS.
         with SessionLocal() as db:
@@ -71,9 +88,11 @@ def test_sqlite_api_registration_location_and_dataset_flow():
         assert upload.status_code == 200, upload.text
         dataset_id = upload.json()["dataset_id"]
         assert upload.json()["row_count"] == 3
+        assert upload.json()["analysis_job_id"]
 
-        queued = client.post(
-            f"/api/v1/datasets/{dataset_id}/process",
+        # Upload itself must queue the weather + automatic model workflow.
+        queued = client.get(
+            f"/api/v1/jobs/{upload.json()['analysis_job_id']}",
             headers=headers,
         )
         assert queued.status_code == 200, queued.text
