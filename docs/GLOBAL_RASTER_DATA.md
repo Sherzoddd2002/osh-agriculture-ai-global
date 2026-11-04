@@ -36,11 +36,12 @@ data directory:
 ```powershell
 $env:OSH_AGRI_HOME = "E:\OSH\AgricultureAI"
 $env:OSH_AGRI_DATA_DIR = "E:\OSH\AgricultureAI\global-data"
+$env:PYTHONPATH = "E:\OSH\AgricultureAI\source\backend"
 
 cd E:\OSH\AgricultureAI\source
 $python = "E:\OSH\AgricultureAI\central-server\.venv\Scripts\python.exe"
 
-& $python -m backend.app.sync_global_rasters --dataset mapspam
+& $python -m app.sync_global_rasters --dataset mapspam
 ```
 
 The default MAPSPAM sync downloads the four core `all` technology COGs
@@ -51,19 +52,19 @@ downloading the separate irrigated and rainfed files until they are needed.
 To download all 12 COG layers (four variables × three technologies):
 
 ```powershell
-& $python -m backend.app.sync_global_rasters --dataset mapspam --all-technologies
+& $python -m app.sync_global_rasters --dataset mapspam --all-technologies
 ```
 
 To download selected layers only:
 
 ```powershell
-& $python -m backend.app.sync_global_rasters --dataset mapspam --assets harvested_area-all production-all yield-all
+& $python -m app.sync_global_rasters --dataset mapspam --assets harvested_area-all production-all yield-all
 ```
 
 To download CROPGRIDS v1.08 (806,855,203 bytes, approximately 807 MB):
 
 ```powershell
-& $python -m backend.app.sync_global_rasters --dataset cropgrids
+& $python -m app.sync_global_rasters --dataset cropgrids
 ```
 
 Use `--dataset both` to sync both MAPSPAM core layers and CROPGRIDS.
