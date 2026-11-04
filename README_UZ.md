@@ -22,6 +22,38 @@ Bu yangi global loyiha. U sizning mavjud `E:\OSH`, `osh` PostgreSQL bazangiz yok
 
 Sentinel-2 NDVI, SMAP va SoilGrids connector statuslari va integratsiya nuqtalari bor, ammo raster qidirish/yuklash, quality mask va poligon bo‘yicha zonal statistikalar hali ulanmagan. Sayt ularni tayyor ma’lumotdek ko‘rsatmaydi.
 
+## Markaziy server — barcha foydalanuvchilar uchun bitta PostgreSQL
+
+Agar barcha odamlarning ma’lumotlari sizning PostgreSQL serveringizga saqlanishi kerak bo‘lsa, lokal SQLite installer emas, markaziy server rejimini ishlating.
+
+**Faqat PostgreSQL 17.11 ishlayotgan sizning Windows kompyuteringizda** (npm paketi e’lon qilingandan keyin):
+
+```powershell
+npx osh-agriculture-ai-global server-install
+npx osh-agriculture-ai-global server-status
+```
+
+Bu rejim:
+- mavjud `osh_agriculture_global` bazasiga `osh_global_app` roli orqali ulanadi;
+- FastAPI web-server va background worker’ni ishga tushiradi;
+- har bir akkauntning hududlari, datasetlari va job natijalarini markaziy PostgreSQL’ga saqlaydi;
+- foydalanuvchilar orasida shaxsiy ma’lumotlarni account ownership orqali ajratadi.
+
+Server boshqaruvi:
+
+```powershell
+npx osh-agriculture-ai-global server-start
+npx osh-agriculture-ai-global server-status
+npx osh-agriculture-ai-global server-stop
+npx osh-agriculture-ai-global server-update
+```
+
+End users uchun bu buyruqlar kerak emas. Ular siz e’lon qilgan HTTPS sayt manziliga brauzerdan kiradi.
+
+**Internetga chiqarish:** Cloudflare Tunnel orqali faqat `http://127.0.0.1:8080` ni e’lon qiling. PostgreSQL `5433` portini internetga ochmang. Vaqtinchalik Quick Tunnel faqat sinov uchun; doimiy domenli tunnel kerak. Batafsil: [docs/CENTRAL_WINDOWS_POSTGRES.md](docs/CENTRAL_WINDOWS_POSTGRES.md).
+
+**Muhim:** barcha foydalanuvchilarning bazasi bitta bo‘lsa-da, hozirgi model tahlili har bir foydalanuvchining o‘z hosildorlik datasetida bajariladi. Boshqa foydalanuvchilar ma’lumotini global modelga qo‘shish rozilik, litsenziya va sifat tekshiruvi bilan alohida boshqarilishi kerak.
+
 ## Lokal ishga tushirish (Windows)
 
 ### One-command CLI (npm paket e’lon qilingandan keyin)
