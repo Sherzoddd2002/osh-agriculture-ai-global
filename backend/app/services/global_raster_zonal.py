@@ -75,15 +75,44 @@ def aggregate_mapspam_zone(
         if ref.count < crop_band:
             raise ValueError(f"MAPSPAM raster has only {ref.count} bands")
 
+        # MAPSPAM COGs can encode the same nominal grid with tiny
+        # floating-point differences in pixel-size metadata. Compare the
+        # candidate grid at all four raster corners in reference-pixel units.
+        # A 1e-5 pixel maximum drift is negligible, while real shifts remain
+        # rejected. We still read identical pixel windows from every asset.
+        grid_tolerance_pixels = 1e-5
+        inverse_ref_transform = ~ref.transform
+
         for key, ds in datasets.items():
-            if (
-                ds.width != ref.width
-                or ds.height != ref.height
-                or ds.count < crop_band
-                or ds.crs != ref.crs
-                or ds.transform != ref.transform
-            ):
-                raise ValueError(f"MAPSPAM {key} raster grid does not match harvested_area")
+            compatible = (
+                ds.width == ref.width
+                and ds.height == ref.height
+                and ds.count >= crop_band
+                and ds.crs == ref.crs
+            )
+            if compatible:
+                for col, row in (
+                    (0, 0),
+                    (ref.width, 0),
+                    (0, ref.height),
+                    (ref.width, ref.height),
+                ):
+                    candidate_x, candidate_y = ds.transform * (col, row)
+                    reference_col, reference_row = (
+                        inverse_ref_transform * (candidate_x, candidate_y)
+                    )
+                    if (
+                        abs(reference_col - col) > grid_tolerance_pixels
+                        or abs(reference_row - row) > grid_tolerance_pixels
+                    ):
+                        compatible = False
+                        break
+
+            if not compatible:
+                raise ValueError(
+                    f"MAPSPAM {key} raster grid does not align with "
+                    "harvested_area within 1e-5 pixel tolerance"
+                )
 
         geom = geometry
         if ref.crs.to_string() != "EPSG:4326":
