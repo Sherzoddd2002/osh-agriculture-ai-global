@@ -221,7 +221,8 @@ def location_climate(location_id: int, user: User = Depends(current_user), db: S
         "weather": snapshot.payload if snapshot else None,
         "weather_fetched_at": snapshot.fetched_at.isoformat() if snapshot else None,
         "latest_job": ({"id": latest_job.id, "status": latest_job.status,
-                        "progress": latest_job.progress, "message": latest_job.message}
+                        "progress": latest_job.progress, "message": latest_job.message,
+                        "result": latest_job.result, "error": latest_job.error}
                        if latest_job else None),
         "sources": SOURCE_REGISTRY,
     }
