@@ -48,6 +48,13 @@ if (-not (Test-Path -LiteralPath $python)) {
     $basePython = $null
     $baseArgs = @()
 
+    if ($env:OSH_AGRI_PYTHON -and (Test-Path -LiteralPath $env:OSH_AGRI_PYTHON)) {
+        $probe = & $env:OSH_AGRI_PYTHON --version 2>&1
+        if ($LASTEXITCODE -eq 0 -and "$probe" -match "Python 3\.(12|1[3-9])") {
+            $basePython = $env:OSH_AGRI_PYTHON
+        }
+    }
+
     $pythonCommand = Get-Command python -ErrorAction SilentlyContinue
     if ($pythonCommand) {
         $probe = & $pythonCommand.Source --version 2>&1
