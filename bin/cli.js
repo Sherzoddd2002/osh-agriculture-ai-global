@@ -243,7 +243,6 @@ async function install() {
 }
 async function update() {
   if (!fs.existsSync(p.source)) throw new Error("Avval install buyrug‘ini bajaring.");
-  if (await healthy()) throw new Error("Avval web-server terminalida Ctrl+C bosing, keyin update bajaring.");
   await stopServer(); await stopWorker(); await downloadSource(); await syncRuntime(); await configure();
   await preparePython(false); await initDb(); await startWorker(); await serve();
 }
