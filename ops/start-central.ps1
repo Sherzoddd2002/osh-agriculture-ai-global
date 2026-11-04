@@ -1,12 +1,14 @@
 $ErrorActionPreference = "Stop"
 $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$state = Join-Path $root ".osh-central"
-$logs = Join-Path $state "logs"
-$envFile = Join-Path $root ".env.central"
-$python = if ($env:OSH_AGRI_PYTHON) { $env:OSH_AGRI_PYTHON } else { (Get-Command python -ErrorAction Stop).Source }
+$centralHome = if ($env:OSH_AGRI_CENTRAL_HOME) { $env:OSH_AGRI_CENTRAL_HOME } else { Join-Path $env:LOCALAPPDATA "OSH\AgricultureAI-Central" }
+$state = Join-Path $centralHome "state"
+$logs = Join-Path $centralHome "logs"
+$envFile = Join-Path $centralHome ".env.central"
+$venv = Join-Path $centralHome ".venv"
+$python = Join-Path $venv "Scripts\python.exe"
 $psql = "E:\Claude\postgresql-17.11-5-windows-x64-binaries\pgsql\bin\psql.exe"
 
-New-Item -ItemType Directory -Force -Path $state, $logs | Out-Null
+New-Item -ItemType Directory -Force -Path $centralHome, $state, $logs | Out-Null
 
 if (-not (Test-Path -LiteralPath $envFile)) {
     $bytes = New-Object byte[] 48
@@ -26,10 +28,9 @@ if (-not (Test-Path -LiteralPath $envFile)) {
         "WORKER_POLL_SECONDS=3"
     )
     [System.IO.File]::WriteAllLines($envFile, $lines, [System.Text.UTF8Encoding]::new($false))
-    Write-Host "Created .env.central with a new JWT secret."
+    Write-Host "Private central config created at $envFile"
 }
 
-# Load only this server's private environment file. Do not print values.
 Get-Content -LiteralPath $envFile | ForEach-Object {
     $line = $_.Trim()
     if ($line -and -not $line.StartsWith("#") -and $line.Contains("=")) {
@@ -43,7 +44,25 @@ if (-not $env:DATABASE_URL.StartsWith("postgresql+psycopg://")) { throw "Central
 if ($env:DATABASE_URL -match "://[^/@:]+:[^@]+@") { throw "Do not store PostgreSQL passwords in .env.central. Use pgpass.conf." }
 if ([string]::IsNullOrWhiteSpace($env:JWT_SECRET) -or $env:JWT_SECRET.Length -lt 32) { throw "JWT_SECRET must be at least 32 characters." }
 
-if (-not (Test-Path -LiteralPath $python)) { throw "Python not found: $python" }
+if (-not (Test-Path -LiteralPath $python)) {
+    $basePython = $null
+    foreach ($candidate in @(@("py", "-3.12"), @("python", ""))) {
+        $cmd = $candidate[0]
+        $prefix = @()
+        if ($candidate[1]) { $prefix = @($candidate[1]) }
+        $probe = & $cmd @prefix --version 2>&1
+        if ($LASTEXITCODE -eq 0 -and "$probe" -match "Python 3\.(12|1[3-9])") {
+            $basePython = @($cmd) + $prefix
+            break
+        }
+    }
+    if (-not $basePython) { throw "Python 3.12+ topilmadi. Python 3.12 o‘rnating yoki OSH_AGRI_PYTHON ni belgilang." }
+    $exe = $basePython[0]
+    $prefix = @()
+    if ($basePython.Count -gt 1) { $prefix = @($basePython[1..($basePython.Count-1)]) }
+    & $exe @prefix -m venv $venv
+    if ($LASTEXITCODE -ne 0) { throw "Central Python virtual environment could not be created." }
+}
 if (-not (Test-Path -LiteralPath $psql)) { throw "PostgreSQL 17 psql.exe not found: $psql" }
 
 $env:PYTHONPATH = Join-Path $root "backend"
@@ -51,7 +70,7 @@ $env:PYTHONUNBUFFERED = "1"
 
 Write-Host "Checking central PostgreSQL connection..."
 & $psql -X -h 127.0.0.1 -p 5433 -U osh_global_app -d osh_agriculture_global -w -v ON_ERROR_STOP=1 -c "SELECT current_database(), current_user, inet_server_port();"
-if ($LASTEXITCODE -ne 0) { throw "PostgreSQL connection failed. Check the osh_global_app entry in pgpass.conf." }
+if ($LASTEXITCODE -ne 0) { throw "PostgreSQL connection failed. Check pgpass.conf mapping for osh_global_app." }
 
 function Test-ProcessPidFile($path, $needle) {
     if (-not (Test-Path -LiteralPath $path)) { return $false }
@@ -61,9 +80,9 @@ function Test-ProcessPidFile($path, $needle) {
         return ($null -ne $proc -and $proc.CommandLine -like "*$needle*")
     } catch { return $false }
 }
-
 $webPidFile = Join-Path $state "web.pid"
 $workerPidFile = Join-Path $state "worker.pid"
+
 if (Test-ProcessPidFile $webPidFile "uvicorn app.main:app") {
     Write-Host "Web server is already running."
     if (-not (Test-ProcessPidFile $workerPidFile "app.worker")) {
@@ -74,14 +93,15 @@ if (Test-ProcessPidFile $webPidFile "uvicorn app.main:app") {
     exit 0
 }
 
-# Stop only stale state files. Never kill an unverified PID.
 if (Test-Path $webPidFile) { Remove-Item -LiteralPath $webPidFile -Force }
 if (Test-Path $workerPidFile) {
-    if (Test-ProcessPidFile $workerPidFile "app.worker") { throw "Worker is already running; use stop-central.ps1 first." }
+    if (Test-ProcessPidFile $workerPidFile "app.worker") { throw "Worker is already running; run ops/stop-central.ps1 first." }
     Remove-Item -LiteralPath $workerPidFile -Force
 }
 
-Write-Host "Installing/updating Python requirements..."
+Write-Host "Installing Python requirements in the central virtual environment..."
+& $python -m pip install --upgrade pip
+if ($LASTEXITCODE -ne 0) { throw "pip upgrade failed." }
 & $python -m pip install -r (Join-Path $root "requirements.txt")
 if ($LASTEXITCODE -ne 0) { throw "pip install failed." }
 
@@ -106,13 +126,13 @@ for ($i = 0; $i -lt 45; $i++) {
 if (-not $healthy) {
     Write-Host "Web did not become healthy. Logs:"
     Get-Content (Join-Path $logs "web.err.log") -Tail 60 -ErrorAction SilentlyContinue
-    throw "Central web server did not start. See .osh-central\logs."
+    throw "Central web server did not start. See $logs."
 }
 
 Write-Host ""
 Write-Host "OSH Agriculture AI Global CENTRAL SERVER is running."
 Write-Host "Local health: http://127.0.0.1:8080/api/v1/health"
 Write-Host "Web PID: $($web.Id) | Worker PID: $($worker.Id)"
-Write-Host "PostgreSQL database: osh_agriculture_global (port 5433)"
+Write-Host "Central PostgreSQL: osh_agriculture_global on 127.0.0.1:5433"
 Write-Host "PostgreSQL is not exposed publicly."
-Write-Host "Logs: $logs"
+Write-Host "Persistent data/config/logs: $centralHome"
