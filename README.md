@@ -15,6 +15,19 @@ For Uzbek setup instructions, see [README_UZ.md](README_UZ.md).
 - **Environmental sources:** geoBoundaries, NASA POWER annual historical weather, and Open-Meteo current/16-day forecast are connected. NDVI, SMAP, SoilGrids remain explicit `PLANNED_CONNECTOR` sources.
 - **Deployment:** Docker and Fly.io process groups (`web` + `worker`); a separate managed PostGIS-compatible PostgreSQL cluster.
 
+## Shared central Windows + PostgreSQL server
+
+For one shared multi-user website backed by an existing PostgreSQL 17.11 host, see [docs/CENTRAL_WINDOWS_POSTGRES.md](docs/CENTRAL_WINDOWS_POSTGRES.md). The owner can install/start the central server with:
+
+```powershell
+npx osh-agriculture-ai-global server-install
+npx osh-agriculture-ai-global server-status
+```
+
+This mode uses the dedicated osh_global_app role and osh_agriculture_global database on localhost:5433. The database port must not be exposed to the public internet. Publish only the web app on 127.0.0.1:8080 through a configured HTTPS tunnel. End users access the public website in a browser; they do not run the server installer.
+
+The central host stores users' records in one PostgreSQL database with account-level ownership checks. The current Windows-host topology is a single point of failure; configure backups, monitoring, automatic startup, and security controls before unrestricted public signup.
+
 ## Local one-command installer
 
 After the npm package is published by the repository owner:
