@@ -353,6 +353,136 @@ class GlobalYieldRequest(BaseModel):
     crop_code: str = Field(min_length=2,max_length=64)
     target_year: int = Field(ge=1900,le=2200)
 
+class GlobalRasterSummaryRequest(BaseModel):
+    geojson: dict
+    crop_code: str = Field(min_length=4, max_length=4, pattern="^[a-zA-Z]{4}$")
+    technology: str = Field(default="all", pattern="^(all|irrigated|rainfed)$")
+    location_name: Optional[str] = Field(default=None, max_length=250)
+    admin_level: Optional[str] = Field(default=None, pattern="^ADM[0-5]$")
+
+
+@app.get("/api/v1/global-raster-catalog")
+def global_raster_catalog():
+    from .services.global_raster_catalog import catalog_summary
+    return catalog_summary()
+
+
+@app.get("/api/v1/global-raster-status")
+def global_raster_status():
+    from .services.global_raster_catalog import (
+        CROPGRIDS,
+        MAPSPAM,
+        default_global_data_dir,
+        mapspam_cog_assets,
+    )
+
+    root = default_global_data_dir()
+    mapspam_dir = root / MAPSPAM["dataset_id"]
+    assets = []
+    for asset in mapspam_cog_assets():
+        path = mapspam_dir / asset["filename"]
+        assets.append({
+            "asset_id": asset["asset_id"],
+            "filename": asset["filename"],
+            "required_for_summary": (
+                asset["asset_id"] in {
+                    "physical_area-all", "harvested_area-all",
+                    "production-all", "yield-all",
+                }
+            ),
+            "downloaded": path.is_file() and path.stat().st_size > 0,
+            "bytes": path.stat().st_size if path.is_file() else 0,
+        })
+    cropgrids_path = (
+        root / CROPGRIDS["dataset_id"] / CROPGRIDS["filename"]
+    )
+    return {
+        "storage": "server-local",
+        "data_directory_configured": True,
+        "mapspam": {
+            "dataset_id": MAPSPAM["dataset_id"],
+            "reference_year": MAPSPAM["reference_year"],
+            "assets": assets,
+            "core_ready": all(
+                item["downloaded"]
+                for item in assets
+                if item["required_for_summary"]
+            ) and next(
+                item["downloaded"] for item in assets
+                if item["asset_id"] == "crop-codes"
+            ),
+        },
+        "cropgrids": {
+            "dataset_id": CROPGRIDS["dataset_id"],
+            "reference_year": CROPGRIDS["reference_year"],
+            "downloaded": cropgrids_path.is_file(),
+            "bytes": cropgrids_path.stat().st_size if cropgrids_path.is_file() else 0,
+            "expected_bytes": CROPGRIDS["expected_size_bytes"],
+        },
+    }
+
+
+@app.post("/api/v1/global-raster-summary/mapspam")
+def global_raster_mapspam_summary(
+    payload: GlobalRasterSummaryRequest,
+    user: User = Depends(current_user),
+):
+    from .services.global_raster_catalog import (
+        MAPSPAM,
+        MAPSPAM_CROPS,
+        default_global_data_dir,
+    )
+    from .services.global_raster_zonal import aggregate_mapspam_zone
+
+    crop_lookup = {code: name for code, name in MAPSPAM_CROPS}
+    crop_code = payload.crop_code.strip().lower()
+    if crop_code not in crop_lookup:
+        raise HTTPException(
+            422,
+            f"MAPSPAM crop_code '{crop_code}' not found. "
+            "Use one of the 46 codes from /api/v1/global-raster-catalog.",
+        )
+
+    geojson_geometry = payload.geojson.get("geometry", payload.geojson)
+    try:
+        geom = shape(geojson_geometry)
+        if geom.is_empty or not geom.is_valid:
+            raise ValueError("GeoJSON geometry is empty or invalid")
+        if geom.geom_type not in {"Polygon", "MultiPolygon"}:
+            raise ValueError("Only Polygon or MultiPolygon geometries are supported")
+        result = aggregate_mapspam_zone(
+            geometry=mapping(geom),
+            crop_band=list(crop_lookup).index(crop_code) + 1,
+            data_dir=default_global_data_dir(),
+            technology=payload.technology,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            503,
+            f"MAPSPAM assets are not fully synced. "
+            f"Run the global raster sync command. Details: {exc}",
+        ) from exc
+    except RuntimeError as exc:
+        raise HTTPException(503, str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+    result.update({
+        "crop_code": crop_code,
+        "crop_name": crop_lookup[crop_code],
+        "source": "IFPRI MAPSPAM 2020 v2r2",
+        "source_year": MAPSPAM["reference_year"],
+        "source_license": MAPSPAM["license"],
+        "spatial_level": payload.admin_level,
+        "location_name": payload.location_name,
+        "interpretation": (
+            "2020 gridded spatial estimate. This is not a current-year observation "
+            "or field-level measurement."
+        ),
+    })
+    return result
+
+
 @app.get("/api/v1/global-crops")
 def global_crops(db: Session = Depends(get_db)):
     rows=db.execute(text("SELECT crop_code,MIN(crop_name) crop_name,COUNT(*) observations,MIN(year) first_year,MAX(year) last_year,COUNT(DISTINCT country_iso3) countries FROM global_crop_statistics GROUP BY crop_code ORDER BY crop_code")).mappings().all()

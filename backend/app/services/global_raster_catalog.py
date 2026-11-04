@@ -6,7 +6,9 @@ Sources:
 """
 from __future__ import annotations
 
+import os
 from itertools import product
+from pathlib import Path
 
 
 CROPGRIDS = {
@@ -32,9 +34,9 @@ CROPGRIDS = {
 }
 
 MAPSPAM_VARIABLES = {
-    "physical_area": {"unit": "1000 ha", "aggregation": "sum"},
-    "harvested_area": {"unit": "1000 ha", "aggregation": "sum"},
-    "production": {"unit": "1000 t", "aggregation": "sum"},
+    "physical_area": {"unit": "ha", "aggregation": "sum"},
+    "harvested_area": {"unit": "ha", "aggregation": "sum"},
+    "production": {"unit": "t", "aggregation": "sum"},
     "yield": {"unit": "kg/ha", "aggregation": "harvested-area-weighted mean"},
 }
 MAPSPAM_TECHNOLOGIES = ("all", "irrigated", "rainfed")
@@ -100,6 +102,17 @@ MAPSPAM_CROP_CODES_URL = (
 )
 
 
+
+def default_global_data_dir() -> Path:
+    """Resolve persistent global data storage without writing into the source tree."""
+    explicit = os.environ.get("OSH_AGRI_DATA_DIR")
+    if explicit:
+        return Path(explicit).expanduser()
+    home = os.environ.get("OSH_AGRI_HOME")
+    if home:
+        return Path(home).expanduser() / "global-data"
+    return Path("data/global")
+
 def mapspam_cog_assets() -> list[dict]:
     """Return the 12 documented COG variable/technology combinations."""
     assets = []
@@ -161,5 +174,11 @@ def catalog_summary() -> dict:
         "mapspam": {
             key: value for key, value in MAPSPAM.items()
             if key != "assets"
-        } | {"assets": mapspam_cog_assets()},
+        } | {
+            "assets": mapspam_cog_assets(),
+            "crops": [
+                {"code": code, "name": name, "band": index + 1}
+                for index, (code, name) in enumerate(MAPSPAM_CROPS)
+            ],
+        },
     }
