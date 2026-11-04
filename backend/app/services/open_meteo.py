@@ -78,6 +78,7 @@ async def fetch_weather_forecast(lat: float, lon: float, forecast_days: int = 16
         "timezone": payload.get("timezone"),
         "elevation_m": payload.get("elevation"),
         "current": current,
+        "current_units": payload.get("current_units") or {},
         "daily": rows,
         "forecast_days_returned": len(rows),
         "units": {
