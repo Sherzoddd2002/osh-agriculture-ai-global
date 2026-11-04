@@ -1,4 +1,6 @@
 from types import SimpleNamespace
+
+import pytest
 from backend.app.services.global_crops import normalize_crop_code, _series, _fit
 
 def test_global_crop_aliases_are_normalized():
