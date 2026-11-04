@@ -126,3 +126,25 @@ class LocationWeatherSnapshot(Base):
     payload: Mapped[dict] = mapped_column(json_payload_type())
     fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
+
+
+class GlobalCropStatistic(Base):
+    __tablename__ = "global_crop_statistics"
+    __table_args__ = (UniqueConstraint("source_code","area_m49","item_code","year",name="uq_global_crop_source_area_item_year"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source_code: Mapped[str] = mapped_column(String(24),default="FAOSTAT_QCL",index=True)
+    source_release: Mapped[str] = mapped_column(String(32),default="")
+    area_m49: Mapped[str] = mapped_column(String(3),index=True)
+    country_iso3: Mapped[str] = mapped_column(String(3),index=True)
+    area_name: Mapped[str] = mapped_column(String(160))
+    item_code: Mapped[str] = mapped_column(String(32))
+    crop_code: Mapped[str] = mapped_column(String(64),index=True)
+    crop_name: Mapped[str] = mapped_column(String(160))
+    year: Mapped[int] = mapped_column(Integer,index=True)
+    harvested_area_ha: Mapped[float|None] = mapped_column(Float,nullable=True)
+    production_t: Mapped[float|None] = mapped_column(Float,nullable=True)
+    yield_t_ha: Mapped[float|None] = mapped_column(Float,nullable=True)
+    area_flag: Mapped[str|None] = mapped_column(String(32),nullable=True)
+    production_flag: Mapped[str|None] = mapped_column(String(32),nullable=True)
+    yield_flag: Mapped[str|None] = mapped_column(String(32),nullable=True)
+    imported_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),default=utcnow)
