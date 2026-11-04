@@ -43,8 +43,32 @@ jobs:
       - name: Validate npm package contents
         run: npm pack --dry-run
 
-      - name: Validate CLI help
-        run: node bin/cli.js --help
+      - name: Validate CLI syntax and help
+        run: |
+          node --check bin/cli.js
+          node bin/cli.js --help
+
+      - name: Validate central PowerShell scripts
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $files = @(
+            "ops/start-central.ps1",
+            "ops/stop-central.ps1",
+            "ops/status-central.ps1"
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Join-Path $PWD $file), [ref]$tokens, [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error $_.ToString() }
+              throw "PowerShell parse failed: $file"
+            }
+            Write-Host "PASS: $file"
+          }
 
       - name: Install Python dependencies and test runner
         run: |
