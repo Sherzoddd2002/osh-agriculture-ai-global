@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     app_name: str = "OSH Agriculture AI Global"
     database_url: str = "postgresql+psycopg://osh:osh_dev_password@localhost:5434/osh_global"
+    enable_postgis: bool = False
     jwt_secret: str = "DEV_ONLY_CHANGE_ME"
     jwt_expire_minutes: int = 10080
     cors_origins: str = "http://localhost:8080"
