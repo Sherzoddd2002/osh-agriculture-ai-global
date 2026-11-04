@@ -209,12 +209,20 @@ def location_climate(location_id: int, user: User = Depends(current_user), db: S
         .order_by(EnvironmentFeature.year)
     ).all()
     snapshot = db.scalar(select(LocationWeatherSnapshot).where(LocationWeatherSnapshot.location_id == loc.id))
+    latest_job = db.scalar(
+        select(LocationClimateJob)
+        .where(LocationClimateJob.location_id == loc.id, LocationClimateJob.owner_id == user.id)
+        .order_by(LocationClimateJob.created_at.desc())
+    )
     return {
         "location": {"id": loc.id, "name": loc.name, "country_iso3": loc.country_iso3,
                      "centroid": {"lat": loc.centroid_lat, "lon": loc.centroid_lon}},
         "annual": [{"year": x.year, **x.features, "source_status": x.source_status} for x in rows],
         "weather": snapshot.payload if snapshot else None,
         "weather_fetched_at": snapshot.fetched_at.isoformat() if snapshot else None,
+        "latest_job": ({"id": latest_job.id, "status": latest_job.status,
+                        "progress": latest_job.progress, "message": latest_job.message}
+                       if latest_job else None),
         "sources": SOURCE_REGISTRY,
     }
 
