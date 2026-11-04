@@ -99,3 +99,30 @@ class AnalysisJob(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+class LocationClimateJob(Base):
+    """Annual climate and short-range weather job; independent of crop-yield datasets."""
+    __tablename__ = "location_climate_jobs"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    location_id: Mapped[int] = mapped_column(ForeignKey("locations.id", ondelete="CASCADE"), index=True)
+    start_year: Mapped[int] = mapped_column(Integer, default=2010)
+    end_year: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(20), default="QUEUED", index=True)
+    progress: Mapped[int] = mapped_column(Integer, default=0)
+    message: Mapped[str] = mapped_column(Text, default="Navbatda")
+    result: Mapped[dict | None] = mapped_column(json_payload_type(), nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class LocationWeatherSnapshot(Base):
+    """Latest current/short-range forecast snapshot for a saved location."""
+    __tablename__ = "location_weather_snapshots"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    location_id: Mapped[int] = mapped_column(ForeignKey("locations.id", ondelete="CASCADE"), unique=True, index=True)
+    payload: Mapped[dict] = mapped_column(json_payload_type())
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
