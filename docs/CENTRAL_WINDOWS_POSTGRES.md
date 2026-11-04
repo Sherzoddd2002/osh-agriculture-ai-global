@@ -19,8 +19,9 @@ This deployment mode runs one shared FastAPI API + background worker on the owne
 
    127.0.0.1:5433:osh_agriculture_global:osh_global_app:<application-role-password>
 
-4. Python 3.12 is installed and requirements.txt dependencies can be installed.
-5. The repository is checked out on the host.
+4. Python 3.12+ is installed.
+5. Node.js 20+ and npm are installed on the host for the npx server installer.
+6. The npm CLI package is published, or use the checked-out PowerShell scripts directly.
 
 The application uses DATABASE_URL=postgresql+psycopg://osh_global_app@127.0.0.1:5433/osh_agriculture_global; psycopg obtains the password from pgpass.conf. Do not put a database password in .env.central.
 
