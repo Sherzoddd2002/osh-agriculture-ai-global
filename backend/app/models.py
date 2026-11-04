@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, JSON, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .db import Base
@@ -7,6 +7,11 @@ from .db import Base
 
 def utcnow():
     return datetime.now(timezone.utc)
+
+
+def json_payload_type():
+    # SQLite uses JSON; PostgreSQL keeps the more capable JSONB storage.
+    return JSON().with_variant(JSONB(), "postgresql")
 
 
 class User(Base):
@@ -27,7 +32,7 @@ class Location(Base):
     admin_level: Mapped[str] = mapped_column(String(8), default="ADM1")
     centroid_lat: Mapped[float] = mapped_column(Float)
     centroid_lon: Mapped[float] = mapped_column(Float)
-    geojson: Mapped[dict] = mapped_column(JSONB)
+    geojson: Mapped[dict] = mapped_column(json_payload_type())
     source: Mapped[str] = mapped_column(String(80), default="geoBoundaries")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     datasets = relationship("Dataset", back_populates="location")
@@ -75,8 +80,8 @@ class EnvironmentFeature(Base):
     location_id: Mapped[int] = mapped_column(ForeignKey("locations.id", ondelete="CASCADE"), index=True)
     crop_code: Mapped[str] = mapped_column(String(40), index=True)
     year: Mapped[int] = mapped_column(Integer, index=True)
-    features: Mapped[dict] = mapped_column(JSONB)
-    source_status: Mapped[dict] = mapped_column(JSONB)
+    features: Mapped[dict] = mapped_column(json_payload_type())
+    source_status: Mapped[dict] = mapped_column(json_payload_type())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
@@ -89,7 +94,7 @@ class AnalysisJob(Base):
     status: Mapped[str] = mapped_column(String(20), default="QUEUED", index=True)
     progress: Mapped[int] = mapped_column(Integer, default=0)
     message: Mapped[str] = mapped_column(Text, default="Navbatda")
-    result: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    result: Mapped[dict | None] = mapped_column(json_payload_type(), nullable=True)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
