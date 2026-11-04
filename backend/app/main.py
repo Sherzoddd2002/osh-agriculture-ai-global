@@ -358,7 +358,7 @@ class GlobalRasterSummaryRequest(BaseModel):
     crop_code: str = Field(min_length=4, max_length=4, pattern="^[a-zA-Z]{4}$")
     technology: str = Field(default="all", pattern="^(all|irrigated|rainfed)$")
     location_name: Optional[str] = Field(default=None, max_length=250)
-    admin_level: Optional[str] = Field(default=None, max_length=10)
+    admin_level: Optional[str] = Field(default=None, pattern="^ADM[0-5]$")
 
 
 @app.get("/api/v1/global-raster-catalog")
@@ -397,7 +397,8 @@ def global_raster_status():
         root / CROPGRIDS["dataset_id"] / CROPGRIDS["filename"]
     )
     return {
-        "data_directory": str(root),
+        "storage": "server-local",
+        "data_directory_configured": True,
         "mapspam": {
             "dataset_id": MAPSPAM["dataset_id"],
             "reference_year": MAPSPAM["reference_year"],
