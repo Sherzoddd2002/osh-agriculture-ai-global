@@ -1,19 +1,23 @@
 # Global crop data (FAOSTAT baseline)
 
-The central PostgreSQL service can store country-level official crop observations from FAOSTAT's
-"Production: Crops and livestock products" bulk release. This first connector imports a curated
-starter set: wheat, maize, rice, barley, soybean, cotton, potato and sorghum.
+The central PostgreSQL service stores country-level official crop statistics imported from
+FAOSTAT's "Production: Crops and livestock products" (QCL) normalized bulk release.
 
-Run the importer from the installed central runtime after updating the application:
+The initial curated catalog contains wheat, maize (including FAOSTAT's "Maize (corn)"),
+rice/paddy rice, barley, soybean/soya beans, cotton lint, potatoes and sorghum. The importer
+reads the CSV in 200,000-row chunks, normalizes the source units (1000 ha, 1000 t, hg/ha),
+keeps FAOSTAT element flags, maps UN M49 area codes to ISO-3, and skips regional/world
+aggregate rows to avoid double counting. It loads into a staging list first; replacement
+of the live FAOSTAT_QCL snapshot occurs in one database transaction. A failed or empty
+import does not delete the previous completed snapshot.
+
+After updating the central server, run from the source backend folder:
 
 ```powershell
-$home = "E:\OSH\AgricultureAI\central-server"
-& "$home\.venv\Scripts\python.exe" -m app.sync_global_data
+$home = "E:\OSH\AgricultureAI"
+Set-Location "$home\source\backend"
+& "$home\central-server\.venv\Scripts\python.exe" -m app.sync_global_data
 ```
-
-The importer downloads the official FAOSTAT normalized ZIP, maps M49 country codes to ISO-3,
-normalizes area/production/yield units, and replaces the FAOSTAT_QCL snapshot transactionally.
-The raw source archive is not stored in PostgreSQL.
 
 Authenticated endpoints:
 - `GET /api/v1/global-crops` — loaded crop coverage and year ranges.
@@ -25,13 +29,14 @@ Prediction hierarchy:
    at least 3 matching years exist.
 3. If the global series is too short: return HTTP 422; do not fabricate a forecast.
 
-The baseline uses an expanding-window time validation and compares MAE with persistence.
-Its uncertainty band is approximate. It is a national/global proxy, never a district or field
-measurement. Raster zonal statistics (MAPSPAM/CROPGRIDS), climate and soil features are not
-yet part of this baseline and must be added and validated before claiming ADM3–ADM5 yield
-prediction accuracy.
+The baseline uses expanding-window temporal validation and compares MAE with a persistence
+baseline. Its uncertainty band is approximate. It is a national/global proxy, never a district
+or field measurement. Raster zonal statistics (MAPSPAM/CROPGRIDS), climate and soil features
+are not yet part of this baseline and must be added and validated before claiming ADM3–ADM5
+yield prediction accuracy.
 
-Administrative boundary lookup tries geoBoundaries gbOpen first and gbHumanitarian second.
-Availability and administrative meaning vary by country. A requested ADM level is returned
-only when the provider supplies a non-empty FeatureCollection; missing levels are not invented.
-Always review provider metadata and licensing before redistributing downloaded boundary data.
+The source is FAOSTAT QCL. FAO data released under CC BY 4.0 requires attribution to FAO.
+Boundary lookup tries geoBoundaries gbOpen first and gbHumanitarian second. Availability and
+administrative meaning vary by country. A requested ADM level is returned only when the
+provider supplies a non-empty FeatureCollection; missing levels are not invented. Review
+each boundary provider's returned licence and attribution metadata before redistribution.
