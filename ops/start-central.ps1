@@ -46,21 +46,29 @@ if ([string]::IsNullOrWhiteSpace($env:JWT_SECRET) -or $env:JWT_SECRET.Length -lt
 
 if (-not (Test-Path -LiteralPath $python)) {
     $basePython = $null
-    foreach ($candidate in @(@("py", "-3.12"), @("python", ""))) {
-        $cmd = $candidate[0]
-        $prefix = @()
-        if ($candidate[1]) { $prefix = @($candidate[1]) }
-        $probe = & $cmd @prefix --version 2>&1
+    $baseArgs = @()
+
+    $pythonCommand = Get-Command python -ErrorAction SilentlyContinue
+    if ($pythonCommand) {
+        $probe = & $pythonCommand.Source --version 2>&1
         if ($LASTEXITCODE -eq 0 -and "$probe" -match "Python 3\.(12|1[3-9])") {
-            $basePython = @($cmd) + $prefix
-            break
+            $basePython = $pythonCommand.Source
         }
     }
+
+    if (-not $basePython) {
+        $pyCommand = Get-Command py -ErrorAction SilentlyContinue
+        if ($pyCommand) {
+            $probe = & $pyCommand.Source -3.12 --version 2>&1
+            if ($LASTEXITCODE -eq 0 -and "$probe" -match "Python 3\.(12|1[3-9])") {
+                $basePython = $pyCommand.Source
+                $baseArgs = @("-3.12")
+            }
+        }
+    }
+
     if (-not $basePython) { throw "Python 3.12+ topilmadi. Python 3.12 o‘rnating yoki OSH_AGRI_PYTHON ni belgilang." }
-    $exe = $basePython[0]
-    $prefix = @()
-    if ($basePython.Count -gt 1) { $prefix = @($basePython[1..($basePython.Count-1)]) }
-    & $exe @prefix -m venv $venv
+    & $basePython @baseArgs -m venv $venv
     if ($LASTEXITCODE -ne 0) { throw "Central Python virtual environment could not be created." }
 }
 if (-not (Test-Path -LiteralPath $psql)) { throw "PostgreSQL 17 psql.exe not found: $psql" }
