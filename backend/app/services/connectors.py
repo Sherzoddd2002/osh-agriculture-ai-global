@@ -8,6 +8,13 @@ SOURCE_REGISTRY = {
         "note": "MVP samples the selected polygon's representative point; not polygon-wide zonal statistics.",
         "url": "https://power.larc.nasa.gov/",
     },
+    "OPEN_METEO_FORECAST": {
+        "status": "ACTIVE",
+        "coverage": "Current conditions and up to 16-day point forecast",
+        "outputs": ["temperature", "apparent_temperature", "relative_humidity", "precipitation", "precipitation_probability", "wind", "reference_evapotranspiration"],
+        "note": "Weather-model forecast for the saved location's representative point; forecast is not a measurement.",
+        "url": "https://open-meteo.com/",
+    },
     "SENTINEL2_NDVI": {
         "status": "PLANNED_CONNECTOR",
         "coverage": "Requires STAC search, cloud masking, raster processing and seasonal aggregation",
