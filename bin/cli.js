@@ -261,8 +261,11 @@ async function runCentralScript(action) {
   if (process.platform !== "win32") {
     throw new Error("Central PostgreSQL host installer currently supports Windows PowerShell only.");
   }
-  if (!fs.existsSync(p.source)) await downloadSource();
-  const script = path.join(p.source, "ops", `${action}-central.ps1`);
+  let script = path.join(p.source, "ops", `${action}-central.ps1`);
+  if (!fs.existsSync(script)) {
+    await downloadSource();
+    script = path.join(p.source, "ops", `${action}-central.ps1`);
+  }
   await fsp.access(script);
   const centralHome = path.join(home, "central-server");
   await fsp.mkdir(centralHome, { recursive: true });
