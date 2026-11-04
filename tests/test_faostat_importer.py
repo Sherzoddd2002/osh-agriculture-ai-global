@@ -1,4 +1,4 @@
-from io import BytesIO
+from io import BytesIO, StringIO
 from zipfile import ZipFile
 import csv
 
@@ -22,10 +22,14 @@ def make_zip():
     payload = BytesIO()
     with ZipFile(payload, "w") as archive:
         name = "Production_Crops_Livestock_E_All_Data_(Normalized).csv"
-        content = BytesIO()
-        text = "Area Code (M49),Area,Item Code,Item,Element,Year,Unit,Value,Flag\n"
-        text += "\n".join(",".join(row) for row in rows)
-        archive.writestr(name, text.encode("utf-8"))
+        text = StringIO(newline="")
+        writer = csv.writer(text, lineterminator="\n")
+        writer.writerow([
+            "Area Code (M49)", "Area", "Item Code", "Item",
+            "Element", "Year", "Unit", "Value", "Flag",
+        ])
+        writer.writerows(rows)
+        archive.writestr(name, text.getvalue().encode("utf-8"))
     return payload.getvalue()
 
 
