@@ -35,9 +35,14 @@ ELEMENTS = {
     "Production": "production",
     "Yield": "yield",
 }
+
+# These are the columns that actually exist in FAOSTAT's source CSV.
+# crop_code is derived below from the Item label and must NOT be requested
+# in pandas.read_csv(usecols=...).
 KEY_COLUMNS = [
-    "Area Code (M49)", "Area", "Item Code", "Item", "crop_code", "Year"
+    "Area Code (M49)", "Area", "Item Code", "Item", "Year"
 ]
+GROUP_COLUMNS = KEY_COLUMNS + ["crop_code"]
 USE_COLUMNS = set(KEY_COLUMNS + ["Element", "Unit", "Value", "Flag"])
 
 
@@ -60,7 +65,7 @@ def convert_value(value, unit: str, kind: str) -> float | None:
         return None
     if not np.isfinite(number):
         return None
-    normalized_unit = re.sub(r"\\s+", " ", str(unit).lower()).strip()
+    normalized_unit = re.sub(r"\s+", " ", str(unit).lower()).strip()
 
     if kind == "area":
         if normalized_unit == "1000 ha":
@@ -140,7 +145,7 @@ def parse_faostat_zip(payload: bytes, source_release: str = "bulk-latest") -> li
                 if chunk.empty:
                     continue
 
-                for key, group in chunk.groupby(KEY_COLUMNS, dropna=False, sort=False):
+                for key, group in chunk.groupby(GROUP_COLUMNS, dropna=False, sort=False):
                     values = {}
                     flags = {}
                     for row in group.itertuples(index=False):
@@ -167,7 +172,7 @@ def parse_faostat_zip(payload: bytes, source_release: str = "bulk-latest") -> li
                     if not 0 <= yield_value <= 30:
                         continue
 
-                    m49, area_name, item_code, crop_name, crop_code, year = key
+                    m49, area_name, item_code, crop_name, year, crop_code = key
                     iso3 = country_iso3_from_m49(m49)
                     if not iso3:
                         # Skip world/region aggregates here; global totals are
