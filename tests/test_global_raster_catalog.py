@@ -1,5 +1,5 @@
 from backend.app.services.global_raster_catalog import (
-    CROPGRIDS, MAPSPAM, MAPSPAM_CROPS, mapspam_cog_assets,
+    CROPGRIDS, MAPSPAM, MAPSPAM_CROPS, catalog_summary, mapspam_cog_assets,
 )
 
 
@@ -34,3 +34,12 @@ def test_mapspam_source_units_match_official_cog_metadata():
 def test_yield_is_not_declared_as_additive():
     assert MAPSPAM["variables"]["yield"]["aggregation"] == "harvested-area-weighted mean"
     assert MAPSPAM["variables"]["production"]["aggregation"] == "sum"
+
+
+
+def test_catalog_returns_crop_codes_names_and_one_based_raster_bands():
+    crops = catalog_summary()["mapspam"]["crops"]
+    assert len(crops) == 46
+    assert crops[0] == {"code": "whea", "name": "Wheat", "band": 1}
+    assert crops[1] == {"code": "rice", "name": "Rice", "band": 2}
+    assert crops[-1]["band"] == 46
