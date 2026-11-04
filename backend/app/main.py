@@ -3,7 +3,7 @@ import hashlib
 import io
 import json
 import re
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 import re
 from typing import Optional
 import pandas as pd
@@ -16,9 +16,11 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 from .config import settings
 from .db import SessionLocal, init_db
-from .models import User, Location, Dataset, YieldObservation, EnvironmentFeature, AnalysisJob
+from .models import User, Location, Dataset, YieldObservation, EnvironmentFeature, AnalysisJob, LocationClimateJob, LocationWeatherSnapshot
 from .security import hash_password, verify_password, create_access_token, current_user, get_db
 from .services.boundaries import get_boundary_geojson
+from .services.nasa_power import fetch_daily_weather, aggregate_calendar_year_weather
+from .services.open_meteo import fetch_weather_forecast
 from .services.connectors import SOURCE_REGISTRY
 from .ml.forecast import evaluate_and_predict
 
@@ -107,6 +109,7 @@ class LocationCreate(BaseModel):
     admin_level: str = "ADM1"
     geojson: dict
     source: str = "geoBoundaries"
+    climate_start_year: int = Field(default=2010, ge=1981, le=2200)
 
 
 @app.post("/api/v1/locations")
@@ -131,8 +134,23 @@ def create_location(payload: LocationCreate, user: User = Depends(current_user),
                    {"geojson": geom_json, "id": loc.id})
 
     db.commit(); db.refresh(loc)
+
+    climate_job = LocationClimateJob(
+        owner_id=user.id,
+        location_id=loc.id,
+        start_year=payload.climate_start_year,
+        end_year=date.today().year,
+        status="QUEUED",
+        progress=0,
+        message="Hudud uchun yillik iqlim ma’lumotlari navbatga qo‘yildi",
+    )
+    db.add(climate_job)
+    db.commit()
+    db.refresh(climate_job)
+
     return {"id": loc.id, "name": loc.name, "country_iso3": loc.country_iso3, "admin_level": loc.admin_level,
-            "centroid": {"lat": loc.centroid_lat, "lon": loc.centroid_lon}}
+            "centroid": {"lat": loc.centroid_lat, "lon": loc.centroid_lon},
+            "climate_job_id": climate_job.id, "climate_status": climate_job.status}
 
 
 @app.get("/api/v1/datasets")
@@ -147,6 +165,59 @@ def list_datasets(user: User = Depends(current_user), db: Session = Depends(get_
 def list_locations(user: User = Depends(current_user), db: Session = Depends(get_db)):
     rows = db.scalars(select(Location).where(Location.owner_id == user.id).order_by(Location.created_at.desc())).all()
     return [{"id": x.id, "country_iso3": x.country_iso3, "name": x.name, "admin_level": x.admin_level} for x in rows]
+
+
+@app.post("/api/v1/locations/{location_id}/analyze")
+def analyze_location(location_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    loc = db.scalar(select(Location).where(Location.id == location_id, Location.owner_id == user.id))
+    if not loc:
+        raise HTTPException(404, "Hudud topilmadi")
+    existing = db.scalar(
+        select(LocationClimateJob)
+        .where(LocationClimateJob.location_id == loc.id, LocationClimateJob.owner_id == user.id,
+               LocationClimateJob.status.in_(["QUEUED", "RUNNING"]))
+        .order_by(LocationClimateJob.created_at.desc())
+    )
+    if existing:
+        return {"job_id": existing.id, "status": existing.status, "message": existing.message}
+    job = LocationClimateJob(
+        owner_id=user.id, location_id=loc.id, start_year=2010, end_year=date.today().year,
+        status="QUEUED", progress=0, message="Hudud iqlimi qayta tahlilga qo‘yildi"
+    )
+    db.add(job); db.commit(); db.refresh(job)
+    return {"job_id": job.id, "status": job.status, "message": job.message}
+
+
+@app.get("/api/v1/location-climate-jobs/{job_id}")
+def location_climate_job_status(job_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    job = db.scalar(select(LocationClimateJob).where(
+        LocationClimateJob.id == job_id, LocationClimateJob.owner_id == user.id
+    ))
+    if not job:
+        raise HTTPException(404, "Iqlim job topilmadi")
+    return {"id": job.id, "status": job.status, "progress": job.progress,
+            "message": job.message, "result": job.result, "error": job.error}
+
+
+@app.get("/api/v1/locations/{location_id}/climate")
+def location_climate(location_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    loc = db.scalar(select(Location).where(Location.id == location_id, Location.owner_id == user.id))
+    if not loc:
+        raise HTTPException(404, "Hudud topilmadi")
+    rows = db.scalars(
+        select(EnvironmentFeature)
+        .where(EnvironmentFeature.location_id == loc.id, EnvironmentFeature.crop_code == "CLIMATE")
+        .order_by(EnvironmentFeature.year)
+    ).all()
+    snapshot = db.scalar(select(LocationWeatherSnapshot).where(LocationWeatherSnapshot.location_id == loc.id))
+    return {
+        "location": {"id": loc.id, "name": loc.name, "country_iso3": loc.country_iso3,
+                     "centroid": {"lat": loc.centroid_lat, "lon": loc.centroid_lon}},
+        "annual": [{"year": x.year, **x.features, "source_status": x.source_status} for x in rows],
+        "weather": snapshot.payload if snapshot else None,
+        "weather_fetched_at": snapshot.fetched_at.isoformat() if snapshot else None,
+        "sources": SOURCE_REGISTRY,
+    }
 
 
 @app.post("/api/v1/datasets/upload")
@@ -207,9 +278,19 @@ async def upload_dataset(
                                 production_t=float(production.iloc[i]) if pd.notna(production.iloc[i]) else None,
                                 target_status="OBSERVED"))
     db.commit(); db.refresh(dataset)
+
+    analysis_job = AnalysisJob(
+        owner_id=user.id, dataset_id=dataset.id, job_type="ENVIRONMENT_AND_AUTO_MODEL",
+        status="QUEUED", progress=0, message="Iqlim ma’lumotlari va avtomatik model tahlili navbatga qo‘yildi"
+    )
+    dataset.status = "PROCESSING"
+    db.add(analysis_job)
+    db.commit()
+    db.refresh(analysis_job)
+
     return {"dataset_id": dataset.id, "name": dataset.name, "row_count": dataset.row_count,
             "year_range": [dataset.first_year, dataset.last_year], "global_training_consent": dataset.global_consent,
-            "status": dataset.status, "sha256": sha}
+            "status": dataset.status, "sha256": sha, "analysis_job_id": analysis_job.id}
 
 
 @app.post("/api/v1/datasets/{dataset_id}/process")
