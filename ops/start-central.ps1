@@ -23,7 +23,7 @@ if (-not (Test-Path -LiteralPath $envFile)) {
         "ENABLE_POSTGIS=false"
         "JWT_SECRET=$jwt"
         "JWT_EXPIRE_MINUTES=10080"
-        "CORS_ORIGINS=*"
+        "CORS_ORIGINS=http://127.0.0.1:8080,http://localhost:8080"
         "MAX_UPLOAD_MB=25"
         "WORKER_POLL_SECONDS=3"
     )
