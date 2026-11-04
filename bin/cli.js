@@ -10,7 +10,7 @@ import { Readable } from "node:stream";
 import extractZip from "extract-zip";
 
 const repo = "Sherzoddd2002/osh-agriculture-ai-global";
-const branch = "main";
+const sourceRef = process.env.OSH_AGRI_SOURCE_REF || "main";
 const port = 8080;
 const home = path.resolve(process.env.OSH_AGRI_HOME || (
   process.platform === "win32"
@@ -52,7 +52,7 @@ async function pythonCommand() {
 async function downloadSource() {
   const tmp = await fsp.mkdtemp(path.join(os.tmpdir(), "osh-agri-"));
   try {
-    const response = await fetch(`https://codeload.github.com/${repo}/zip/refs/heads/${branch}`);
+    const response = await fetch(`https://codeload.github.com/${repo}/zip/refs/heads/${sourceRef}`);
     if (!response.ok || !response.body) throw new Error(`GitHub download HTTP ${response.status}`);
     const zip = path.join(tmp, "repo.zip");
     await pipeline(Readable.fromWeb(response.body), fs.createWriteStream(zip));
