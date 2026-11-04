@@ -1,24 +1,55 @@
-# OSH Agriculture AI Global — CLI Installer
+# OSH Agriculture AI Global — CLI
 
-Install the local edition from the public GitHub repository:
+The project supports two different modes. Choose the mode that matches the job of the computer.
 
-```bash
+## 1. Shared central server (project owner's Windows host)
+
+This is the mode for one shared website and one shared PostgreSQL database. Run it only on the Windows computer that already hosts PostgreSQL 17.11 and the database osh_agriculture_global.
+
+After the npm package is published:
+
+```powershell
+npx osh-agriculture-ai-global server-install
+```
+
+This downloads the public source, creates a private Python virtual environment, checks the dedicated osh_global_app connection through Windows pgpass.conf, initializes the central PostgreSQL schema, and starts one FastAPI server plus one background worker.
+
+Management commands:
+
+```powershell
+npx osh-agriculture-ai-global server-status
+npx osh-agriculture-ai-global server-stop
+npx osh-agriculture-ai-global server-start
+npx osh-agriculture-ai-global server-update
+```
+
+Persistent central configuration, the generated JWT signing secret, Python environment, PID files, and logs are stored under the Windows user's application-data directory in OSH/AgricultureAI/central-server, not inside the replaceable source download. PostgreSQL passwords are never placed in the generated config; psycopg reads them from pgpass.conf.
+
+The server listens on 127.0.0.1:8080. To give it a public HTTPS address, configure a Cloudflare Tunnel route to http://127.0.0.1:8080. Do not expose port 5433. See docs/CENTRAL_WINDOWS_POSTGRES.md.
+
+End users do not run the server installer. They open the owner's published HTTPS URL, register, choose their region, and upload a crop-yield CSV when they have one. Each user's private rows are stored in the same PostgreSQL database and filtered by account ownership.
+
+## 2. Local isolated mode (personal sandbox)
+
+For a standalone offline/local evaluation on a user's own computer:
+
+```powershell
 npx osh-agriculture-ai-global install
 ```
 
-Requirements: Node.js 20+ and Python 3.11+. The installer downloads the public `main` branch, creates an isolated Python virtual environment, installs requirements, configures a private SQLite database, initializes tables, starts the background worker, and opens http://127.0.0.1:8080.
+This creates a private SQLite database on that computer. It is not connected to the owner's central PostgreSQL and is not the shared public website.
 
 Commands:
 
-```bash
+```powershell
 npx osh-agriculture-ai-global start
 npx osh-agriculture-ai-global status
 npx osh-agriculture-ai-global stop
 npx osh-agriculture-ai-global update
 ```
 
-The default installation is stored outside the current directory under the user's application-data folder. Override it with the `OSH_AGRI_HOME` environment variable. The database, .env secrets and logs are kept separately from the replaceable source tree, so updates preserve local data. The `stop` command safely stops both the local web server and background worker. Pressing Ctrl+C in the foreground server terminal also stops the worker.
+Requirements: Node.js 20+; central Windows host mode also requires Python 3.12+ and access to its PostgreSQL 17.11 instance.
 
-The local edition uses SQLite and Shapely geometry validation; PostGIS is optional for PostgreSQL deployments. Every local install has its own database. This installer does not publish a shared hosted website.
+## Publication status
 
-The npm package must be published by the repository owner before the `npx` command becomes available from the public npm registry.
+These commands become available through the public npm registry only after the repository owner publishes the package. A GitHub repository or pull request by itself does not create an npm package.
