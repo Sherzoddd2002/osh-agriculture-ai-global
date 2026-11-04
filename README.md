@@ -12,8 +12,18 @@ For Uzbek setup instructions, see [README_UZ.md](README_UZ.md).
 - **API:** FastAPI (Python).
 - **Database:** PostgreSQL + PostGIS (SQLAlchemy; geometry is stored in a PostGIS `geometry` column and GeoJSON metadata in JSONB).
 - **Background work:** a dedicated worker polls a PostgreSQL job queue using `FOR UPDATE SKIP LOCKED`.
-- **Environmental sources:** geoBoundaries and NASA POWER are connected in this MVP. NDVI, SMAP, SoilGrids have explicit `PLANNED_CONNECTOR` states.
+- **Environmental sources:** geoBoundaries, NASA POWER annual historical weather, and Open-Meteo current/16-day forecast are connected. NDVI, SMAP, SoilGrids remain explicit `PLANNED_CONNECTOR` sources.
 - **Deployment:** Docker and Fly.io process groups (`web` + `worker`); a separate managed PostGIS-compatible PostgreSQL cluster.
+
+## Local one-command installer
+
+After the npm package is published by the repository owner:
+
+```bash
+npx osh-agriculture-ai-global install
+```
+
+The local CLI stores each installation's data in its own SQLite database. Users do not share data or a central global training pool through this local mode. Shared multi-user operation requires a separately hosted backend and central database.
 
 ## Quick start
 
