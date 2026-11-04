@@ -28,7 +28,8 @@ const p = {
   venv: path.join(home, ".venv"),
   data: path.join(home, "data"),
   logs: path.join(home, "logs"),
-  pid: path.join(home, "worker.pid")
+  pid: path.join(home, "worker.pid"),
+  serverPid: path.join(home, "web.pid")
 };
 const py = process.platform === "win32" ? path.join(p.venv, "Scripts", "python.exe") : path.join(p.venv, "bin", "python");
 const args = process.argv.slice(2);
@@ -111,7 +112,7 @@ async function healthy() {
     const r = await fetch(`http://127.0.0.1:${port}/api/v1/health`, { signal: AbortSignal.timeout(2000) });
     if (!r.ok) return false;
     const body = await r.json();
-    return body.ok === true;
+    return body.ok === true && body.service === "OSH Agriculture AI Global";
   } catch { return false; }
 }
 async function workerPid() {
@@ -165,19 +166,74 @@ function openBrowser() {
   if (process.platform === "win32") spawn("cmd.exe", ["/c", "start", "", url], { detached: true, stdio: "ignore", windowsHide: true }).unref();
   else spawn(process.platform === "darwin" ? "open" : "xdg-open", [url], { detached: true, stdio: "ignore" }).unref();
 }
+async function processCommandLine(pid) {
+  if (process.platform === "win32") {
+    const r = spawnSync("powershell.exe", ["-NoProfile", "-Command", `(Get-CimInstance Win32_Process -Filter 'ProcessId = ${pid}').CommandLine`], { encoding: "utf8" });
+    return r.stdout || "";
+  }
+  const r = spawnSync("ps", ["-p", String(pid), "-o", "args="], { encoding: "utf8" });
+  return r.stdout || "";
+}
+async function stopServer() {
+  let pid = null;
+  try { pid = Number(JSON.parse(await fsp.readFile(p.serverPid, "utf8")).pid); } catch {}
+  if (!pid || !(await pidAlive(pid))) {
+    await fsp.rm(p.serverPid, { force: true });
+    console.log("Web-server ishlamayapti.");
+    return;
+  }
+  const cmdline = await processCommandLine(pid);
+  if (!cmdline.toLowerCase().includes("uvicorn") || !cmdline.includes("app.main:app")) {
+    throw new Error("Server PID OSH Agriculture web-server ekanligi tasdiqlanmadi; jarayon to‘xtatilmadi.");
+  }
+  if (process.platform === "win32") run("taskkill.exe", ["/PID", String(pid), "/T", "/F"], home);
+  else process.kill(pid, "SIGTERM");
+
+  const until = Date.now() + 10000;
+  while (Date.now() < until && await pidAlive(pid)) await new Promise(r => setTimeout(r, 250));
+  if (await pidAlive(pid)) throw new Error("Web-server to‘xtamadi; PID fayli saqlab qolindi.");
+  await fsp.rm(p.serverPid, { force: true });
+  console.log("Web-server to‘xtatildi.");
+}
 async function serve() {
   if (await healthy()) { console.log("Sayt allaqachon ishlayapti: http://127.0.0.1:8080"); openBrowser(); return; }
   const child = spawn(py, ["-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", String(port)], { cwd: p.runtime, stdio: "inherit", windowsHide: false });
+  if (!child.pid) throw new Error("Web-server process yaratilmadi.");
+  await fsp.writeFile(p.serverPid, JSON.stringify({ pid: child.pid, command: "uvicorn app.main:app" }));
+
   let exited = false;
   let code = 0;
-  const ended = new Promise(resolve => child.once("exit", c => { exited = true; code = c ?? 1; resolve(); }));
+  const ended = new Promise(resolve => child.once("exit", async c => {
+    exited = true;
+    code = c ?? 1;
+    await fsp.rm(p.serverPid, { force: true });
+    resolve();
+  }));
+  const onSignal = () => {
+    if (!child.killed) child.kill();
+    stopWorker().catch(e => console.error("Worker stop:", e.message));
+  };
+  process.once("SIGINT", onSignal);
+  process.once("SIGTERM", onSignal);
+
   const until = Date.now() + 90000;
   while (Date.now() < until && !exited && !(await healthy())) await new Promise(r => setTimeout(r, 1000));
-  if (exited) throw new Error(`Web-server ishga tushmadi (exit ${code}).`);
-  if (!(await healthy())) { child.kill(); throw new Error("Health-check 90 soniyada javob bermadi."); }
+  if (exited) {
+    process.removeListener("SIGINT", onSignal);
+    process.removeListener("SIGTERM", onSignal);
+    throw new Error(`Web-server ishga tushmadi (exit ${code}).`);
+  }
+  if (!(await healthy())) {
+    child.kill();
+    process.removeListener("SIGINT", onSignal);
+    process.removeListener("SIGTERM", onSignal);
+    throw new Error("Health-check 90 soniyada javob bermadi.");
+  }
   console.log("OSH Agriculture AI Global: http://127.0.0.1:8080");
   openBrowser();
   await ended;
+  process.removeListener("SIGINT", onSignal);
+  process.removeListener("SIGTERM", onSignal);
 }
 async function install() {
   if (fs.existsSync(p.source)) throw new Error("Loyiha allaqachon o‘rnatilgan. Yangilash uchun update buyrug‘idan foydalaning.");
@@ -188,7 +244,7 @@ async function install() {
 async function update() {
   if (!fs.existsSync(p.source)) throw new Error("Avval install buyrug‘ini bajaring.");
   if (await healthy()) throw new Error("Avval web-server terminalida Ctrl+C bosing, keyin update bajaring.");
-  await stopWorker(); await downloadSource(); await syncRuntime(); await configure();
+  await stopServer(); await stopWorker(); await downloadSource(); await syncRuntime(); await configure();
   await preparePython(false); await initDb(); await startWorker(); await serve();
 }
 async function status() {
@@ -200,14 +256,12 @@ async function status() {
 async function main() {
   if (Number(process.versions.node.split(".")[0]) < 20) throw new Error("Node.js 20+ kerak.");
   if (args.includes("--help") || command === "help") {
-    console.log("OSH Agriculture AI Global CLI\n\nnpx osh-agriculture-ai-global install\nnpx osh-agriculture-ai-global start\nnpx osh-agriculture-ai-global status\nnpx osh-agriculture-ai-global stop\nnpx osh-agriculture-ai-global update\n\nOptions: --dir <path>, --no-open");
+    console.log("OSH Agriculture AI Global CLI\n\nnpx osh-agriculture-ai-global install\nnpx osh-agriculture-ai-global start\nnpx osh-agriculture-ai-global status\nnpx osh-agriculture-ai-global stop\nnpx osh-agriculture-ai-global update\n\nOptions: --no-open");
     return;
   }
-  const dirAt = args.indexOf("--dir");
-  if (dirAt >= 0 && args[dirAt + 1]) throw new Error("Custom --dir support will be added in a later CLI release. Set OSH_AGRI_HOME instead.");
   if (command === "install") await install();
   else if (command === "start") { if (!fs.existsSync(p.app)) throw new Error("Avval install buyrug‘ini bajaring."); await startWorker(); await serve(); }
-  else if (command === "stop") await stopWorker();
+  else if (command === "stop") { await stopServer(); await stopWorker(); }
   else if (command === "status") await status();
   else if (command === "update") await update();
   else throw new Error("Noma’lum buyruq. --help ni ko‘ring.");
