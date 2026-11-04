@@ -32,9 +32,9 @@ CROPGRIDS = {
 }
 
 MAPSPAM_VARIABLES = {
-    "physical_area": {"unit": "1000 ha", "aggregation": "sum"},
-    "harvested_area": {"unit": "1000 ha", "aggregation": "sum"},
-    "production": {"unit": "1000 t", "aggregation": "sum"},
+    "physical_area": {"unit": "ha", "aggregation": "sum"},
+    "harvested_area": {"unit": "ha", "aggregation": "sum"},
+    "production": {"unit": "t", "aggregation": "sum"},
     "yield": {"unit": "kg/ha", "aggregation": "harvested-area-weighted mean"},
 }
 MAPSPAM_TECHNOLOGIES = ("all", "irrigated", "rainfed")
