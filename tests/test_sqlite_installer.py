@@ -61,7 +61,7 @@ def test_sqlite_api_registration_location_and_dataset_flow():
             assert saved.centroid_lat > 0
             assert saved.centroid_lon > 0
 
-        csv_data = "year,yield_t_ha\\n2020,3.1\\n2021,3.3\\n2022,3.4\\n"
+        csv_data = "year,yield_t_ha\n2020,3.1\n2021,3.3\n2022,3.4\n"
         upload = client.post(
             "/api/v1/datasets/upload",
             headers=headers,
