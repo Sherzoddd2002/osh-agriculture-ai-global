@@ -29,8 +29,11 @@ app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origin_list, allo
 
 @app.on_event("startup")
 def startup():
-    if settings.app_env.lower() == "production" and (settings.jwt_secret == "DEV_ONLY_CHANGE_ME" or len(settings.jwt_secret) < 32):
-        raise RuntimeError("Production rejimida JWT_SECRET kamida 32 belgili maxfiy qiymat bo‘lishi kerak")
+    if settings.app_env.lower() == "production":
+        if settings.jwt_secret == "DEV_ONLY_CHANGE_ME" or len(settings.jwt_secret) < 32:
+            raise RuntimeError("Production rejimida JWT_SECRET kamida 32 belgili maxfiy qiymat bo‘lishi kerak")
+        if not settings.database_url.startswith(("postgresql+psycopg://", "postgresql://")):
+            raise RuntimeError("Production server SQLite bilan ishga tushmaydi. Markaziy PostgreSQL DATABASE_URL talab qilinadi.")
     init_db()
 
 
