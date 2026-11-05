@@ -64,19 +64,25 @@ async function loadSources(){try{const r=await api('/sources');$('source-cards')
 let globalCropCatalogLoaded = false;
 
 async function loadGlobalCropCatalog(){
-  if(globalCropCatalogLoaded)return;
   const status=$('global-data-status');
   try{
     toast(status,'FAOSTAT ekin va hudud katalogi olinmoqda…');
-    const [catalog,countries]=await Promise.all([api('/global-crops'),api('/global-crops/countries')]);
+    const itemType=$('global-item-type').value||'CROP';
+    const [catalog,countries]=await Promise.all([
+      api(`/global-crops?item_type=${encodeURIComponent(itemType)}`),
+      api('/global-crops/countries')
+    ]);
     const cropSelect=$('global-crop');
+    const previousCrop=cropSelect.value;
     const countrySelect=$('global-country');
-    cropSelect.innerHTML=(catalog.crops||[]).map(x=>`<option value="${escapeHtml(x.crop_code)}">${escapeHtml(x.crop_name)} · ${escapeHtml(x.crop_code)}</option>`).join('');
+    cropSelect.innerHTML=(catalog.crops||[]).map(x=>`<option value="${escapeHtml(x.crop_code)}" data-item-type="${escapeHtml(x.item_type)}">${escapeHtml(x.crop_name)} · ${escapeHtml(x.item_type_label)} · ${escapeHtml(x.crop_code)}</option>`).join('');
+    if((catalog.crops||[]).some(x=>x.crop_code===previousCrop))cropSelect.value=previousCrop;
     countrySelect.innerHTML=(countries.countries||[]).map(x=>`<option value="${escapeHtml(x.country_iso3)}">${escapeHtml(x.area_name)} · ${escapeHtml(x.country_iso3)}</option>`).join('');
     $('global-start-year').value='1961';
     $('global-end-year').value='2024';
     globalCropCatalogLoaded=true;
-    toast(status,`FAOSTAT katalogi tayyor · ${(catalog.crops||[]).length} ta ekin/ekin mahsuloti · ${(countries.countries||[]).length} ta mamlakat/hudud`);
+    const counts=catalog.item_type_counts||{};
+    toast(status,`FAOSTAT katalogi tayyor · ${catalog.total_item_count||0} item · ${counts.CROP||0} alohida ekin · ${counts.AGGREGATE||0} agregat · ${counts.PRODUCT_FORM||0} mahsulot shakli · ${(countries.countries||[]).length} hudud`);
     if(cropSelect.value&&countrySelect.value)await loadGlobalSeries();
   }catch(e){toast(status,`FAOSTAT katalogi yuklanmadi: ${e.message}`);}
 }
@@ -110,6 +116,11 @@ async function runGlobalYieldForecast(){
   const country=$('global-country').value;
   const crop=$('global-crop').value;
   const target=Number($('global-end-year').value)||2024;
+  const selectedType=$('global-crop').selectedOptions[0]?.dataset.itemType;
+  if(selectedType&&selectedType!=='CROP'){
+    $('global-prediction-result').textContent='Prognoz faqat alohida ekin itemlari uchun mavjud. Agregat va mahsulot shakllari tarixiy tahlil uchun saqlanadi.';
+    return;
+  }
   if(!country||!crop){toast($('global-data-status'),'Mamlakat va ekinni tanlang.');return;}
   const result=$('global-prediction-result');
   result.textContent='Tarixiy trend ssenariysi hisoblanmoqda…';
@@ -119,6 +130,7 @@ async function runGlobalYieldForecast(){
   }catch(e){result.textContent=e.message;}
 }
 
+$('global-item-type').addEventListener('change',()=>{globalCropCatalogLoaded=false;loadGlobalCropCatalog();});
 $('refresh-global-crops').addEventListener('click',()=>{globalCropCatalogLoaded=false;loadGlobalCropCatalog();});
 $('load-global-series').addEventListener('click',loadGlobalSeries);
 $('global-yield-forecast').addEventListener('click',runGlobalYieldForecast);
