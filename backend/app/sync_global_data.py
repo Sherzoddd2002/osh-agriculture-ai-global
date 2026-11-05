@@ -29,7 +29,6 @@ from sqlalchemy import delete, insert
 
 from .db import SessionLocal, init_db
 from .models import GlobalCropStatistic
-from .services.global_crops import normalize_crop_code
 
 
 URL = (
@@ -47,9 +46,11 @@ USE_COLUMNS = {
     "Area Code (M49)", "Area", "Item Code", "Item",
     "Element", "Year", "Unit", "Value", "Flag",
 }
-STANDARD_CROP_CODES = {
-    "WHEAT", "MAIZE", "RICE", "BARLEY",
-    "SOYBEAN", "COTTON", "POTATO", "SORGHUM",
+CORE_FAOSTAT_ITEM_CODES = {
+    "015": "WHEAT",
+    "056": "MAIZE",
+    "027": "RICE",
+    "009": "SOYBEAN",
 }
 CHUNK_SIZE = 200_000
 
@@ -79,13 +80,12 @@ def country_iso3_from_m49(value) -> str | None:
 
 def faostat_crop_code(item_code, item_name: str) -> str:
     """Use familiar aliases for core crops and stable FAO IDs for all others."""
-    normalized = normalize_crop_code(item_name)
-    if normalized in STANDARD_CROP_CODES:
-        return normalized
     code = clean_numeric_code(item_code)
     if not code:
         raise ValueError(f"FAOSTAT Item Code yaroqsiz: {item_code!r}")
-    return f"FAO_{int(code)}"
+    # Only map item IDs with verified one-to-one identities. Do not merge
+    # similarly named FAOSTAT products into one crop and double-count area.
+    return CORE_FAOSTAT_ITEM_CODES.get(code, f"FAO_{int(code)}")
 
 
 def convert_value(value, unit: str, kind: str) -> float | None:
