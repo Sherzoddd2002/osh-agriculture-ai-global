@@ -134,6 +134,8 @@ def _load_boundary(client: httpx.Client, iso3: str, level: str, cache: Path):
             errors.append(f"github-gbOpen: {exc}")
 
     raise RuntimeError("; ".join(errors)[:1000] or "Boundary unavailable")
+
+
 def _checkpoint_key(level: str, iso3: str, zone_id: str) -> str:
     """Use country keys for ADM0 and stable country/admin keys for ADM1."""
     return iso3 if level == "ADM0" else f"{iso3}::{zone_id}"
@@ -213,7 +215,11 @@ def run(args):
         "yield_crosscheck_abs_kg_ha", "spatial_status", "computed_at_utc",
     ]
     error_fields = ["country_iso3", "country_name", "admin_level", "error", "failed_at_utc"]
-    write_header = not summary_path.exists() or not args.resume
+    write_header = (
+        not summary_path.exists()
+        or summary_path.stat().st_size == 0
+        or not args.resume
+    )
     if write_header:
         summary_path.write_text("", encoding="utf-8")
     if not errors_path.exists() or not args.resume:
