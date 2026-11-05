@@ -21,6 +21,7 @@ Example (PowerShell):
 
     $env:OSH_AGRI_HOME = $Base
     $env:OSH_AGRI_DATA_DIR = "$Base\global-data"
+    $env:DATABASE_URL = "postgresql+psycopg://osh_global_app@127.0.0.1:5433/osh_agriculture_global"
     $env:PYTHONPATH = "$Source\backend"
     & $Python -m app.import_mapspam_results --adm1-csv "$Results\.ci-mapspam-output\mapspam_2020_adm1.csv" --adm0-csv "$Results\.ci-mapspam-adm0-output\mapspam_2020_adm0.csv" --dry-run
 
