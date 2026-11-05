@@ -468,9 +468,12 @@ def upsert_summary_rows(
     inserted = 0
     updated = 0
     now = datetime.now(timezone.utc)
-    key_columns = [getattr(GlobalRasterSummary, field) for field in KEY_FIELDS]
+    summary_table = GlobalRasterSummary.__table__
+    key_columns = [summary_table.c[field] for field in KEY_FIELDS]
     key_tuple = tuple_(*key_columns)
-    batch_size = 500
+    # Keep SQLite batches under its conservative 999-parameter limit; the
+    # production PostgreSQL path can use larger batches.
+    batch_size = 500 if dialect == "postgresql" else 30
 
     try:
         for start in range(0, len(rows), batch_size):
@@ -487,7 +490,7 @@ def upsert_summary_rows(
             )
             existing_keys = {tuple(record) for record in existing_result.all()}
 
-            statement = insert_for(GlobalRasterSummary).values(batch)
+            statement = insert_for(summary_table).values(batch)
             update_fields = [
                 field for field in batch[0]
                 if field not in KEY_FIELDS
