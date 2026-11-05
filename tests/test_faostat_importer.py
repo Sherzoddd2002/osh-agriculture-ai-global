@@ -22,8 +22,8 @@ def make_zip():
         ["004", "Afghanistan", "56", "Maize (corn)", "Production", "2020", "1000 t", "50", "E"],
         ["004", "Afghanistan", "27", "Rice, paddy", "Area harvested", "2020", "1000 ha", "20", "A"],
         ["004", "Afghanistan", "27", "Rice, paddy", "Production", "2020", "1000 t", "80", "A"],
-        ["004", "Afghanistan", "9", "Soya beans", "Area harvested", "2020", "1000 ha", "5", "A"],
-        ["004", "Afghanistan", "9", "Soya beans", "Yield", "2020", "hg/ha", "20000", "A"],
+        ["004", "Afghanistan", "236", "Soya beans", "Area harvested", "2020", "1000 ha", "5", "A"],
+        ["004", "Afghanistan", "236", "Soya beans", "Yield", "2020", "hg/ha", "20000", "A"],
         ["001", "World", "15", "Wheat", "Area harvested", "2020", "1000 ha", "200000", "A"],
         ["001", "World", "15", "Wheat", "Production", "2020", "1000 t", "700000", "A"],
     ]
@@ -48,6 +48,8 @@ def test_unit_conversion_and_m49_country_mapping():
     assert country_iso3_from_m49("004") == "AFG"
     assert country_iso3_from_m49("'004") == "AFG"
     assert faostat_crop_code("656", "Coffee, green") == "FAO_656"
+    assert faostat_crop_code("236", "Soya beans") == "SOYBEAN"
+    assert faostat_crop_code("9", "Some other item") == "FAO_9"
 
 
 def test_faostat_zip_parser_normalizes_crops_and_skips_world_aggregate():
