@@ -11,11 +11,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from shapely.geometry import shape, mapping
-from sqlalchemy import select, text
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 from .config import settings
 from .db import SessionLocal, init_db
-from .models import User, Location, Dataset, YieldObservation, EnvironmentFeature, AnalysisJob, LocationClimateJob, LocationWeatherSnapshot
+from .models import User, Location, Dataset, YieldObservation, EnvironmentFeature, AnalysisJob, LocationClimateJob, LocationWeatherSnapshot, GlobalRasterSummary
 from .security import hash_password, verify_password, create_access_token, current_user, get_db
 from .services.boundaries import get_boundary_geojson
 from .services.nasa_power import fetch_daily_weather, aggregate_calendar_year_weather
@@ -482,6 +482,112 @@ def global_raster_mapspam_summary(
         ),
     })
     return result
+
+
+
+@app.get("/api/v1/global-raster-summaries")
+def list_global_raster_summaries(
+    country_iso3: Optional[str] = None,
+    admin_level: Optional[str] = None,
+    admin_id: Optional[str] = None,
+    crop_code: Optional[str] = None,
+    source_year: Optional[int] = None,
+    technology: Optional[str] = None,
+    dataset_id: Optional[str] = None,
+    limit: int = 1000,
+    offset: int = 0,
+    db: Session = Depends(get_db),
+):
+    """Read persisted official raster summaries; NULL yields remain NULL."""
+    if limit < 1 or limit > 5000:
+        raise HTTPException(422, "limit 1–5000 oralig‘ida bo‘lishi kerak")
+    if offset < 0:
+        raise HTTPException(422, "offset manfiy bo‘lishi mumkin emas")
+
+    conditions = []
+    if country_iso3:
+        country = country_iso3.strip().upper()
+        if not re.fullmatch(r"[A-Z]{3}", country):
+            raise HTTPException(422, "country_iso3 ISO-3 formatida bo‘lishi kerak")
+        conditions.append(GlobalRasterSummary.country_iso3 == country)
+    if admin_level:
+        level = admin_level.strip().upper()
+        if level not in {"ADM0", "ADM1"}:
+            raise HTTPException(422, "admin_level ADM0 yoki ADM1 bo‘lishi kerak")
+        conditions.append(GlobalRasterSummary.admin_level == level)
+    if admin_id:
+        conditions.append(GlobalRasterSummary.admin_id == admin_id.strip())
+    if crop_code:
+        crop = crop_code.strip().lower()
+        from .services.global_raster_catalog import MAPSPAM_CROPS
+        if crop not in {code for code, _ in MAPSPAM_CROPS}:
+            raise HTTPException(422, "Noma’lum MAPSPAM crop_code")
+        conditions.append(GlobalRasterSummary.crop_code == crop)
+    if source_year is not None:
+        if source_year < 1900 or source_year > 2200:
+            raise HTTPException(422, "source_year noto‘g‘ri")
+        conditions.append(GlobalRasterSummary.source_year == source_year)
+    if technology:
+        technology_value = technology.strip().lower()
+        if technology_value not in {"all", "irrigated", "rainfed"}:
+            raise HTTPException(422, "technology all, irrigated yoki rainfed bo‘lishi kerak")
+        conditions.append(GlobalRasterSummary.technology == technology_value)
+    if dataset_id:
+        conditions.append(GlobalRasterSummary.dataset_id == dataset_id.strip())
+
+    total = db.scalar(
+        select(func.count()).select_from(GlobalRasterSummary).where(*conditions)
+    ) or 0
+    rows = db.scalars(
+        select(GlobalRasterSummary)
+        .where(*conditions)
+        .order_by(
+            GlobalRasterSummary.country_iso3,
+            GlobalRasterSummary.admin_level,
+            GlobalRasterSummary.admin_name,
+            GlobalRasterSummary.crop_code,
+        )
+        .offset(offset)
+        .limit(limit)
+    ).all()
+    return {
+        "source": "IFPRI MAPSPAM",
+        "count": total,
+        "returned": len(rows),
+        "limit": limit,
+        "offset": offset,
+        "items": [
+            {
+                "dataset_id": row.dataset_id,
+                "country_iso3": row.country_iso3,
+                "country_name": row.country_name,
+                "admin_level": row.admin_level,
+                "admin_name": row.admin_name,
+                "admin_id": row.admin_id,
+                "boundary_source": row.boundary_source,
+                "boundary_year": row.boundary_year,
+                "source_year": row.source_year,
+                "technology": row.technology,
+                "crop_code": row.crop_code,
+                "crop_name": row.crop_name,
+                "crop_band": row.crop_band,
+                "physical_area_ha": row.physical_area_ha,
+                "harvested_area_ha": row.harvested_area_ha,
+                "production_t": row.production_t,
+                "yield_t_ha_area_weighted": row.yield_t_ha_area_weighted,
+                "valid_cells": row.valid_cells,
+                "yield_crosscheck_abs_kg_ha": row.yield_crosscheck_abs_kg_ha,
+                "spatial_status": row.spatial_status,
+                "computed_at_utc": row.computed_at_utc,
+                "imported_at": row.imported_at,
+                "interpretation": (
+                    "2020 gridded spatial estimate, not a current-year observation "
+                    "or field-level measurement."
+                ),
+            }
+            for row in rows
+        ],
+    }
 
 
 @app.get("/api/v1/global-crops")
