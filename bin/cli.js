@@ -7,9 +7,10 @@ import crypto from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
-import extractZip from "extract-zip";
+import { fileURLToPath } from "node:url";
 
 const repo = "Sherzoddd2002/osh-agriculture-ai-global";
+const safeZipExtractor = path.join(path.dirname(fileURLToPath(import.meta.url)), "safe_extract_zip.py");
 const sourceRef = process.env.OSH_AGRI_SOURCE_REF || "main";
 const port = 8080;
 const home = path.resolve(process.env.OSH_AGRI_HOME || (
@@ -51,6 +52,10 @@ async function pythonCommand() {
   throw new Error("Python 3.11+ topilmadi. O‘rnating: https://www.python.org/downloads/");
 }
 async function downloadSource() {
+  const [python, pythonPrefix] = await pythonCommand();
+  if (!fs.existsSync(safeZipExtractor)) {
+    throw new Error("Safe ZIP extractor topilmadi; CLI package to‘liq o‘rnatilganini tekshiring.");
+  }
   const tmp = await fsp.mkdtemp(path.join(os.tmpdir(), "osh-agri-"));
   try {
     const response = await fetch(`https://codeload.github.com/${repo}/zip/refs/heads/${sourceRef}`);
@@ -59,7 +64,7 @@ async function downloadSource() {
     await pipeline(Readable.fromWeb(response.body), fs.createWriteStream(zip));
     const unpack = path.join(tmp, "unpack");
     await fsp.mkdir(unpack);
-    await extractZip(zip, { dir: unpack });
+    run(python, [...pythonPrefix, safeZipExtractor, zip, unpack], tmp);
     const [folder] = await fsp.readdir(unpack);
     const root = path.join(unpack, folder);
     for (const file of ["requirements.txt", "backend/app/main.py", "frontend/index.html"]) {
