@@ -92,3 +92,16 @@ def test_local_csv_streaming_keeps_all_crop_items_and_excludes_livestock(tmp_pat
     assert by_crop["WHEAT"]["yield_t_ha"] == 3
     assert by_crop["FAO_656"]["crop_name"] == "Coffee, green"
     assert by_crop["FAO_656"]["yield_t_ha"] == 2
+
+
+
+def test_faostat_item_taxonomy_separates_crop_aggregate_and_product_form():
+    from backend.app.services.faostat_catalog import (
+        classify_faostat_item, CROP, AGGREGATE, PRODUCT_FORM,
+    )
+
+    assert classify_faostat_item("015", "Wheat") == CROP
+    assert classify_faostat_item("1717", "Cereals, primary") == AGGREGATE
+    assert classify_faostat_item("1735", "Vegetables Primary") == AGGREGATE
+    assert classify_faostat_item("836", "Natural rubber in primary forms") == PRODUCT_FORM
+    assert classify_faostat_item("99999", "New individual crop") == CROP

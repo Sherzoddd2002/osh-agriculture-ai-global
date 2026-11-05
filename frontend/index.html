@@ -104,9 +104,10 @@
       <div class="page-intro"><span class="eyebrow">DATA & REPORTS</span><h2>Ma’lumotlar va hisobotlar</h2><p>Yuklangan datasetlar, yillar qamrovi, ob-havo integratsiyasi va processing job holati.</p></div>
       <div class="panel">
         <div class="panel-title"><div><span class="eyebrow">GLOBAL HISTORICAL DATA</span><h3>FAOSTAT tarixiy ekinlar bazasi</h3></div><button class="secondary-button" id="refresh-global-crops">Yangilash</button></div>
-        <p class="muted">FAOSTAT QCL · mavjud yillar va ko‘rsatkichlar mamlakat hamda ekinga qarab farq qiladi. Bu tarixiy kuzatuv, prognoz emas.</p>
+        <p class="muted">FAOSTAT QCL · alohida ekinlar, yig‘ma agregatlar va mahsulot shakllari alohida tasniflanadi. Mavjud yillar mamlakat va itemga qarab farq qiladi. Bu tarixiy kuzatuv, prognoz emas.</p>
         <div class="upload-grid">
           <label>Mamlakat / hudud<select id="global-country"><option value="">Yuklanmoqda…</option></select></label>
+          <label>Ma’lumot turi<select id="global-item-type"><option value="CROP">Alohida ekinlar</option><option value="AGGREGATE">Yig‘ma ko‘rsatkichlar</option><option value="PRODUCT_FORM">Mahsulot shakllari</option><option value="ALL">Barchasi</option></select></label>
           <label>Ekin / mahsulot<select id="global-crop"><option value="">Yuklanmoqda…</option></select></label>
           <label>Boshlanish yili<input id="global-start-year" type="number" min="1961" max="2024" value="1961"></label>
           <label>Tugash yili<input id="global-end-year" type="number" min="1961" max="2024" value="2024"></label>
