@@ -15,7 +15,7 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 from .config import settings
 from .db import SessionLocal, init_db
-from .models import User, Location, Dataset, YieldObservation, EnvironmentFeature, AnalysisJob, LocationClimateJob, LocationWeatherSnapshot, GlobalCropStatistic
+from .models import User, Location, Dataset, YieldObservation, EnvironmentFeature, AnalysisJob, LocationClimateJob, LocationWeatherSnapshot
 from .security import hash_password, verify_password, create_access_token, current_user, get_db
 from .services.boundaries import get_boundary_geojson
 from .services.nasa_power import fetch_daily_weather, aggregate_calendar_year_weather
