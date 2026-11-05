@@ -23,6 +23,8 @@ Example (PowerShell):
     $env:OSH_AGRI_DATA_DIR = "$Base\global-data"
     $env:DATABASE_URL = "postgresql+psycopg://osh_global_app@127.0.0.1:5433/osh_agriculture_global"
     $env:PYTHONPATH = "$Source\backend"
+    $env:DATABASE_URL = "postgresql+psycopg://osh_global_app@127.0.0.1:5433/osh_agriculture_global"
+    Set-Location $Source
     & $Python -m app.import_mapspam_results --adm1-csv "$Results\.ci-mapspam-output\mapspam_2020_adm1.csv" --adm0-csv "$Results\.ci-mapspam-adm0-output\mapspam_2020_adm0.csv" --dry-run
 
 ## 2. Commit the import
@@ -68,24 +70,24 @@ separate error logs and checkpoints for each level.
 
 Run from the Windows central installation (first run may take substantial time):
 
-    $Base = "E:\\OSH\\AgricultureAI"
-    $Source = "$Base\\source\\osh-agriculture-ai-global-main"
-    $Python = "$Base\\central-server\\.venv\\Scripts\\python.exe"
-    $Output = "$Base\\global-data\\mapspam-2020-v2r2\\results\\global"
+    $Base = "E:\OSH\AgricultureAI"
+    $Source = "$Base\source\osh-agriculture-ai-global-main"
+    $Python = "$Base\central-server\.venv\Scripts\python.exe"
+    $Output = "$Base\global-data\mapspam-2020-v2r2\results\global"
 
     $env:OSH_AGRI_HOME = $Base
-    $env:OSH_AGRI_DATA_DIR = "$Base\\global-data"
-    $env:PYTHONPATH = "$Source\\backend"
+    $env:OSH_AGRI_DATA_DIR = "$Base\global-data"
+    $env:PYTHONPATH = "$Source\backend"
 
     # Download and validate the four global core rasters once.
-    & $Python -m app.sync_global_rasters --dataset mapspam --data-dir "$Base\\global-data"
+    & $Python -m app.sync_global_rasters --dataset mapspam --data-dir "$Base\global-data"
 
     # No --countries argument means the full ISO3 country catalog.
-    & $Python -m app.run_global_mapspam --level ADM0 --technology all --data-dir "$Base\\global-data" --output-dir $Output --resume
-    & $Python -m app.run_global_mapspam --level ADM1 --technology all --data-dir "$Base\\global-data" --output-dir $Output --resume
+    & $Python -m app.run_global_mapspam --level ADM0 --technology all --data-dir "$Base\global-data" --output-dir $Output --resume
+    & $Python -m app.run_global_mapspam --level ADM1 --technology all --data-dir "$Base\global-data" --output-dir $Output --resume
 
-    $Adm1 = "$Output\\mapspam_2020_adm1.csv"
-    $Adm0 = "$Output\\mapspam_2020_adm0.csv"
+    $Adm1 = "$Output\mapspam_2020_adm1.csv"
+    $Adm0 = "$Output\mapspam_2020_adm0.csv"
 
     # First validate all countries strictly. No database writes happen here.
     & $Python -m app.import_mapspam_results --adm1-csv $Adm1 --adm0-csv $Adm0 --dry-run
