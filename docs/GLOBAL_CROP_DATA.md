@@ -40,3 +40,21 @@ Boundary lookup tries geoBoundaries gbOpen first and gbHumanitarian second. Avai
 administrative meaning vary by country. A requested ADM level is returned only when the
 provider supplies a non-empty FeatureCollection; missing levels are not invented. Review
 each boundary provider's returned licence and attribution metadata before redistribution.
+
+
+## FAOSTAT item taxonomy
+
+The API keeps every imported QCL item and classifies it for presentation:
+- `CROP`: individual crop items, eligible for the experimental crop-trend baseline.
+- `AGGREGATE`: group totals and equivalents such as Cereals, primary; Pulses, Total; Vegetables Primary; and Oilcrops, Oil Equivalent.
+- `PRODUCT_FORM`: processed or product-form items such as Natural rubber in primary forms.
+
+Use `GET /api/v1/global-crops?item_type=CROP` for individual crops,
+`item_type=AGGREGATE` for aggregates, `item_type=PRODUCT_FORM` for product forms,
+or `item_type=ALL` for the complete catalog. The default is `ALL` for backwards
+compatibility. The response includes `item_type_counts`, `total_item_count`,
+and per-item `item_type` / `item_type_label`.
+
+Aggregates and product forms remain available for historical analysis but are
+rejected by the experimental crop-yield forecast endpoint. No source rows are
+deleted or rewritten by this classification.
