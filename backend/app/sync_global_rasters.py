@@ -13,7 +13,7 @@ import tempfile
 import urllib.request
 from pathlib import Path
 
-from .global_raster_catalog import (
+from .services.global_raster_catalog import (
     CROPGRIDS,
     MAPSPAM,
     default_global_data_dir,
