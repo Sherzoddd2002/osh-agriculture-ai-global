@@ -22,6 +22,7 @@ on:
       - "backend/app/services/boundaries.py"
       - "backend/app/sync_global_rasters.py"
       - "scripts/verify_uzb_adm1_mapspam.py"
+      - "scripts/verify_uzb_adm1_vs_adm0.py"
       - ".github/workflows/mapspam-adm1-integration.yml"
 
 permissions:
