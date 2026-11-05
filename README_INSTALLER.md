@@ -48,7 +48,7 @@ npx osh-agriculture-ai-global stop
 npx osh-agriculture-ai-global update
 ```
 
-Requirements: Node.js 20+; central Windows host mode also requires Python 3.12+ and access to its PostgreSQL 17.11 instance.
+Requirements: Node.js 20+ and Python 3.11+ for source download and the local Python runtime; central Windows host mode also requires Python 3.12+ and access to its PostgreSQL 17.11 instance.
 
 ## Publication status
 
