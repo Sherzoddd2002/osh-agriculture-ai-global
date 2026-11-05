@@ -8,6 +8,14 @@ from __future__ import annotations
 
 import asyncio
 import json
+import sys
+from pathlib import Path
+
+# Running a file under scripts/ sets that directory as sys.path[0].
+# Add the repository root so the backend package resolves in CI and locally.
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+if str(REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY_ROOT))
 
 from shapely.geometry import shape
 
