@@ -176,7 +176,7 @@ def iter_faostat_csv(
     encoding = _choose_encoding(path, chunksize)
     crop_item_codes = _detect_crop_item_codes(path, encoding, chunksize)
 
-    with tempfile.TemporaryDirectory(prefix="osh-faostat-stage-") as temp_dir:
+    with tempfile.TemporaryDirectory(prefix="osh-faostat-stage-", dir=path.parent) as temp_dir:
         stage_path = Path(temp_dir) / "faostat_stage.sqlite3"
         connection = sqlite3.connect(stage_path)
         try:
