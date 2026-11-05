@@ -178,12 +178,12 @@ def test_global_raster_summaries_api_filters_and_keeps_null_yield():
         yield_crosscheck_abs_kg_ha=None,
         spatial_status="NO_RASTER_CELLS",
     )
-    with SessionLocal() as db:
-        db.add(row)
-        db.commit()
+    with TestClient(app) as client:
+        with SessionLocal() as db:
+            db.add(row)
+            db.commit()
 
-    try:
-        with TestClient(app) as client:
+        try:
             response = client.get(
                 "/api/v1/global-raster-summaries",
                 params={
@@ -193,13 +193,13 @@ def test_global_raster_summaries_api_filters_and_keeps_null_yield():
                     "crop_code": crop_code,
                 },
             )
-        assert response.status_code == 200, response.text
-        payload = response.json()
-        assert payload["count"] == 1
-        assert payload["returned"] == 1
-        assert payload["items"][0]["spatial_status"] == "NO_RASTER_CELLS"
-        assert payload["items"][0]["yield_t_ha_area_weighted"] is None
-    finally:
-        with SessionLocal() as db:
-            db.query(GlobalRasterSummary).filter_by(dataset_id=marker).delete()
-            db.commit()
+            assert response.status_code == 200, response.text
+            payload = response.json()
+            assert payload["count"] == 1
+            assert payload["returned"] == 1
+            assert payload["items"][0]["spatial_status"] == "NO_RASTER_CELLS"
+            assert payload["items"][0]["yield_t_ha_area_weighted"] is None
+        finally:
+            with SessionLocal() as db:
+                db.query(GlobalRasterSummary).filter_by(dataset_id=marker).delete()
+                db.commit()
