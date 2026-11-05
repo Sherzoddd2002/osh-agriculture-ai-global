@@ -12,6 +12,10 @@ on:
       - "backend/app/sync_global_rasters.py"
       - "scripts/verify_uzb_adm1_mapspam.py"
       - "scripts/verify_uzb_adm1_vs_adm0.py"
+      - "backend/app/models.py"
+      - "backend/app/main.py"
+      - "backend/app/import_mapspam_results.py"
+      - "tests/test_global_raster_import.py"
       - ".github/workflows/mapspam-adm1-integration.yml"
   pull_request:
     branches: [main]
@@ -23,6 +27,10 @@ on:
       - "backend/app/sync_global_rasters.py"
       - "scripts/verify_uzb_adm1_mapspam.py"
       - "scripts/verify_uzb_adm1_vs_adm0.py"
+      - "backend/app/models.py"
+      - "backend/app/main.py"
+      - "backend/app/import_mapspam_results.py"
+      - "tests/test_global_raster_import.py"
       - ".github/workflows/mapspam-adm1-integration.yml"
 
 permissions:
@@ -90,6 +98,13 @@ jobs:
           python scripts/verify_uzb_adm1_vs_adm0.py \
             "$MAPSPAM_OUTPUT_DIR/mapspam_2020_adm1.csv" \
             "$MAPSPAM_ADM0_OUTPUT_DIR/mapspam_2020_adm0.csv"
+
+      - name: Validate database import against real MAPSPAM outputs (dry-run)
+        run: |
+          python -m app.import_mapspam_results \
+            --adm1-csv "$MAPSPAM_OUTPUT_DIR/mapspam_2020_adm1.csv" \
+            --adm0-csv "$MAPSPAM_ADM0_OUTPUT_DIR/mapspam_2020_adm0.csv" \
+            --dry-run
 
       - name: Upload real-data integration results
         if: always()

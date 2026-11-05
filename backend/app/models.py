@@ -148,3 +148,39 @@ class GlobalCropStatistic(Base):
     production_flag: Mapped[str|None] = mapped_column(String(32),nullable=True)
     yield_flag: Mapped[str|None] = mapped_column(String(32),nullable=True)
     imported_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),default=utcnow)
+
+class GlobalRasterSummary(Base):
+    """Persisted administrative summary rows derived from official global rasters."""
+    __tablename__ = "global_raster_summaries"
+    __table_args__ = (
+        UniqueConstraint(
+            "dataset_id", "source_year", "country_iso3", "admin_level",
+            "admin_id", "technology", "crop_code",
+            name="uq_global_raster_summary_identity",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    dataset_id: Mapped[str] = mapped_column(String(80), index=True)
+    country_iso3: Mapped[str] = mapped_column(String(3), index=True)
+    country_name: Mapped[str] = mapped_column(String(160))
+    admin_level: Mapped[str] = mapped_column(String(8), index=True)
+    admin_name: Mapped[str] = mapped_column(String(250))
+    admin_id: Mapped[str] = mapped_column(String(250))
+    boundary_source: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    boundary_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    source_year: Mapped[int] = mapped_column(Integer, index=True)
+    technology: Mapped[str] = mapped_column(String(16), default="all")
+    crop_code: Mapped[str] = mapped_column(String(40), index=True)
+    crop_name: Mapped[str] = mapped_column(String(160))
+    crop_band: Mapped[int] = mapped_column(Integer)
+    physical_area_ha: Mapped[float] = mapped_column(Float)
+    harvested_area_ha: Mapped[float] = mapped_column(Float)
+    production_t: Mapped[float] = mapped_column(Float)
+    yield_t_ha_area_weighted: Mapped[float | None] = mapped_column(Float, nullable=True)
+    valid_cells: Mapped[int] = mapped_column(Integer)
+    yield_crosscheck_abs_kg_ha: Mapped[float | None] = mapped_column(Float, nullable=True)
+    spatial_status: Mapped[str] = mapped_column(String(24), index=True)
+    computed_at_utc: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    imported_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
