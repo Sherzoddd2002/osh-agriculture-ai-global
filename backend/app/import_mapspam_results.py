@@ -513,7 +513,6 @@ def upsert_summary_rows(
         "inserted": inserted,
         "updated": updated,
         "processed": len(rows),
-        "batch_size": batch_size,
     }
 
 

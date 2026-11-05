@@ -78,8 +78,8 @@ def _write_pair(
             })
 
         adm0_rows.append({
-            "country_iso3": "UZB",
-            "country_name": "Uzbekistan",
+            "country_iso3": country_iso3,
+            "country_name": country_name,
             "admin_level": "ADM0",
             "admin_name": country_name,
             "admin_id": country_iso3,
