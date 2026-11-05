@@ -102,6 +102,21 @@
 
     <section class="view" id="view-data">
       <div class="page-intro"><span class="eyebrow">DATA & REPORTS</span><h2>Ma’lumotlar va hisobotlar</h2><p>Yuklangan datasetlar, yillar qamrovi, ob-havo integratsiyasi va processing job holati.</p></div>
+      <div class="panel">
+        <div class="panel-title"><div><span class="eyebrow">GLOBAL HISTORICAL DATA</span><h3>FAOSTAT tarixiy ekinlar bazasi</h3></div><button class="secondary-button" id="refresh-global-crops">Yangilash</button></div>
+        <p class="muted">FAOSTAT QCL · mavjud yillar va ko‘rsatkichlar mamlakat hamda ekinga qarab farq qiladi. Bu tarixiy kuzatuv, prognoz emas.</p>
+        <div class="upload-grid">
+          <label>Mamlakat / hudud<select id="global-country"><option value="">Yuklanmoqda…</option></select></label>
+          <label>Ekin / mahsulot<select id="global-crop"><option value="">Yuklanmoqda…</option></select></label>
+          <label>Boshlanish yili<input id="global-start-year" type="number" min="1961" max="2024" value="1961"></label>
+          <label>Tugash yili<input id="global-end-year" type="number" min="1961" max="2024" value="2024"></label>
+        </div>
+        <div class="upload-bottom"><button class="primary-button" id="load-global-series">Tarixiy ma’lumotni ko‘rsatish</button><button class="secondary-button" id="global-yield-forecast">Hosildorlik trend ssenariysi</button></div>
+        <div id="global-data-status" class="muted" role="status">Global FAOSTAT katalogi yuklanmoqda…</div>
+        <div id="global-crop-summary" class="kpi-grid"></div>
+        <div id="global-crop-table" class="table-wrap"></div>
+        <div id="global-prediction-result" class="result-panel"></div>
+      </div>
       <div class="panel"><div class="panel-title"><h3>Mening datasetlarim</h3><button class="secondary-button" id="refresh-datasets">Yangilash</button></div><div id="dataset-list" class="empty-state">Hisobga kiring va dataset yuklang.</div></div>
       <div class="panel"><h3>So‘nggi background job</h3><div id="job-list" class="empty-state">Hozircha job yo‘q.</div></div>
     </section>

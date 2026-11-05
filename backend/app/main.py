@@ -485,8 +485,77 @@ def global_raster_mapspam_summary(
 
 @app.get("/api/v1/global-crops")
 def global_crops(db: Session = Depends(get_db)):
-    rows=db.execute(text("SELECT crop_code,MIN(crop_name) crop_name,COUNT(*) observations,MIN(year) first_year,MAX(year) last_year,COUNT(DISTINCT country_iso3) countries FROM global_crop_statistics GROUP BY crop_code ORDER BY crop_code")).mappings().all()
-    return {"source":"FAOSTAT QCL","loaded":bool(rows),"crops":[dict(x) for x in rows]}
+    rows = db.execute(text("""
+        SELECT crop_code, MIN(crop_name) AS crop_name,
+               COUNT(*) AS observations, MIN(year) AS first_year,
+               MAX(year) AS last_year,
+               COUNT(DISTINCT country_iso3) AS countries
+        FROM global_crop_statistics
+        GROUP BY crop_code
+        ORDER BY crop_name, crop_code
+    """)).mappings().all()
+    return {"source": "FAOSTAT QCL", "loaded": bool(rows), "crop_count": len(rows),
+            "crops": [dict(x) for x in rows]}
+
+
+@app.get("/api/v1/global-crops/countries")
+def global_crop_countries(crop_code: Optional[str] = None, db: Session = Depends(get_db)):
+    params = {}
+    where = ""
+    if crop_code:
+        where = "WHERE crop_code = :crop_code"
+        params["crop_code"] = crop_code.strip().upper()
+    rows = db.execute(text(f"""
+        SELECT country_iso3, MIN(area_name) AS area_name,
+               COUNT(*) AS observations, MIN(year) AS first_year,
+               MAX(year) AS last_year
+        FROM global_crop_statistics
+        {where}
+        GROUP BY country_iso3
+        ORDER BY area_name, country_iso3
+    """), params).mappings().all()
+    return {"source": "FAOSTAT QCL", "countries": [dict(x) for x in rows]}
+
+
+@app.get("/api/v1/global-crops/series/{country_iso3}/{crop_code}")
+def global_crop_series(
+    country_iso3: str,
+    crop_code: str,
+    start_year: Optional[int] = None,
+    end_year: Optional[int] = None,
+    db: Session = Depends(get_db),
+):
+    country = country_iso3.strip().upper()
+    crop = crop_code.strip().upper()
+    if not re.fullmatch(r"[A-Z]{3}", country):
+        raise HTTPException(422, "country_iso3 3 ta harfdan iborat ISO-3 kod bo‘lishi kerak")
+    if start_year is not None and end_year is not None and start_year > end_year:
+        raise HTTPException(422, "start_year end_year dan katta bo‘lishi mumkin emas")
+    conditions = ["country_iso3 = :country", "crop_code = :crop"]
+    params = {"country": country, "crop": crop}
+    if start_year is not None:
+        conditions.append("year >= :start_year")
+        params["start_year"] = start_year
+    if end_year is not None:
+        conditions.append("year <= :end_year")
+        params["end_year"] = end_year
+    rows = db.execute(text(f"""
+        SELECT country_iso3, area_name, crop_code, crop_name, year,
+               harvested_area_ha, production_t, yield_t_ha,
+               area_flag, production_flag, yield_flag,
+               source_code, source_release
+        FROM global_crop_statistics
+        WHERE {" AND ".join(conditions)}
+        ORDER BY year
+    """), params).mappings().all()
+    return {
+        "source": "FAOSTAT QCL",
+        "country_iso3": country,
+        "crop_code": crop,
+        "count": len(rows),
+        "series": [dict(row) for row in rows],
+    }
+
 
 @app.post("/api/v1/global-predictions/yield")
 def global_yield(payload: GlobalYieldRequest,user: User=Depends(current_user),db: Session=Depends(get_db)):
