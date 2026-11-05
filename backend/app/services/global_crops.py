@@ -10,6 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..models import GlobalCropStatistic
+from .faostat_catalog import classify_faostat_item, CROP
 
 
 ALIASES = {
@@ -146,6 +147,15 @@ def forecast_global_crop_yield(
     ).all()
     if not records:
         raise ValueError(f"{crop}: FAOSTAT global bazasi yuklanmagan.")
+    item_types = {
+        classify_faostat_item(row.item_code, row.crop_name)
+        for row in records
+    }
+    if item_types != {CROP}:
+        raise ValueError(
+            f"{crop}: prognoz faqat alohida ekin itemlari uchun ruxsat etiladi; "
+            "agregat yoki mahsulot shakli tanlangan."
+        )
 
     global_series = _series(records)
     country_series = _series([
