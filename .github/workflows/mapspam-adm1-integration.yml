@@ -2,6 +2,16 @@ name: MAPSPAM ADM1 integration smoke
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "backend/app/run_global_mapspam.py"
+      - "backend/app/services/global_raster_batch.py"
+      - "backend/app/services/global_raster_catalog.py"
+      - "backend/app/services/boundaries.py"
+      - "backend/app/sync_global_rasters.py"
+      - "scripts/verify_uzb_adm1_mapspam.py"
+      - ".github/workflows/mapspam-adm1-integration.yml"
   pull_request:
     branches: [main]
     paths:
@@ -23,8 +33,8 @@ jobs:
     timeout-minutes: 45
     env:
       PYTHONPATH: backend
-      MAPSPAM_DATA_DIR: ${{ runner.temp }}/mapspam-data
-      MAPSPAM_OUTPUT_DIR: ${{ runner.temp }}/mapspam-output
+      MAPSPAM_DATA_DIR: .ci-mapspam-data
+      MAPSPAM_OUTPUT_DIR: .ci-mapspam-output
 
     steps:
       - name: Checkout
@@ -69,6 +79,6 @@ jobs:
           name: uzb-adm1-mapspam-results
           if-no-files-found: ignore
           path: |
-            ${{ runner.temp }}/mapspam-output/mapspam_2020_adm1.csv
-            ${{ runner.temp }}/mapspam-output/mapspam_2020_adm1_errors.csv
-            ${{ runner.temp }}/mapspam-output/mapspam_2020_adm1_completed.json
+            .ci-mapspam-output/mapspam_2020_adm1.csv
+            .ci-mapspam-output/mapspam_2020_adm1_errors.csv
+            .ci-mapspam-output/mapspam_2020_adm1_completed.json
