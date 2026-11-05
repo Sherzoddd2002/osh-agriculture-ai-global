@@ -20,7 +20,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, tuple_
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
 
 from .db import SessionLocal, init_db
@@ -314,45 +316,205 @@ def validate_adm0_adm1_pair(
     }
 
 
+def validate_global_adm0_adm1_pairs(
+    adm1_rows: list[dict[str, Any]],
+    adm0_rows: list[dict[str, Any]],
+    *,
+    allow_partial_countries: bool = False,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Validate ADM0/ADM1 conservation independently for each country scope.
+
+    A scope is one country, MAPSPAM dataset/year and technology. In strict mode,
+    one missing or invalid scope rejects the complete batch. Partial mode keeps
+    only scopes that passed all 46-crop and ADM1-to-ADM0 checks.
+    """
+    def scope(row: dict[str, Any]) -> tuple[str, str, int, str]:
+        return (
+            str(row["country_iso3"]),
+            str(row["dataset_id"]),
+            int(row["source_year"]),
+            str(row["technology"]),
+        )
+
+    adm1_by_scope: dict[tuple[str, str, int, str], list[dict[str, Any]]] = defaultdict(list)
+    adm0_by_scope: dict[tuple[str, str, int, str], list[dict[str, Any]]] = defaultdict(list)
+    for row in adm1_rows:
+        adm1_by_scope[scope(row)].append(row)
+    for row in adm0_rows:
+        adm0_by_scope[scope(row)].append(row)
+
+    scopes = sorted(
+        set(adm1_by_scope) | set(adm0_by_scope),
+        key=lambda item: (item[0], item[1], item[2], item[3]),
+    )
+    if not scopes:
+        raise ValueError("Global MAPSPAM input contains no country scopes")
+
+    accepted_rows: list[dict[str, Any]] = []
+    accepted_reports: list[dict[str, Any]] = []
+    rejected: list[dict[str, Any]] = []
+
+    for country, dataset_id, source_year, technology in scopes:
+        key = (country, dataset_id, source_year, technology)
+        label = {
+            "country_iso3": country,
+            "dataset_id": dataset_id,
+            "source_year": source_year,
+            "technology": technology,
+        }
+        country_adm1 = adm1_by_scope.get(key, [])
+        country_adm0 = adm0_by_scope.get(key, [])
+
+        if not country_adm1 or not country_adm0:
+            missing = []
+            if not country_adm1:
+                missing.append("ADM1")
+            if not country_adm0:
+                missing.append("ADM0")
+            rejected.append({**label, "reason": f"Missing {' and '.join(missing)} result rows"})
+            continue
+
+        try:
+            for level_rows in (country_adm1, country_adm0):
+                country_names = {str(row["country_name"]).strip() for row in level_rows}
+                if len(country_names) != 1 or not next(iter(country_names), ""):
+                    raise ValueError("country_name is empty or inconsistent within a level")
+            if country_adm1[0]["country_name"] != country_adm0[0]["country_name"]:
+                raise ValueError("ADM0/ADM1 country_name mismatch")
+
+            report = validate_adm0_adm1_pair(country_adm1, country_adm0)
+            accepted_rows.extend(country_adm1)
+            accepted_rows.extend(country_adm0)
+            accepted_reports.append(report)
+        except Exception as exc:
+            rejected.append({**label, "reason": str(exc)[:1000]})
+
+    if rejected and not allow_partial_countries:
+        preview = json.dumps(rejected[:10], ensure_ascii=False)
+        suffix = " (showing first 10)" if len(rejected) > 10 else ""
+        raise ValueError(
+            f"Global MAPSPAM validation rejected {len(rejected)} country/technology "
+            f"group(s){suffix}: {preview}"
+        )
+
+    if not accepted_rows:
+        raise ValueError("No country/technology group passed MAPSPAM ADM0/ADM1 validation")
+
+    # Preserve the established single-country report shape for existing callers.
+    if len(scopes) == 1 and not rejected:
+        return accepted_rows, accepted_reports[0]
+
+    max_relative = {
+        field: max(
+            (report["max_relative_differences"][field] for report in accepted_reports),
+            default=0.0,
+        )
+        for field in SUM_FIELDS
+    }
+    countries_passed = sorted({report["country_iso3"] for report in accepted_reports})
+    countries_rejected = sorted({item["country_iso3"] for item in rejected})
+    report = {
+        "status": "PARTIAL" if rejected else "PASS",
+        "countries_total": len({item[0] for item in scopes}),
+        "countries_passed": countries_passed,
+        "countries_rejected": countries_rejected,
+        "country_technology_groups_total": len(scopes),
+        "country_technology_groups_passed": len(accepted_reports),
+        "country_technology_groups_rejected": len(rejected),
+        "adm1_rows": sum(item["adm1_rows"] for item in accepted_reports),
+        "adm0_rows": sum(item["adm0_rows"] for item in accepted_reports),
+        "crop_count": len(EXPECTED_CROPS),
+        "max_relative_differences": max_relative,
+        "max_weighted_yield_difference_t_ha": max(
+            (item["max_weighted_yield_difference_t_ha"] for item in accepted_reports),
+            default=0.0,
+        ),
+        "rejected_groups": rejected,
+    }
+    return accepted_rows, report
+
+
 def read_and_validate_pair(
     adm1_path: str | Path,
     adm0_path: str | Path,
+    *,
+    allow_partial_countries: bool = False,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Read global or single-country CSVs and validate before any database write."""
     adm1_rows = _read_level(adm1_path, "ADM1")
     adm0_rows = _read_level(adm0_path, "ADM0")
-    report = validate_adm0_adm1_pair(adm1_rows, adm0_rows)
-    return adm1_rows + adm0_rows, report
+    return validate_global_adm0_adm1_pairs(
+        adm1_rows,
+        adm0_rows,
+        allow_partial_countries=allow_partial_countries,
+    )
 
 
 def upsert_summary_rows(
     db: Session,
     rows: list[dict[str, Any]],
 ) -> dict[str, int]:
-    """Insert new summary identities and update existing ones in one transaction."""
+    """Bulk insert/update identities in bounded batches and one transaction."""
+    dialect = db.get_bind().dialect.name
+    if dialect == "postgresql":
+        insert_for = pg_insert
+    elif dialect == "sqlite":
+        insert_for = sqlite_insert
+    else:
+        raise RuntimeError(
+            f"Bulk MAPSPAM upsert does not support database dialect {dialect!r}"
+        )
+
     inserted = 0
     updated = 0
     now = datetime.now(timezone.utc)
+    key_columns = [getattr(GlobalRasterSummary, field) for field in KEY_FIELDS]
+    key_tuple = tuple_(*key_columns)
+    batch_size = 500
+
     try:
-        for row in rows:
-            key_filter = {
-                field: row[field] for field in KEY_FIELDS
-            }
-            existing = db.scalar(
-                select(GlobalRasterSummary).filter_by(**key_filter)
+        for start in range(0, len(rows), batch_size):
+            batch = [
+                {**row, "imported_at": now}
+                for row in rows[start:start + batch_size]
+            ]
+            batch_keys = [
+                tuple(row[field] for field in KEY_FIELDS)
+                for row in batch
+            ]
+            existing_result = db.execute(
+                select(*key_columns).where(key_tuple.in_(batch_keys))
             )
-            if existing is None:
-                db.add(GlobalRasterSummary(**row, imported_at=now))
-                inserted += 1
-            else:
-                for field, value in row.items():
-                    setattr(existing, field, value)
-                existing.imported_at = now
-                updated += 1
+            existing_keys = {tuple(record) for record in existing_result.all()}
+
+            statement = insert_for(GlobalRasterSummary).values(batch)
+            update_fields = [
+                field for field in batch[0]
+                if field not in KEY_FIELDS
+            ]
+            statement = statement.on_conflict_do_update(
+                index_elements=key_columns,
+                set_={
+                    field: getattr(statement.excluded, field)
+                    for field in update_fields
+                },
+            )
+            db.execute(statement)
+
+            updated += len(existing_keys)
+            inserted += len(batch) - len(existing_keys)
+
         db.commit()
     except Exception:
         db.rollback()
         raise
-    return {"inserted": inserted, "updated": updated, "processed": len(rows)}
+
+    return {
+        "inserted": inserted,
+        "updated": updated,
+        "processed": len(rows),
+        "batch_size": batch_size,
+    }
 
 
 def main() -> None:
@@ -362,13 +524,22 @@ def main() -> None:
     parser.add_argument("--adm1-csv", required=True, help="Verified ADM1 results CSV")
     parser.add_argument("--adm0-csv", required=True, help="Official ADM0 totals CSV")
     parser.add_argument(
+        "--allow-partial-countries",
+        action="store_true",
+        help="Import only country/technology groups that pass validation; report rejected groups",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Validate source files and ADM0/ADM1 conservation without database writes",
     )
     args = parser.parse_args()
 
-    rows, report = read_and_validate_pair(args.adm1_csv, args.adm0_csv)
+    rows, report = read_and_validate_pair(
+        args.adm1_csv,
+        args.adm0_csv,
+        allow_partial_countries=args.allow_partial_countries,
+    )
     result: dict[str, Any] = {"validation": report}
     if args.dry_run:
         result["database_write"] = "SKIPPED (dry-run)"
