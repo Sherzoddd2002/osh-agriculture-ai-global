@@ -50,7 +50,7 @@ CORE_FAOSTAT_ITEM_CODES = {
     "015": "WHEAT",
     "056": "MAIZE",
     "027": "RICE",
-    "009": "SOYBEAN",
+    "236": "SOYBEAN",
 }
 CHUNK_SIZE = 200_000
 
