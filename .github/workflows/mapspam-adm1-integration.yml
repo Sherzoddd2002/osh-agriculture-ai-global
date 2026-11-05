@@ -27,6 +27,10 @@ on:
       - "backend/app/sync_global_rasters.py"
       - "scripts/verify_uzb_adm1_mapspam.py"
       - "scripts/verify_uzb_adm1_vs_adm0.py"
+      - "backend/app/models.py"
+      - "backend/app/main.py"
+      - "backend/app/import_mapspam_results.py"
+      - "tests/test_global_raster_import.py"
       - ".github/workflows/mapspam-adm1-integration.yml"
 
 permissions:
