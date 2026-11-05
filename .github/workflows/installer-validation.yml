@@ -85,5 +85,9 @@ jobs:
       - name: Run test suite
         run: python -m pytest -q
 
+      - name: Verify live geoBoundaries UZB ADM1 source
+        if: runner.os == 'Linux'
+        run: python scripts/verify_live_boundaries.py
+
       - name: End-to-end installer lifecycle
         run: python scripts/ci_installer_smoke.py
