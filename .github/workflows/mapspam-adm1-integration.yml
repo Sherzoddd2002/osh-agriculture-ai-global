@@ -11,6 +11,7 @@ on:
       - "backend/app/services/boundaries.py"
       - "backend/app/sync_global_rasters.py"
       - "scripts/verify_uzb_adm1_mapspam.py"
+      - "scripts/verify_uzb_adm1_vs_adm0.py"
       - ".github/workflows/mapspam-adm1-integration.yml"
   pull_request:
     branches: [main]
@@ -21,6 +22,7 @@ on:
       - "backend/app/services/boundaries.py"
       - "backend/app/sync_global_rasters.py"
       - "scripts/verify_uzb_adm1_mapspam.py"
+      - "scripts/verify_uzb_adm1_vs_adm0.py"
       - ".github/workflows/mapspam-adm1-integration.yml"
 
 permissions:
@@ -35,6 +37,7 @@ jobs:
       PYTHONPATH: backend
       MAPSPAM_DATA_DIR: .ci-mapspam-data
       MAPSPAM_OUTPUT_DIR: .ci-mapspam-output
+      MAPSPAM_ADM0_OUTPUT_DIR: .ci-mapspam-adm0-output
 
     steps:
       - name: Checkout
@@ -66,11 +69,27 @@ jobs:
             --output-dir "$MAPSPAM_OUTPUT_DIR" \
             --resume
 
+      - name: Calculate official Uzbekistan ADM0 country totals
+        run: |
+          python -m app.run_global_mapspam \
+            --level ADM0 \
+            --countries UZB \
+            --technology all \
+            --data-dir "$MAPSPAM_DATA_DIR" \
+            --output-dir "$MAPSPAM_ADM0_OUTPUT_DIR" \
+            --resume
+
       - name: Verify 14 zones x 46 crops output
         run: |
           python scripts/verify_uzb_adm1_mapspam.py \
             "$MAPSPAM_OUTPUT_DIR/mapspam_2020_adm1.csv" \
             "$MAPSPAM_OUTPUT_DIR/mapspam_2020_adm1_errors.csv"
+
+      - name: Compare ADM1 sums with ADM0 country totals
+        run: |
+          python scripts/verify_uzb_adm1_vs_adm0.py \
+            "$MAPSPAM_OUTPUT_DIR/mapspam_2020_adm1.csv" \
+            "$MAPSPAM_ADM0_OUTPUT_DIR/mapspam_2020_adm0.csv"
 
       - name: Upload real-data integration results
         if: always()
@@ -82,3 +101,5 @@ jobs:
             .ci-mapspam-output/mapspam_2020_adm1.csv
             .ci-mapspam-output/mapspam_2020_adm1_errors.csv
             .ci-mapspam-output/mapspam_2020_adm1_completed.json
+            .ci-mapspam-adm0-output/mapspam_2020_adm0.csv
+            .ci-mapspam-adm0-output/mapspam_2020_adm0_errors.csv
