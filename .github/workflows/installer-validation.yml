@@ -40,6 +40,9 @@ jobs:
       - name: Install CLI dependencies
         run: npm install --ignore-scripts
 
+      - name: Audit npm runtime dependencies
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Validate npm package contents
         run: npm pack --dry-run
 
