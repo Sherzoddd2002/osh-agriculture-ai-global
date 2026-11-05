@@ -1,6 +1,6 @@
 import os
 import uuid
-from csv import DictWriter
+from csv import DictReader, DictWriter
 from pathlib import Path
 
 import pytest
@@ -138,12 +138,16 @@ def test_mapspam_import_is_idempotent_on_sqlite(tmp_path):
 
 def test_mapspam_pair_rejects_non_conserving_country_total(tmp_path):
     adm1_path, adm0_path = _write_pair(tmp_path)
-    lines = adm0_path.read_text(encoding="utf-8").splitlines()
+    with adm0_path.open("r", newline="", encoding="utf-8") as stream:
+        reader = DictReader(stream)
+        rows = list(reader)
+        fields = list(reader.fieldnames or [])
     # Increase the first national crop production without changing ADM1.
-    first = lines[1].split(",")
-    first[15] = "999999"
-    lines[1] = ",".join(first)
-    adm0_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    rows[0]["production_t"] = "999999"
+    with adm0_path.open("w", newline="", encoding="utf-8") as stream:
+        writer = DictWriter(stream, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(rows)
 
     with pytest.raises(ValueError, match="production_t"):
         read_and_validate_pair(adm1_path, adm0_path)
