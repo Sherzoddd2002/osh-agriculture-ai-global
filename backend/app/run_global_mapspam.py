@@ -134,6 +134,36 @@ def _load_boundary(client: httpx.Client, iso3: str, level: str, cache: Path):
             errors.append(f"github-gbOpen: {exc}")
 
     raise RuntimeError("; ".join(errors)[:1000] or "Boundary unavailable")
+def _checkpoint_key(level: str, iso3: str, zone_id: str) -> str:
+    """Use country keys for ADM0 and stable country/admin keys for ADM1."""
+    return iso3 if level == "ADM0" else f"{iso3}::{zone_id}"
+
+
+def _save_checkpoint(path: Path, completed: set[str]) -> None:
+    """Atomically persist completed countries/admin zones."""
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(
+        json.dumps(sorted(completed), indent=2),
+        encoding="utf-8",
+    )
+    temporary.replace(path)
+
+
+def _load_existing_result_keys(path: Path) -> set[tuple[str, str, str, str]]:
+    """Read output identities so interrupted CSV appends remain idempotent."""
+    keys: set[tuple[str, str, str, str]] = set()
+    if not path.is_file():
+        return keys
+    with path.open("r", newline="", encoding="utf-8-sig") as file:
+        for row in csv.DictReader(file):
+            keys.add((
+                row.get("country_iso3", ""),
+                row.get("admin_id", ""),
+                row.get("technology", ""),
+                row.get("crop_code", ""),
+            ))
+    return keys
+
 
 def _countries():
     values = []
@@ -169,6 +199,10 @@ def run(args):
     completed = set()
     if args.resume and completed_path.is_file():
         completed = set(json.loads(completed_path.read_text(encoding="utf-8")))
+    existing_result_keys = (
+        _load_existing_result_keys(summary_path)
+        if args.resume else set()
+    )
 
     result_fields = [
         "country_iso3", "country_name", "admin_level", "admin_name",
@@ -198,7 +232,7 @@ def run(args):
             error_writer.writeheader()
 
         for index, (iso3, country_name) in enumerate(countries, 1):
-            if iso3 in completed:
+            if level == "ADM0" and iso3 in completed:
                 print(f"[{index}/{len(countries)}] SKIP {iso3} (already complete)", flush=True)
                 continue
             print(f"[{index}/{len(countries)}] {iso3} {country_name}", flush=True)
@@ -241,13 +275,34 @@ def run(args):
                         })
 
                 metadata = boundary.get("metadata") or {}
+                completed_this_country = 0
                 for zone in zones:
+                    checkpoint_key = _checkpoint_key(level, iso3, str(zone["id"]))
+                    if checkpoint_key in completed:
+                        print(
+                            f"  SKIP {zone['name']} (already complete)",
+                            flush=True,
+                        )
+                        completed_this_country += 1
+                        continue
+
                     summaries = aggregate_mapspam_zone_all_crops(
                         zone["geometry"], data_dir, technology=args.technology
                     )
                     for item in summaries:
                         band = item["crop_band"]
                         crop_code, crop_name = MAPSPAM_CROPS[band - 1]
+                        result_key = (
+                            iso3,
+                            str(zone["id"]),
+                            item["technology"],
+                            crop_code,
+                        )
+                        # If a previous process stopped during a CSV append,
+                        # never duplicate rows already written for this zone.
+                        if result_key in existing_result_keys:
+                            continue
+
                         has_data = item["valid_cells"] > 0
                         writer.writerow({
                             "country_iso3": iso3,
@@ -272,14 +327,20 @@ def run(args):
                             "spatial_status": "ESTIMATED" if has_data else "NO_RASTER_CELLS",
                             "computed_at_utc": datetime.now(timezone.utc).isoformat(),
                         })
+                        existing_result_keys.add(result_key)
+
+                    # Flush before checkpointing: the checkpoint must never
+                    # claim a zone complete before its result rows are durable.
                     result_file.flush()
-                if level == "ADM0":
-                    completed.add(iso3)
-                    completed_path.write_text(
-                        json.dumps(sorted(completed), indent=2),
-                        encoding="utf-8",
-                    )
-                print(f"  PASS: {len(zones)} zone(s) x {len(MAPSPAM_CROPS)} crops", flush=True)
+                    completed.add(checkpoint_key)
+                    _save_checkpoint(completed_path, completed)
+                    completed_this_country += 1
+
+                print(
+                    f"  PASS: {completed_this_country}/{len(zones)} zone(s) complete "
+                    f"x {len(MAPSPAM_CROPS)} crops",
+                    flush=True,
+                )
             except Exception as exc:
                 error_writer.writerow({
                     "country_iso3": iso3,
@@ -295,7 +356,9 @@ def run(args):
     print(json.dumps({
         "level": level,
         "countries_requested": len(countries),
-        "countries_completed": len(completed),
+        "countries_completed": sum(1 for key in completed if "::" not in key),
+        "admin_zones_completed": sum(1 for key in completed if "::" in key),
+        "completed_units": len(completed),
         "results_csv": str(summary_path),
         "errors_csv": str(errors_path),
         "completed_checkpoint": str(completed_path),
@@ -312,7 +375,11 @@ def main():
     parser.add_argument("--technology", choices=["all", "irrigated", "rainfed"], default="all")
     parser.add_argument("--data-dir", default=str(default_global_data_dir()))
     parser.add_argument("--output-dir", default="data/global-results")
-    parser.add_argument("--resume", action="store_true", help="Skip completed ADM0 countries")
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Skip completed ADM0 countries or ADM1 zones; avoid duplicate CSV rows",
+    )
     run(parser.parse_args())
 
 
