@@ -21,6 +21,7 @@ from .services.boundaries import get_boundary_geojson
 from .services.nasa_power import fetch_daily_weather, aggregate_calendar_year_weather
 from .services.open_meteo import fetch_weather_forecast
 from .services.connectors import SOURCE_REGISTRY
+from .services.faostat_catalog import classify_faostat_item, item_type_label, CROP, AGGREGATE, PRODUCT_FORM
 from .ml.forecast import evaluate_and_predict
 
 app = FastAPI(title=settings.app_name, version="0.1.0", description="Global agricultural data integration and yield forecasting foundation")
@@ -484,18 +485,37 @@ def global_raster_mapspam_summary(
 
 
 @app.get("/api/v1/global-crops")
-def global_crops(db: Session = Depends(get_db)):
+def global_crops(item_type: str = "ALL", db: Session = Depends(get_db)):
+    requested_type = item_type.strip().upper()
+    if requested_type not in {"ALL", CROP, AGGREGATE, PRODUCT_FORM}:
+        raise HTTPException(422, "item_type ALL, CROP, AGGREGATE yoki PRODUCT_FORM bo‘lishi kerak")
     rows = db.execute(text("""
-        SELECT crop_code, MIN(crop_name) AS crop_name,
+        SELECT crop_code, item_code, MIN(crop_name) AS crop_name,
                COUNT(*) AS observations, MIN(year) AS first_year,
                MAX(year) AS last_year,
                COUNT(DISTINCT country_iso3) AS countries
         FROM global_crop_statistics
-        GROUP BY crop_code
+        WHERE source_code = 'FAOSTAT_QCL'
+        GROUP BY crop_code, item_code
         ORDER BY crop_name, crop_code
     """)).mappings().all()
-    return {"source": "FAOSTAT QCL", "loaded": bool(rows), "crop_count": len(rows),
-            "crops": [dict(x) for x in rows]}
+    items = []
+    for row in rows:
+        item = dict(row)
+        item["item_type"] = classify_faostat_item(item["item_code"], item["crop_name"])
+        item["item_type_label"] = item_type_label(item["item_type"])
+        if requested_type == "ALL" or item["item_type"] == requested_type:
+            items.append(item)
+    counts = {kind: sum(x["item_type"] == kind for x in items) for kind in (CROP, AGGREGATE, PRODUCT_FORM)}
+    return {
+        "source": "FAOSTAT QCL",
+        "loaded": bool(items),
+        "crop_count": counts[CROP],
+        "total_item_count": len(items),
+        "item_type_filter": requested_type,
+        "item_type_counts": counts,
+        "crops": items,
+    }
 
 
 @app.get("/api/v1/global-crops/countries")
