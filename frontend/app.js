@@ -71,14 +71,14 @@ async function loadGlobalCropCatalog(){
     const [catalog,countries]=await Promise.all([api('/global-crops'),api('/global-crops/countries')]);
     const cropSelect=$('global-crop');
     const countrySelect=$('global-country');
-    cropSelect.innerHTML=(catalog.crops||[]).map(x=>\`<option value="\${escapeHtml(x.crop_code)}">\${escapeHtml(x.crop_name)} · \${escapeHtml(x.crop_code)}</option>\`).join('');
-    countrySelect.innerHTML=(countries.countries||[]).map(x=>\`<option value="\${escapeHtml(x.country_iso3)}">\${escapeHtml(x.area_name)} · \${escapeHtml(x.country_iso3)}</option>\`).join('');
+    cropSelect.innerHTML=(catalog.crops||[]).map(x=>`<option value="${escapeHtml(x.crop_code)}">${escapeHtml(x.crop_name)} · ${escapeHtml(x.crop_code)}</option>`).join('');
+    countrySelect.innerHTML=(countries.countries||[]).map(x=>`<option value="${escapeHtml(x.country_iso3)}">${escapeHtml(x.area_name)} · ${escapeHtml(x.country_iso3)}</option>`).join('');
     $('global-start-year').value='1961';
     $('global-end-year').value='2024';
     globalCropCatalogLoaded=true;
-    toast(status,\`FAOSTAT katalogi tayyor · \${(catalog.crops||[]).length} ta ekin/ekin mahsuloti · \${(countries.countries||[]).length} ta mamlakat/hudud\`);
+    toast(status,`FAOSTAT katalogi tayyor · ${(catalog.crops||[]).length} ta ekin/ekin mahsuloti · ${(countries.countries||[]).length} ta mamlakat/hudud`);
     if(cropSelect.value&&countrySelect.value)await loadGlobalSeries();
-  }catch(e){toast(status,\`FAOSTAT katalogi yuklanmadi: \${e.message}\`);}
+  }catch(e){toast(status,`FAOSTAT katalogi yuklanmadi: ${e.message}`);}
 }
 
 async function loadGlobalSeries(){
@@ -92,16 +92,16 @@ async function loadGlobalSeries(){
   toast(status,'Tarixiy qator olinmoqda…');
   $('global-prediction-result').textContent='';
   try{
-    const data=await api(\`/global-crops/series/\${encodeURIComponent(country)}/\${encodeURIComponent(crop)}?start_year=\${start}&end_year=\${end}\`);
+    const data=await api(`/global-crops/series/${encodeURIComponent(country)}/${encodeURIComponent(crop)}?start_year=${start}&end_year=${end}`);
     const rows=data.series||[];
     $('global-crop-summary').innerHTML=[
       ['Mavjud yillar',rows.length],
       ['Birinchi yil',rows.length?rows[0].year:'—'],
       ['Oxirgi yil',rows.length?rows[rows.length-1].year:'—'],
       ['Manba','FAOSTAT QCL']
-    ].map(([label,value])=>\`<article class="kpi-card"><small>\${escapeHtml(label)}</small><strong>\${escapeHtml(value)}</strong></article>\`).join('');
-    $('global-crop-table').innerHTML=rows.length?\`<table><thead><tr><th>Yil</th><th>Hosil maydoni (ha)</th><th>Ishlab chiqarish (t)</th><th>Hosildorlik (t/ha)</th><th>Flag</th></tr></thead><tbody>\${rows.map(row=>\`<tr><td>\${row.year}</td><td>\${fmt(row.harvested_area_ha,0)}</td><td>\${fmt(row.production_t,0)}</td><td>\${fmt(row.yield_t_ha,3)}</td><td>\${escapeHtml([row.area_flag,row.production_flag,row.yield_flag].filter(Boolean).join(' / ')||'—')}</td></tr>\`).join('')}</tbody></table>\`:'<div class="empty-state">Tanlangan mamlakat va ekin uchun shu davrda mos kuzatuv topilmadi.</div>';
-    toast(status,\`Tarixiy ma’lumot tayyor · \${country} · \${crop} · \${rows.length} yillik yozuv · FAOSTAT\`);
+    ].map(([label,value])=>`<article class="kpi-card"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></article>`).join('');
+    $('global-crop-table').innerHTML=rows.length?`<table><thead><tr><th>Yil</th><th>Hosil maydoni (ha)</th><th>Ishlab chiqarish (t)</th><th>Hosildorlik (t/ha)</th><th>Flag</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${row.year}</td><td>${fmt(row.harvested_area_ha,0)}</td><td>${fmt(row.production_t,0)}</td><td>${fmt(row.yield_t_ha,3)}</td><td>${escapeHtml([row.area_flag,row.production_flag,row.yield_flag].filter(Boolean).join(' / ')||'—')}</td></tr>`).join('')}</tbody></table>`:'<div class="empty-state">Tanlangan mamlakat va ekin uchun shu davrda mos kuzatuv topilmadi.</div>';
+    toast(status,`Tarixiy ma’lumot tayyor · ${country} · ${crop} · ${rows.length} yillik yozuv · FAOSTAT`);
   }catch(e){toast(status,e.message);}
 }
 
@@ -115,7 +115,7 @@ async function runGlobalYieldForecast(){
   result.textContent='Tarixiy trend ssenariysi hisoblanmoqda…';
   try{
     const r=await api('/global-predictions/yield',{method:'POST',headers:authHeaders(),body:JSON.stringify({country_iso3:country,crop_code:crop,target_year:target+1})});
-    result.innerHTML=\`<div class="notice"><b>\${escapeHtml(r.prediction_type)}</b><p>Maqsadli yil: \${r.target_year} · Prognoz ssenariysi: <b>\${fmt(r.predicted_yield_t_ha,3)} t/ha</b></p><p>Oxirgi kuzatilgan yil: \${r.last_observed_year} · Mamlakat qatori: \${r.country_observed_years} yil · Global qator: \${r.global_observed_years} yil</p><p>OOF MAE: \${fmt(r.oof_mae_t_ha,3)} t/ha · Persistence MAE: \${fmt(r.persistence_oof_mae_t_ha,3)} t/ha · \${escapeHtml(r.beats_persistence?'Persistence’dan yaxshi':'Persistence’dan yaxshi emas')}</p><p>\${escapeHtml(r.limitations||'')}</p><small>Bu baseline trend ssenariysi, tasdiqlangan global hosil prognozi emas.</small></div>\`;
+    result.innerHTML=`<div class="notice"><b>${escapeHtml(r.prediction_type)}</b><p>Maqsadli yil: ${r.target_year} · Prognoz ssenariysi: <b>${fmt(r.predicted_yield_t_ha,3)} t/ha</b></p><p>Oxirgi kuzatilgan yil: ${r.last_observed_year} · Mamlakat qatori: ${r.country_observed_years} yil · Global qator: ${r.global_observed_years} yil</p><p>OOF MAE: ${fmt(r.oof_mae_t_ha,3)} t/ha · Persistence MAE: ${fmt(r.persistence_oof_mae_t_ha,3)} t/ha · ${escapeHtml(r.beats_persistence?'Persistence’dan yaxshi':'Persistence’dan yaxshi emas')}</p><p>${escapeHtml(r.limitations||'')}</p><small>Bu baseline trend ssenariysi, tasdiqlangan global hosil prognozi emas.</small></div>`;
   }catch(e){result.textContent=e.message;}
 }
 
