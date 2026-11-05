@@ -1,0 +1,84 @@
+name: MAPSPAM ADM1 integration smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "backend/app/run_global_mapspam.py"
+      - "backend/app/services/global_raster_batch.py"
+      - "backend/app/services/global_raster_catalog.py"
+      - "backend/app/services/boundaries.py"
+      - "backend/app/sync_global_rasters.py"
+      - "scripts/verify_uzb_adm1_mapspam.py"
+      - ".github/workflows/mapspam-adm1-integration.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/app/run_global_mapspam.py"
+      - "backend/app/services/global_raster_batch.py"
+      - "backend/app/services/global_raster_catalog.py"
+      - "backend/app/services/boundaries.py"
+      - "backend/app/sync_global_rasters.py"
+      - "scripts/verify_uzb_adm1_mapspam.py"
+      - ".github/workflows/mapspam-adm1-integration.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  uzb-adm1-mapspam:
+    name: Real MAPSPAM UZB ADM1 integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONPATH: backend
+      MAPSPAM_DATA_DIR: .ci-mapspam-data
+      MAPSPAM_OUTPUT_DIR: .ci-mapspam-output
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install raster and backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Download and validate official MAPSPAM core rasters
+        run: |
+          python -m app.sync_global_rasters \
+            --dataset mapspam \
+            --data-dir "$MAPSPAM_DATA_DIR"
+
+      - name: Calculate all crops for Uzbekistan ADM1 zones
+        run: |
+          python -m app.run_global_mapspam \
+            --level ADM1 \
+            --countries UZB \
+            --technology all \
+            --data-dir "$MAPSPAM_DATA_DIR" \
+            --output-dir "$MAPSPAM_OUTPUT_DIR" \
+            --resume
+
+      - name: Verify 14 zones x 46 crops output
+        run: |
+          python scripts/verify_uzb_adm1_mapspam.py \
+            "$MAPSPAM_OUTPUT_DIR/mapspam_2020_adm1.csv" \
+            "$MAPSPAM_OUTPUT_DIR/mapspam_2020_adm1_errors.csv"
+
+      - name: Upload real-data integration results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uzb-adm1-mapspam-results
+          if-no-files-found: ignore
+          path: |
+            .ci-mapspam-output/mapspam_2020_adm1.csv
+            .ci-mapspam-output/mapspam_2020_adm1_errors.csv
+            .ci-mapspam-output/mapspam_2020_adm1_completed.json
