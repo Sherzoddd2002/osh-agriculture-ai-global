@@ -1,6 +1,6 @@
 {
   "name": "osh-agriculture-ai-global",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "One-command installer and launcher for OSH Agriculture AI Global",
   "type": "module",
   "bin": {
@@ -8,13 +8,11 @@
   },
   "files": [
     "bin/cli.js",
+    "bin/safe_extract_zip.py",
     "README_INSTALLER.md"
   ],
   "engines": {
     "node": ">=20"
-  },
-  "dependencies": {
-    "extract-zip": "^2.0.1"
   },
   "license": "MIT",
   "repository": {
