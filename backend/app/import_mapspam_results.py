@@ -116,6 +116,8 @@ def _read_level(path: str | Path, expected_level: str) -> list[dict[str, Any]]:
             if not re.fullmatch(r"[A-Z]{3}", country):
                 raise ValueError(f"{identity}: invalid ISO3 country code {country!r}")
             level = _required_text(raw, "admin_level", identity).upper()
+            if level not in {"ADM0", "ADM1", "ADM2", "ADM3", "ADM4"}:
+                raise ValueError(f"{identity}: unsupported admin level {level!r}")
             if level != expected_level:
                 raise ValueError(
                     f"{identity}: expected {expected_level}, received {level}"
@@ -148,6 +150,27 @@ def _read_level(path: str | Path, expected_level: str) -> list[dict[str, Any]]:
 
             admin_id = _required_text(raw, "admin_id", identity)
             admin_name = _required_text(raw, "admin_name", identity)
+            parent_admin_level = (raw.get("parent_admin_level") or "").strip().upper() or None
+            parent_admin_id = (raw.get("parent_admin_id") or "").strip() or None
+            if level == "ADM0":
+                parent_admin_level = None
+                parent_admin_id = None
+            elif level == "ADM1":
+                # Legacy ADM1 output predates explicit parent columns; its
+                # parent is the country-level ADM0 feature.
+                if parent_admin_level not in {None, "ADM0"}:
+                    raise ValueError(f"{identity}: ADM1 parent level must be ADM0")
+                parent_admin_level = "ADM0"
+                parent_admin_id = parent_admin_id or country
+                if parent_admin_id != country:
+                    raise ValueError(f"{identity}: ADM1 parent must be country {country}")
+            else:
+                expected_parent = f"ADM{int(level[-1]) - 1}"
+                if parent_admin_level != expected_parent or not parent_admin_id:
+                    raise ValueError(
+                        f"{identity}: {level} requires parent_admin_level={expected_parent} "
+                        "and a non-empty parent_admin_id"
+                    )
             spatial_status = _required_text(raw, "spatial_status", identity)
             valid_cells = int(_number(raw, "valid_cells", identity, integer=True))
             if spatial_status not in {"ESTIMATED", "NO_RASTER_CELLS"}:
@@ -166,6 +189,8 @@ def _read_level(path: str | Path, expected_level: str) -> list[dict[str, Any]]:
                 "admin_level": level,
                 "admin_name": admin_name,
                 "admin_id": admin_id,
+                "parent_admin_level": parent_admin_level,
+                "parent_admin_id": parent_admin_id,
                 "boundary_source": (raw.get("boundary_source") or "").strip() or None,
                 "boundary_year": (
                     int(_number(raw, "boundary_year", identity, integer=True))
