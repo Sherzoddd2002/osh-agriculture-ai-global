@@ -66,6 +66,31 @@ def test_child_polygon_uses_largest_intersection_when_boundaries_do_not_nest():
     assert runner._assign_parent_id(child, parents) == "P1"
 
 
+def test_child_outside_parent_uses_limited_nearest_parent_fallback():
+    parents = [{
+        "id": "UZB-ADM1-01",
+        "_shape": runner.shape(_polygon(0, 0, 1, 1)),
+    }]
+    child = _polygon(1.01, 0.2, 1.02, 0.3)
+
+    assert runner._assign_parent_id(child, parents) == "UZB-ADM1-01"
+
+
+def test_child_far_from_all_parents_is_rejected():
+    parents = [{
+        "id": "UZB-ADM1-01",
+        "_shape": runner.shape(_polygon(0, 0, 1, 1)),
+    }]
+    child = _polygon(2, 2, 2.1, 2.1)
+
+    try:
+        runner._assign_parent_id(child, parents)
+    except ValueError as exc:
+        assert "outside the limited snap tolerance" in str(exc)
+    else:
+        raise AssertionError("A remote child polygon was assigned to a parent")
+
+
 def test_adm2_runner_writes_parent_lineage_and_resumes(monkeypatch, tmp_path):
     output = tmp_path / "results"
     boundaries = {
