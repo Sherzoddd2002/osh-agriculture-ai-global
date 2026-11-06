@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths:
       - "backend/app/run_global_mapspam.py"
+      - "backend/app/run_global_mapspam_hierarchy.py"
+      - "backend/app/import_mapspam_hierarchy.py"
       - "backend/app/services/global_raster_batch.py"
       - "backend/app/services/global_raster_catalog.py"
       - "backend/app/services/boundaries.py"
@@ -21,6 +23,8 @@ on:
     branches: [main]
     paths:
       - "backend/app/run_global_mapspam.py"
+      - "backend/app/run_global_mapspam_hierarchy.py"
+      - "backend/app/import_mapspam_hierarchy.py"
       - "backend/app/services/global_raster_batch.py"
       - "backend/app/services/global_raster_catalog.py"
       - "backend/app/services/boundaries.py"
