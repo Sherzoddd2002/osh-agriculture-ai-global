@@ -50,6 +50,7 @@ jobs:
         run: |
           node --check bin/cli.js
           node --check frontend/app.js
+          node --check frontend/i18n.js
           node bin/cli.js --help
 
       - name: Validate central PowerShell scripts
