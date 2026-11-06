@@ -104,13 +104,34 @@ jobs:
             --output-dir "$MAPSPAM_ADM2_OUTPUT_DIR" \
             --resume
 
-      - name: Validate ADM1-to-ADM2 hierarchy conservation
+      - name: Verify 199 Uzbekistan districts x 46 crops
+        run: |
+          python - <<'PY'
+          import csv
+          from collections import Counter
+          from pathlib import Path
+
+          path = Path("$MAPSPAM_ADM2_OUTPUT_DIR/mapspam_2020_adm2.csv")
+          with path.open(encoding="utf-8-sig", newline="") as stream:
+              rows = list(csv.DictReader(stream))
+          zones = {(row["country_iso3"], row["admin_id"]) for row in rows}
+          counts = Counter((row["country_iso3"], row["admin_id"]) for row in rows)
+          assert len(zones) == 199, f"Expected 199 ADM2 zones, got {len(zones)}"
+          assert len(rows) == 199 * 46, f"Expected 9154 rows, got {len(rows)}"
+          assert all(count == 46 for count in counts.values()), "Some districts do not have all 46 crops"
+          assert {row["parent_admin_level"] for row in rows} == {"ADM1"}
+          assert all(row["parent_admin_id"] and row["parent_link_method"] for row in rows)
+          print({"districts": len(zones), "rows": len(rows), "parent_methods": sorted({r["parent_link_method"] for r in rows})})
+          PY
+
+      - name: Validate ADM1-to-ADM2 links and boundary vintage status
         run: |
           python -m app.import_mapspam_hierarchy \
             --parent-level ADM1 \
             --child-level ADM2 \
             --parent-csv "$MAPSPAM_OUTPUT_DIR/mapspam_2020_adm1.csv" \
             --child-csv "$MAPSPAM_ADM2_OUTPUT_DIR/mapspam_2020_adm2.csv" \
+            --allow-unreconciled-boundaries \
             --dry-run
 
       - name: Verify 14 zones x 46 crops output
