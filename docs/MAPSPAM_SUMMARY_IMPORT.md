@@ -106,6 +106,53 @@ catalog. Keep the generated `*_errors.csv` files and completed checkpoints:
 work. A partial import is never implicit; the flag must be supplied explicitly,
 and the validation report lists every skipped country/technology group.
 
+## 5. Deeper administrative levels (ADM2–ADM4)
+
+The stable `run_global_mapspam` command remains dedicated to ADM0/ADM1.
+For deeper zones, use the separate parent-linked runner. It fetches the requested
+level and its immediate parent boundary, assigns each child polygon to the
+parent covering its representative point (or, when boundary versions do not
+nest perfectly, the parent with the largest positive overlap), and writes
+`parent_admin_level` and `parent_admin_id` into every child row.
+
+Example:
+
+    $Output = "$Base\global-data\mapspam-2020-v2r2\results\global-all-countries"
+
+    & $Python -m app.run_global_mapspam_hierarchy --level ADM2 --countries UZB,KAZ,TUR --technology all --data-dir "$Base\global-data" --output-dir $Output --resume
+    & $Python -m app.run_global_mapspam_hierarchy --level ADM3 --countries UZB,KAZ,TUR --technology all --data-dir "$Base\global-data" --output-dir $Output --resume
+    & $Python -m app.run_global_mapspam_hierarchy --level ADM4 --countries UZB,KAZ,TUR --technology all --data-dir "$Base\global-data" --output-dir $Output --resume
+
+Run only levels whose parent/child boundaries are available. A country may
+legitimately have ADM0/ADM1 but no ADM3 or ADM4. Child zones without a valid
+parent link are rejected for that country and recorded in the level-specific
+error file. The runner does not fabricate administrative units.
+
+Validate and import one adjacent pair at a time:
+
+    # Existing ADM0 -> ADM1 importer remains supported.
+    & $Python -m app.import_mapspam_results --adm1-csv "$Output\mapspam_2020_adm1.csv" --adm0-csv "$Output\mapspam_2020_adm0.csv" --allow-partial-countries --dry-run
+
+    # ADM1 -> ADM2; repeat for ADM2 -> ADM3 and ADM3 -> ADM4.
+    & $Python -m app.import_mapspam_hierarchy --parent-level ADM1 --child-level ADM2 --parent-csv "$Output\mapspam_2020_adm1.csv" --child-csv "$Output\mapspam_2020_adm2.csv" --allow-partial-countries --dry-run
+
+Remove `--dry-run` only after reviewing the PASS/PARTIAL report. The importer
+checks all 46 crops per parent and child zone, explicit parent IDs, and
+child-to-parent conservation for physical area, harvested area, production,
+and harvested-area-weighted yield. Previously imported parent rows are
+upserted by the existing unique identity, not duplicated.
+
+The schema adds nullable `parent_admin_level` and `parent_admin_id` columns.
+Existing ADM0/ADM1 rows remain compatible; legacy ADM1 rows infer their parent
+as the country ADM0 identifier. Existing installations receive additive
+columns on startup without deleting or rewriting existing summary rows.
+
+ADM2–ADM4 summaries remain MAPSPAM 2020 spatial estimates. Smaller polygons can
+have `NO_RASTER_CELLS`; this status must remain NULL yield, never a zero-yield
+observation. Administrative boundaries and MAPSPAM raster resolution limit
+the reliability of very small zones. These outputs are geographic summaries,
+not proof of district-level historical observations.
+
 ## Interpretation and null handling
 
 The stored rows remain MAPSPAM 2020 gridded estimates, not current-year
