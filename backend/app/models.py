@@ -167,6 +167,8 @@ class GlobalRasterSummary(Base):
     admin_level: Mapped[str] = mapped_column(String(8), index=True)
     admin_name: Mapped[str] = mapped_column(String(250))
     admin_id: Mapped[str] = mapped_column(String(250))
+    parent_admin_level: Mapped[str | None] = mapped_column(String(8), nullable=True, index=True)
+    parent_admin_id: Mapped[str | None] = mapped_column(String(250), nullable=True, index=True)
     boundary_source: Mapped[str | None] = mapped_column(String(80), nullable=True)
     boundary_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
     source_year: Mapped[int] = mapped_column(Integer, index=True)
