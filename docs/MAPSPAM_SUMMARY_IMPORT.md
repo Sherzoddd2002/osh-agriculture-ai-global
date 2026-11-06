@@ -134,7 +134,7 @@ Validate and import one adjacent pair at a time:
     & $Python -m app.import_mapspam_results --adm1-csv "$Output\mapspam_2020_adm1.csv" --adm0-csv "$Output\mapspam_2020_adm0.csv" --allow-partial-countries --dry-run
 
     # ADM1 -> ADM2; repeat for ADM2 -> ADM3 and ADM3 -> ADM4.
-    & $Python -m app.import_mapspam_hierarchy --parent-level ADM1 --child-level ADM2 --parent-csv "$Output\mapspam_2020_adm1.csv" --child-csv "$Output\mapspam_2020_adm2.csv" --allow-partial-countries --dry-run
+    & $Python -m app.import_mapspam_hierarchy --parent-level ADM1 --child-level ADM2 --parent-csv "$Output\mapspam_2020_adm1.csv" --child-csv "$Output\mapspam_2020_adm2.csv" --allow-partial-countries --allow-unreconciled-boundaries --dry-run
 
 Remove `--dry-run` only after reviewing the PASS/PARTIAL report. The importer
 checks all 46 crops per parent and child zone, explicit parent IDs, and
