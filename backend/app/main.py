@@ -490,6 +490,7 @@ def list_global_raster_summaries(
     country_iso3: Optional[str] = None,
     admin_level: Optional[str] = None,
     admin_id: Optional[str] = None,
+    parent_admin_id: Optional[str] = None,
     crop_code: Optional[str] = None,
     source_year: Optional[int] = None,
     technology: Optional[str] = None,
@@ -512,11 +513,13 @@ def list_global_raster_summaries(
         conditions.append(GlobalRasterSummary.country_iso3 == country)
     if admin_level:
         level = admin_level.strip().upper()
-        if level not in {"ADM0", "ADM1"}:
-            raise HTTPException(422, "admin_level ADM0 yoki ADM1 bo‘lishi kerak")
+        if level not in {"ADM0", "ADM1", "ADM2", "ADM3", "ADM4"}:
+            raise HTTPException(422, "admin_level ADM0–ADM4 oralig‘ida bo‘lishi kerak")
         conditions.append(GlobalRasterSummary.admin_level == level)
     if admin_id:
         conditions.append(GlobalRasterSummary.admin_id == admin_id.strip())
+    if parent_admin_id:
+        conditions.append(GlobalRasterSummary.parent_admin_id == parent_admin_id.strip())
     if crop_code:
         crop = crop_code.strip().lower()
         from .services.global_raster_catalog import MAPSPAM_CROPS
@@ -564,6 +567,8 @@ def list_global_raster_summaries(
                 "admin_level": row.admin_level,
                 "admin_name": row.admin_name,
                 "admin_id": row.admin_id,
+                "parent_admin_level": row.parent_admin_level,
+                "parent_admin_id": row.parent_admin_id,
                 "boundary_source": row.boundary_source,
                 "boundary_year": row.boundary_year,
                 "source_year": row.source_year,
