@@ -110,10 +110,10 @@ and the validation report lists every skipped country/technology group.
 
 The stable `run_global_mapspam` command remains dedicated to ADM0/ADM1.
 For deeper zones, use the separate parent-linked runner. It fetches the requested
-level and its immediate parent boundary, assigns each child polygon to the
-parent covering its representative point (or, when boundary versions do not
-nest perfectly, the parent with the largest positive overlap), and writes
-`parent_admin_level` and `parent_admin_id` into every child row.
+level and its immediate parent boundary, assigns each child polygon by point
+containment, maximum polygon overlap, or a bounded nearest-parent fallback, and
+writes parent IDs, boundary source/year, link method, and link distance into
+every child row.
 
 Example:
 
@@ -136,16 +136,25 @@ Validate and import one adjacent pair at a time:
     # ADM1 -> ADM2; repeat for ADM2 -> ADM3 and ADM3 -> ADM4.
     & $Python -m app.import_mapspam_hierarchy --parent-level ADM1 --child-level ADM2 --parent-csv "$Output\mapspam_2020_adm1.csv" --child-csv "$Output\mapspam_2020_adm2.csv" --allow-partial-countries --allow-unreconciled-boundaries --dry-run
 
-Remove `--dry-run` only after reviewing the PASS/PARTIAL report. The importer
-checks all 46 crops per parent and child zone, explicit parent IDs, and
-child-to-parent conservation for physical area, harvested area, production,
-and harvested-area-weighted yield. Previously imported parent rows are
-upserted by the existing unique identity, not duplicated.
+Remove `--dry-run` only after reviewing the report. For matching known
+boundary vintages, the importer checks all 46 crops per parent and child zone
+and requires conservation of physical area, harvested area, production, and
+harvested-area-weighted yield. If boundary vintages differ or are unknown,
+the importer rejects the pair by default. The explicit
+`--allow-unreconciled-boundaries` option accepts complete parent-linked
+summaries without claiming cross-level conservation. Rows are marked
+`BOUNDARY_VINTAGE_MISMATCH_NOT_RECONCILED` or
+`BOUNDARY_VINTAGE_UNKNOWN_NOT_RECONCILED`; do not sum these child rows and
+present them as exact replacements for the parent total. Partial mode accepts
+only complete 46-crop child zones linked to a parent and reports rejected
+parent groups. Previously imported parent rows are upserted by the existing
+unique identity, not duplicated.
 
-The schema adds nullable `parent_admin_level` and `parent_admin_id` columns.
-Existing ADM0/ADM1 rows remain compatible; legacy ADM1 rows infer their parent
-as the country ADM0 identifier. Existing installations receive additive
-columns on startup without deleting or rewriting existing summary rows.
+The schema adds nullable parent identity/source/year and link provenance
+columns, plus `hierarchy_validation_status`. Existing ADM0/ADM1 rows remain
+compatible; legacy ADM1 rows infer their parent as the country ADM0 identifier.
+Existing installations receive additive columns on startup without deleting
+or rewriting existing summary rows.
 
 ADM2–ADM4 summaries remain MAPSPAM 2020 spatial estimates. Smaller polygons can
 have `NO_RASTER_CELLS`; this status must remain NULL yield, never a zero-yield
