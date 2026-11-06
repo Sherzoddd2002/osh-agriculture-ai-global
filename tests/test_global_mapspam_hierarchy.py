@@ -1,6 +1,8 @@
 import csv
 import json
 from pathlib import Path
+
+import pytest
 from types import SimpleNamespace
 
 from backend.app import run_global_mapspam_hierarchy as runner
@@ -183,10 +185,10 @@ def _row(country, level, admin_id, parent_level, parent_id, band, crop_code, cro
         "admin_id": admin_id,
         "parent_admin_level": parent_level or "",
         "parent_admin_id": parent_id or "",
-        "parent_boundary_source": "gbOpen" if level == "ADM2" else "",
-        "parent_boundary_year": "2021" if level == "ADM2" else "",
-        "parent_link_method": "POINT_CONTAINMENT" if level == "ADM2" else "",
-        "parent_link_distance_deg": "0" if level == "ADM2" else "",
+        "parent_boundary_source": "gbOpen" if level in {"ADM2", "ADM3", "ADM4"} else "",
+        "parent_boundary_year": "2021" if level in {"ADM2", "ADM3", "ADM4"} else "",
+        "parent_link_method": "POINT_CONTAINMENT" if level in {"ADM2", "ADM3", "ADM4"} else "",
+        "parent_link_distance_deg": "0" if level in {"ADM2", "ADM3", "ADM4"} else "",
         "boundary_source": "gbOpen",
         "boundary_year": "2021",
         "dataset_id": "mapspam-2020-v2r2",
@@ -236,6 +238,59 @@ def test_adjacent_level_validation_checks_all_children_against_parent(tmp_path):
 
     assert report["status"] == "PASS"
     assert report["countries_passed"] == ["UZB"]
+    assert report["child_rows"] == 2 * len(MAPSPAM_CROPS)
+    assert len(accepted) == 3 * len(MAPSPAM_CROPS)
+
+
+@pytest.mark.parametrize(
+    ("parent_level", "child_level"),
+    [("ADM2", "ADM3"), ("ADM3", "ADM4")],
+)
+def test_importer_supports_adm3_and_adm4_adjacent_levels(
+    tmp_path, parent_level, child_level
+):
+    parent_path = tmp_path / f"{parent_level.lower()}.csv"
+    child_path = tmp_path / f"{child_level.lower()}.csv"
+    parent_rows = []
+    child_rows = []
+    parent_id = f"UZB-{parent_level}-P1"
+    parent_parent_level = f"ADM{int(parent_level[-1]) - 1}"
+
+    for band, (crop_code, crop_name) in enumerate(MAPSPAM_CROPS, 1):
+        no_cells = band == len(MAPSPAM_CROPS)
+        child_values = (0, 0, 0, None, 0) if no_cells else (50, 40, 80, 2, 1)
+        parent_values = (0, 0, 0, None, 0) if no_cells else (100, 80, 160, 2, 2)
+        parent_rows.append(
+            _row(
+                "UZB", parent_level, parent_id, parent_parent_level,
+                f"UZB-{parent_parent_level}-P0",
+                band, crop_code, crop_name, parent_values,
+            )
+        )
+        for index in (1, 2):
+            child_rows.append(
+                _row(
+                    "UZB", child_level, f"UZB-{child_level}-C{index}",
+                    parent_level, parent_id, band, crop_code, crop_name,
+                    child_values,
+                )
+            )
+
+    for file_path, rows in ((parent_path, parent_rows), (child_path, child_rows)):
+        with file_path.open("w", newline="", encoding="utf-8") as stream:
+            writer = csv.DictWriter(stream, fieldnames=CSV_FIELDS)
+            writer.writeheader()
+            writer.writerows(rows)
+
+    parents = _read_level(parent_path, parent_level)
+    children = _read_level(child_path, child_level)
+    accepted, report = validate_adjacent_levels(
+        parents, children, parent_level, child_level
+    )
+
+    assert report["status"] == "PASS"
+    assert report["parent_level"] == parent_level
+    assert report["child_level"] == child_level
     assert report["child_rows"] == 2 * len(MAPSPAM_CROPS)
     assert len(accepted) == 3 * len(MAPSPAM_CROPS)
 
