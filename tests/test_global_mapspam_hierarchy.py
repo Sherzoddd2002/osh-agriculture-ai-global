@@ -203,7 +203,7 @@ def test_adjacent_level_validation_checks_all_children_against_parent(tmp_path):
 
     assert report["status"] == "PASS"
     assert report["countries_passed"] == ["UZB"]
-      assert report["child_rows"] == 2 * len(MAPSPAM_CROPS)
+    assert report["child_rows"] == 2 * len(MAPSPAM_CROPS)
     assert len(accepted) == 3 * len(MAPSPAM_CROPS)
 
 
