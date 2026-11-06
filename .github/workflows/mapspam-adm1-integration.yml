@@ -1,4 +1,4 @@
-name: MAPSPAM ADM1 integration smoke
+name: MAPSPAM ADM hierarchy integration smoke
 
 on:
   workflow_dispatch:
@@ -15,7 +15,6 @@ on:
       - "scripts/verify_uzb_adm1_mapspam.py"
       - "scripts/verify_uzb_adm1_vs_adm0.py"
       - "backend/app/models.py"
-      - "backend/app/db.py"
       - "backend/app/db.py"
       - "backend/app/main.py"
       - "backend/app/import_mapspam_results.py"
@@ -34,6 +33,7 @@ on:
       - "scripts/verify_uzb_adm1_mapspam.py"
       - "scripts/verify_uzb_adm1_vs_adm0.py"
       - "backend/app/models.py"
+      - "backend/app/db.py"
       - "backend/app/main.py"
       - "backend/app/import_mapspam_results.py"
       - "tests/test_global_raster_import.py"
@@ -44,7 +44,7 @@ permissions:
 
 jobs:
   uzb-adm1-mapspam:
-    name: Real MAPSPAM UZB ADM1 integration
+    name: Real MAPSPAM UZB ADM1-ADM2 integration
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -136,7 +136,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: uzb-adm1-mapspam-results
+          name: uzb-adm1-adm2-mapspam-results
           if-no-files-found: ignore
           path: |
             .ci-mapspam-output/mapspam_2020_adm1.csv
