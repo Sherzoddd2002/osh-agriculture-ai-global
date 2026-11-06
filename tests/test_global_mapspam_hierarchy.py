@@ -202,8 +202,8 @@ def test_adjacent_level_validation_checks_all_children_against_parent(tmp_path):
     accepted, report = validate_adjacent_levels(parents, children, "ADM1", "ADM2")
 
     assert report["status"] == "PASS"
-    assert report["parent_zone_count"] if "parent_zone_count" in report else report["countries_passed"] == ["UZB"]
-    assert report["child_rows"] == 2 * len(MAPSPAM_CROPS)
+    assert report["countries_passed"] == ["UZB"]
+      assert report["child_rows"] == 2 * len(MAPSPAM_CROPS)
     assert len(accepted) == 3 * len(MAPSPAM_CROPS)
 
 
