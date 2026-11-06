@@ -97,12 +97,11 @@ def _boundary_zones(boundary: dict[str, Any], iso3: str, level: str) -> list[dic
     return zones
 
 
-def _assign_parent_id(child_geometry: dict[str, Any], parent_zones: list[dict[str, Any]]) -> str:
-    """Link a child polygon to the parent covering its representative point.
-
-    If boundaries do not nest perfectly, use the parent with the largest
-    positive intersection area. A child with no spatial parent is rejected.
-    """
+def _assign_parent_details(
+    child_geometry: dict[str, Any],
+    parent_zones: list[dict[str, Any]],
+) -> tuple[str, str, float]:
+    """Link a child polygon and retain how strong the spatial match was."""
     child = shape(child_geometry)
     if child.is_empty or not child.is_valid:
         raise ValueError("Child geometry is empty or invalid")
@@ -112,14 +111,16 @@ def _assign_parent_id(child_geometry: dict[str, Any], parent_zones: list[dict[st
         if parent["_shape"].covers(point)
     ]
     if len(containing) == 1:
-        return containing[0]["id"]
+        distance = child.distance(containing[0]["_shape"])
+        return containing[0]["id"], "POINT_CONTAINMENT", float(distance)
     if len(containing) > 1:
         # Resolve overlaps deterministically using the greatest child overlap.
         containing.sort(
             key=lambda parent: child.intersection(parent["_shape"]).area,
             reverse=True,
         )
-        return containing[0]["id"]
+        distance = child.distance(containing[0]["_shape"])
+        return containing[0]["id"], "OVERLAPPING_CONTAINMENT", float(distance)
 
     overlaps = [
         (child.intersection(parent["_shape"]).area, parent["id"])
@@ -129,7 +130,9 @@ def _assign_parent_id(child_geometry: dict[str, Any], parent_zones: list[dict[st
     overlaps = [item for item in overlaps if item[0] > 0]
     if overlaps:
         overlaps.sort(key=lambda item: item[0], reverse=True)
-        return overlaps[0][1]
+        parent_id = overlaps[0][1]
+        parent = next(zone for zone in parent_zones if zone["id"] == parent_id)
+        return parent_id, "MAXIMUM_OVERLAP", float(child.distance(parent["_shape"]))
 
     # A limited nearest-parent fallback handles small gaps between independently
     # sourced/vintaged adjacent boundary releases. The subsequent importer
@@ -139,7 +142,7 @@ def _assign_parent_id(child_geometry: dict[str, Any], parent_zones: list[dict[st
         for parent in parent_zones
     )
     if nearest and nearest[0][0] <= MAX_PARENT_SNAP_DISTANCE_DEGREES:
-        return nearest[0][1]
+        return nearest[0][1], "NEAREST_WITHIN_TOLERANCE", float(nearest[0][0])
 
     parent_bounds = [parent["_shape"].bounds for parent in parent_zones[:5]]
     nearest_text = nearest[0] if nearest else None
@@ -149,6 +152,14 @@ def _assign_parent_id(child_geometry: dict[str, Any], parent_zones: list[dict[st
         f"child_bounds={child.bounds}; nearest_parent={nearest_text}; "
         f"sample_parent_bounds={parent_bounds}"
     )
+
+
+def _assign_parent_id(
+    child_geometry: dict[str, Any],
+    parent_zones: list[dict[str, Any]],
+) -> str:
+    """Backward-compatible parent ID helper used by tests and integrations."""
+    return _assign_parent_details(child_geometry, parent_zones)[0]
 
 
 def run(args: argparse.Namespace) -> None:
@@ -189,7 +200,9 @@ def run(args: argparse.Namespace) -> None:
 
     fields = [
         "country_iso3", "country_name", "admin_level", "admin_name", "admin_id",
-        "parent_admin_level", "parent_admin_id", "boundary_source", "boundary_year",
+        "parent_admin_level", "parent_admin_id", "parent_boundary_source",
+        "parent_boundary_year", "parent_link_method", "parent_link_distance_deg",
+        "boundary_source", "boundary_year",
         "dataset_id", "source_year", "technology", "crop_code", "crop_name",
         "crop_band", "physical_area_ha", "harvested_area_ha", "production_t",
         "yield_t_ha_area_weighted", "valid_cells",
@@ -233,9 +246,29 @@ def run(args: argparse.Namespace) -> None:
                 parent_zones = _boundary_zones(parent_boundary, iso3, parent_level)
 
                 linked_zones = []
+                parent_metadata = parent_boundary.get("metadata") or {}
+                parent_boundary_year = parent_metadata.get("boundaryYearRepresented")
+                parent_boundary_year = (
+                    int(parent_boundary_year) if str(parent_boundary_year or "").isdigit()
+                    else None
+                )
+                parent_boundary_source = (
+                    parent_boundary.get("source")
+                    or parent_metadata.get("boundarySource")
+                    or parent_metadata.get("boundaryID")
+                )
                 for zone in child_zones:
-                    parent_id = _assign_parent_id(zone["geometry"], parent_zones)
-                    linked_zones.append({**zone, "parent_id": parent_id})
+                    parent_id, link_method, link_distance = _assign_parent_details(
+                        zone["geometry"], parent_zones
+                    )
+                    linked_zones.append({
+                        **zone,
+                        "parent_id": parent_id,
+                        "parent_boundary_year": parent_boundary_year,
+                        "parent_boundary_source": parent_boundary_source,
+                        "parent_link_method": link_method,
+                        "parent_link_distance_deg": link_distance,
+                    })
 
                 metadata = child_boundary.get("metadata") or {}
                 done_this_country = 0
@@ -271,6 +304,10 @@ def run(args: argparse.Namespace) -> None:
                             "admin_id": zone["id"],
                             "parent_admin_level": parent_level,
                             "parent_admin_id": zone["parent_id"],
+                            "parent_boundary_source": zone["parent_boundary_source"],
+                            "parent_boundary_year": zone["parent_boundary_year"],
+                            "parent_link_method": zone["parent_link_method"],
+                            "parent_link_distance_deg": zone["parent_link_distance_deg"],
                             "boundary_source": child_source,
                             "boundary_year": metadata.get("boundaryYearRepresented"),
                             "dataset_id": item["dataset_id"],
