@@ -147,3 +147,5 @@ jobs:
             .ci-mapspam-adm2-output/mapspam_2020_adm2.csv
             .ci-mapspam-adm2-output/mapspam_2020_adm2_errors.csv
             .ci-mapspam-adm2-output/mapspam_2020_adm2_completed.json
+            .ci-mapspam-adm2-output/boundary-cache/UZB_ADM1.geojson
+            .ci-mapspam-adm2-output/boundary-cache/UZB_ADM2.geojson
