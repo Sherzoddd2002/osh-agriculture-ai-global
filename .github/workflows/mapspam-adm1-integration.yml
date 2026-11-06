@@ -1,4 +1,4 @@
-name: MAPSPAM ADM1 integration smoke
+name: MAPSPAM ADM hierarchy integration smoke
 
 on:
   workflow_dispatch:
@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths:
       - "backend/app/run_global_mapspam.py"
+      - "backend/app/run_global_mapspam_hierarchy.py"
+      - "backend/app/import_mapspam_hierarchy.py"
       - "backend/app/services/global_raster_batch.py"
       - "backend/app/services/global_raster_catalog.py"
       - "backend/app/services/boundaries.py"
@@ -13,6 +15,7 @@ on:
       - "scripts/verify_uzb_adm1_mapspam.py"
       - "scripts/verify_uzb_adm1_vs_adm0.py"
       - "backend/app/models.py"
+      - "backend/app/db.py"
       - "backend/app/main.py"
       - "backend/app/import_mapspam_results.py"
       - "tests/test_global_raster_import.py"
@@ -21,6 +24,8 @@ on:
     branches: [main]
     paths:
       - "backend/app/run_global_mapspam.py"
+      - "backend/app/run_global_mapspam_hierarchy.py"
+      - "backend/app/import_mapspam_hierarchy.py"
       - "backend/app/services/global_raster_batch.py"
       - "backend/app/services/global_raster_catalog.py"
       - "backend/app/services/boundaries.py"
@@ -28,6 +33,7 @@ on:
       - "scripts/verify_uzb_adm1_mapspam.py"
       - "scripts/verify_uzb_adm1_vs_adm0.py"
       - "backend/app/models.py"
+      - "backend/app/db.py"
       - "backend/app/main.py"
       - "backend/app/import_mapspam_results.py"
       - "tests/test_global_raster_import.py"
@@ -38,7 +44,7 @@ permissions:
 
 jobs:
   uzb-adm1-mapspam:
-    name: Real MAPSPAM UZB ADM1 integration
+    name: Real MAPSPAM UZB ADM1-ADM2 integration
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -46,6 +52,7 @@ jobs:
       MAPSPAM_DATA_DIR: .ci-mapspam-data
       MAPSPAM_OUTPUT_DIR: .ci-mapspam-output
       MAPSPAM_ADM0_OUTPUT_DIR: .ci-mapspam-adm0-output
+      MAPSPAM_ADM2_OUTPUT_DIR: .ci-mapspam-adm2-output
 
     steps:
       - name: Checkout
@@ -87,6 +94,47 @@ jobs:
             --output-dir "$MAPSPAM_ADM0_OUTPUT_DIR" \
             --resume
 
+      - name: Calculate Uzbekistan ADM2 district summaries with parent links
+        run: |
+          python -m app.run_global_mapspam_hierarchy \
+            --level ADM2 \
+            --countries UZB \
+            --technology all \
+            --data-dir "$MAPSPAM_DATA_DIR" \
+            --output-dir "$MAPSPAM_ADM2_OUTPUT_DIR" \
+            --resume
+
+      - name: Verify 199 Uzbekistan districts x 46 crops
+        run: |
+          python - <<'PY'
+          import csv
+          import os
+          from collections import Counter
+          from pathlib import Path
+
+          path = Path(os.environ["MAPSPAM_ADM2_OUTPUT_DIR"]) / "mapspam_2020_adm2.csv"
+          with path.open(encoding="utf-8-sig", newline="") as stream:
+              rows = list(csv.DictReader(stream))
+          zones = {(row["country_iso3"], row["admin_id"]) for row in rows}
+          counts = Counter((row["country_iso3"], row["admin_id"]) for row in rows)
+          assert len(zones) == 199, f"Expected 199 ADM2 zones, got {len(zones)}"
+          assert len(rows) == 199 * 46, f"Expected 9154 rows, got {len(rows)}"
+          assert all(count == 46 for count in counts.values()), "Some districts do not have all 46 crops"
+          assert {row["parent_admin_level"] for row in rows} == {"ADM1"}
+          assert all(row["parent_admin_id"] and row["parent_link_method"] for row in rows)
+          print({"districts": len(zones), "rows": len(rows), "parent_methods": sorted({r["parent_link_method"] for r in rows})})
+          PY
+
+      - name: Validate ADM1-to-ADM2 links and boundary vintage status
+        run: |
+          python -m app.import_mapspam_hierarchy \
+            --parent-level ADM1 \
+            --child-level ADM2 \
+            --parent-csv "$MAPSPAM_OUTPUT_DIR/mapspam_2020_adm1.csv" \
+            --child-csv "$MAPSPAM_ADM2_OUTPUT_DIR/mapspam_2020_adm2.csv" \
+            --allow-unreconciled-boundaries \
+            --dry-run
+
       - name: Verify 14 zones x 46 crops output
         run: |
           python scripts/verify_uzb_adm1_mapspam.py \
@@ -110,7 +158,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: uzb-adm1-mapspam-results
+          name: uzb-adm1-adm2-mapspam-results
           if-no-files-found: ignore
           path: |
             .ci-mapspam-output/mapspam_2020_adm1.csv
@@ -118,3 +166,8 @@ jobs:
             .ci-mapspam-output/mapspam_2020_adm1_completed.json
             .ci-mapspam-adm0-output/mapspam_2020_adm0.csv
             .ci-mapspam-adm0-output/mapspam_2020_adm0_errors.csv
+            .ci-mapspam-adm2-output/mapspam_2020_adm2.csv
+            .ci-mapspam-adm2-output/mapspam_2020_adm2_errors.csv
+            .ci-mapspam-adm2-output/mapspam_2020_adm2_completed.json
+            .ci-mapspam-adm2-output/boundary-cache/UZB_ADM1.geojson
+            .ci-mapspam-adm2-output/boundary-cache/UZB_ADM2.geojson

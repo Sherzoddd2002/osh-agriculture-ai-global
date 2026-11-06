@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, event, text
+from sqlalchemy import create_engine, event, inspect, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from .config import settings
 
@@ -41,6 +41,38 @@ def init_db() -> None:
             conn.exec_driver_sql("CREATE EXTENSION IF NOT EXISTS postgis")
 
     Base.metadata.create_all(bind=engine)
+
+    # Additive migration for hierarchical global raster summaries. Existing
+    # ADM0/ADM1 rows remain valid with NULL parent fields.
+    if "global_raster_summaries" in inspect(engine).get_table_names():
+        existing = {
+            column["name"]
+            for column in inspect(engine).get_columns("global_raster_summaries")
+        }
+        with engine.begin() as conn:
+            if "parent_admin_level" not in existing:
+                conn.exec_driver_sql(
+                    "ALTER TABLE global_raster_summaries "
+                    "ADD COLUMN parent_admin_level VARCHAR(8)"
+                )
+            if "parent_admin_id" not in existing:
+                conn.exec_driver_sql(
+                    "ALTER TABLE global_raster_summaries "
+                    "ADD COLUMN parent_admin_id VARCHAR(250)"
+                )
+            additive_columns = {
+                "parent_boundary_source": "VARCHAR(80)",
+                "parent_boundary_year": "INTEGER",
+                "parent_link_method": "VARCHAR(40)",
+                "parent_link_distance_deg": "DOUBLE PRECISION",
+                "hierarchy_validation_status": "VARCHAR(64) NOT NULL DEFAULT 'NOT_CHECKED'",
+            }
+            for column_name, column_type in additive_columns.items():
+                if column_name not in existing:
+                    conn.exec_driver_sql(
+                        "ALTER TABLE global_raster_summaries "
+                        f"ADD COLUMN {column_name} {column_type}"
+                    )
 
     if settings.enable_postgis:
         with engine.begin() as conn:
