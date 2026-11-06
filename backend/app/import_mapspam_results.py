@@ -171,6 +171,8 @@ def _read_level(path: str | Path, expected_level: str) -> list[dict[str, Any]]:
                         f"{identity}: {level} requires parent_admin_level={expected_parent} "
                         "and a non-empty parent_admin_id"
                     )
+                if not (raw.get("parent_link_method") or "").strip():
+                    raise ValueError(f"{identity}: {level} requires parent_link_method")
             spatial_status = _required_text(raw, "spatial_status", identity)
             valid_cells = int(_number(raw, "valid_cells", identity, integer=True))
             if spatial_status not in {"ESTIMATED", "NO_RASTER_CELLS"}:
