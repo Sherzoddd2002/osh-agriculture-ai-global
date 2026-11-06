@@ -239,7 +239,7 @@ def run(args: argparse.Namespace) -> None:
                 child_boundary, child_source = _load_boundary(
                     client, iso3, level, cache
                 )
-                parent_boundary, _ = _load_boundary(
+                parent_boundary, parent_boundary_source = _load_boundary(
                     client, iso3, parent_level, cache
                 )
                 child_zones = _boundary_zones(child_boundary, iso3, level)
@@ -253,7 +253,7 @@ def run(args: argparse.Namespace) -> None:
                     else None
                 )
                 parent_boundary_source = (
-                    parent_boundary.get("source")
+                    parent_boundary_source
                     or parent_metadata.get("boundarySource")
                     or parent_metadata.get("boundaryID")
                 )
