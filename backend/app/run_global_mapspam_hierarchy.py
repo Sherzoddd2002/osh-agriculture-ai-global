@@ -122,7 +122,11 @@ def _assign_parent_id(child_geometry: dict[str, Any], parent_zones: list[dict[st
     ]
     overlaps = [item for item in overlaps if item[0] > 0]
     if not overlaps:
-        raise ValueError("Child administrative polygon does not intersect any parent")
+        parent_bounds = [parent["_shape"].bounds for parent in parent_zones[:5]]
+        raise ValueError(
+            "Child administrative polygon does not intersect any parent; "
+            f"child_bounds={child.bounds}; sample_parent_bounds={parent_bounds}"
+        )
     overlaps.sort(key=lambda item: item[0], reverse=True)
     return overlaps[0][1]
 
