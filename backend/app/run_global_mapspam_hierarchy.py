@@ -29,6 +29,12 @@ from .services.global_raster_batch import aggregate_mapspam_zone_all_crops
 from .services.global_raster_catalog import MAPSPAM_CROPS, default_global_data_dir
 
 
+# geoBoundaries releases can differ slightly between adjacent admin levels.
+# Keep fallback snaps small; every linked level is still conservation-checked
+# before database import.
+MAX_PARENT_SNAP_DISTANCE_DEGREES = 0.05
+
+
 def _feature_zone(feature: dict[str, Any], iso3: str, level: str, index: int) -> dict[str, Any]:
     props = feature.get("properties") or {}
     name = (
@@ -121,14 +127,28 @@ def _assign_parent_id(child_geometry: dict[str, Any], parent_zones: list[dict[st
         if child.intersects(parent["_shape"])
     ]
     overlaps = [item for item in overlaps if item[0] > 0]
-    if not overlaps:
-        parent_bounds = [parent["_shape"].bounds for parent in parent_zones[:5]]
-        raise ValueError(
-            "Child administrative polygon does not intersect any parent; "
-            f"child_bounds={child.bounds}; sample_parent_bounds={parent_bounds}"
-        )
-    overlaps.sort(key=lambda item: item[0], reverse=True)
-    return overlaps[0][1]
+    if overlaps:
+        overlaps.sort(key=lambda item: item[0], reverse=True)
+        return overlaps[0][1]
+
+    # A limited nearest-parent fallback handles small gaps between independently
+    # sourced/vintaged adjacent boundary releases. The subsequent importer
+    # verifies child-to-parent crop totals and rejects non-conserving groups.
+    nearest = sorted(
+        (child.distance(parent["_shape"]), parent["id"])
+        for parent in parent_zones
+    )
+    if nearest and nearest[0][0] <= MAX_PARENT_SNAP_DISTANCE_DEGREES:
+        return nearest[0][1]
+
+    parent_bounds = [parent["_shape"].bounds for parent in parent_zones[:5]]
+    nearest_text = nearest[0] if nearest else None
+    raise ValueError(
+        "Child administrative polygon does not intersect any parent and is "
+        "outside the limited snap tolerance; "
+        f"child_bounds={child.bounds}; nearest_parent={nearest_text}; "
+        f"sample_parent_bounds={parent_bounds}"
+    )
 
 
 def run(args: argparse.Namespace) -> None:
