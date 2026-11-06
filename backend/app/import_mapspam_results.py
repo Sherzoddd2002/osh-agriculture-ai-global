@@ -191,6 +191,22 @@ def _read_level(path: str | Path, expected_level: str) -> list[dict[str, Any]]:
                 "admin_id": admin_id,
                 "parent_admin_level": parent_admin_level,
                 "parent_admin_id": parent_admin_id,
+                "parent_boundary_source": (raw.get("parent_boundary_source") or "").strip() or None,
+                "parent_boundary_year": (
+                    int(_number(raw, "parent_boundary_year", identity, integer=True))
+                    if (raw.get("parent_boundary_year") or "").strip() else None
+                ),
+                "parent_link_method": (raw.get("parent_link_method") or "").strip() or (
+                    "COUNTRY_ISO3" if level == "ADM1" else None
+                ),
+                "parent_link_distance_deg": (
+                    _number(raw, "parent_link_distance_deg", identity, nullable=True)
+                    if "parent_link_distance_deg" in raw else None
+                ),
+                "hierarchy_validation_status": (
+                    (raw.get("hierarchy_validation_status") or "").strip()
+                    or "NOT_CHECKED"
+                ),
                 "boundary_source": (raw.get("boundary_source") or "").strip() or None,
                 "boundary_year": (
                     int(_number(raw, "boundary_year", identity, integer=True))
