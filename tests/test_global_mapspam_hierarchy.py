@@ -11,7 +11,9 @@ from backend.app.services.global_raster_catalog import MAPSPAM_CROPS
 
 CSV_FIELDS = [
     "country_iso3", "country_name", "admin_level", "admin_name", "admin_id",
-    "parent_admin_level", "parent_admin_id", "boundary_source", "boundary_year",
+    "parent_admin_level", "parent_admin_id", "parent_boundary_source",
+    "parent_boundary_year", "parent_link_method", "parent_link_distance_deg",
+    "boundary_source", "boundary_year",
     "dataset_id", "source_year", "technology", "crop_code", "crop_name",
     "crop_band", "physical_area_ha", "harvested_area_ha", "production_t",
     "yield_t_ha_area_weighted", "valid_cells",
@@ -158,6 +160,8 @@ def test_adm2_runner_writes_parent_lineage_and_resumes(monkeypatch, tmp_path):
     assert len(rows) == 2 * len(MAPSPAM_CROPS)
     assert {row["parent_admin_level"] for row in rows} == {"ADM1"}
     assert {row["parent_admin_id"] for row in rows} == {"UZB-D1-01"}
+    assert {row["parent_boundary_year"] for row in rows} == {"2021"}
+    assert {row["parent_link_method"] for row in rows} == {"POINT_CONTAINMENT"}
     checkpoint = json.loads(
         (output / "mapspam_2020_adm2_completed.json").read_text(encoding="utf-8")
     )
@@ -179,6 +183,10 @@ def _row(country, level, admin_id, parent_level, parent_id, band, crop_code, cro
         "admin_id": admin_id,
         "parent_admin_level": parent_level or "",
         "parent_admin_id": parent_id or "",
+        "parent_boundary_source": "gbOpen" if level == "ADM2" else "",
+        "parent_boundary_year": "2021" if level == "ADM2" else "",
+        "parent_link_method": "POINT_CONTAINMENT" if level == "ADM2" else "",
+        "parent_link_distance_deg": "0" if level == "ADM2" else "",
         "boundary_source": "gbOpen",
         "boundary_year": "2021",
         "dataset_id": "mapspam-2020-v2r2",
@@ -230,6 +238,64 @@ def test_adjacent_level_validation_checks_all_children_against_parent(tmp_path):
     assert report["countries_passed"] == ["UZB"]
     assert report["child_rows"] == 2 * len(MAPSPAM_CROPS)
     assert len(accepted) == 3 * len(MAPSPAM_CROPS)
+
+
+def test_vintage_mismatch_is_explicitly_linked_without_claiming_conservation(tmp_path):
+    parent_path = tmp_path / "adm1.csv"
+    child_path = tmp_path / "adm2.csv"
+    parent_rows = []
+    child_rows = []
+
+    for band, (crop_code, crop_name) in enumerate(MAPSPAM_CROPS, 1):
+        no_cells = band == len(MAPSPAM_CROPS)
+        child_values = (0, 0, 0, None, 0) if no_cells else (1, 1, 1, 1, 1)
+        parent_values = (0, 0, 0, None, 0) if no_cells else (100, 80, 160, 2, 2)
+        parent_rows.append(
+            _row("UZB", "ADM1", "UZB-R1", "ADM0", "UZB", band, crop_code, crop_name, parent_values)
+        )
+        for child_id in ("UZB-D1", "UZB-D2"):
+            row = _row(
+                "UZB", "ADM2", child_id, "ADM1", "UZB-R1",
+                band, crop_code, crop_name, child_values
+            )
+            row["boundary_year"] = "2020"
+            row["parent_boundary_year"] = "2017"
+            child_rows.append(row)
+
+    for row in parent_rows:
+        row["boundary_year"] = "2017"
+
+    for path, rows in ((parent_path, parent_rows), (child_path, child_rows)):
+        with path.open("w", newline="", encoding="utf-8") as stream:
+            writer = csv.DictWriter(stream, fieldnames=CSV_FIELDS)
+            writer.writeheader()
+            writer.writerows(rows)
+
+    parents = _read_level(parent_path, "ADM1")
+    children = _read_level(child_path, "ADM2")
+
+    try:
+        validate_adjacent_levels(parents, children, "ADM1", "ADM2")
+    except ValueError as exc:
+        assert "allow-unreconciled-boundaries" in str(exc)
+    else:
+        raise AssertionError("Vintage mismatch must not be silently accepted")
+
+    accepted, report = validate_adjacent_levels(
+        parents,
+        children,
+        "ADM1",
+        "ADM2",
+        allow_unreconciled_boundaries=True,
+    )
+    assert report["status"] == "LINKED_ONLY"
+    assert report["validation_statuses"] == [
+        "BOUNDARY_VINTAGE_MISMATCH_NOT_RECONCILED"
+    ]
+    assert len(accepted) == 3 * len(MAPSPAM_CROPS)
+    assert {
+        row["hierarchy_validation_status"] for row in accepted
+    } == {"BOUNDARY_VINTAGE_MISMATCH_NOT_RECONCILED"}
 
 
 def test_adjacent_level_validation_rejects_nonconserving_parent(tmp_path):
