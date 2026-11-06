@@ -135,8 +135,9 @@ def _assign_parent_details(
         return parent_id, "MAXIMUM_OVERLAP", float(child.distance(parent["_shape"]))
 
     # A limited nearest-parent fallback handles small gaps between independently
-    # sourced/vintaged adjacent boundary releases. The subsequent importer
-    # verifies child-to-parent crop totals and rejects non-conserving groups.
+    # sourced/vintaged adjacent boundary releases. The importer requires
+    # conservation when boundary vintages match; otherwise it records an
+    # explicit linked-only status after validating every child-parent link.
     nearest = sorted(
         (child.distance(parent["_shape"]), parent["id"])
         for parent in parent_zones
