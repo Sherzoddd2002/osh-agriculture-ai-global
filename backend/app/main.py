@@ -55,6 +55,11 @@ def js():
     return FileResponse("frontend/app.js", media_type="application/javascript")
 
 
+@app.get("/i18n.js", include_in_schema=False)
+def i18n_script():
+    return FileResponse("frontend/i18n.js", media_type="application/javascript")
+
+
 @app.get("/styles.css", include_in_schema=False)
 def css():
     return FileResponse("frontend/styles.css", media_type="text/css")
