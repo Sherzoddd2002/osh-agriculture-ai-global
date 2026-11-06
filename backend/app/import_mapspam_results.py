@@ -484,11 +484,14 @@ def read_and_validate_pair(
     """Read global or single-country CSVs and validate before any database write."""
     adm1_rows = _read_level(adm1_path, "ADM1")
     adm0_rows = _read_level(adm0_path, "ADM0")
-    return validate_global_adm0_adm1_pairs(
+    rows, report = validate_global_adm0_adm1_pairs(
         adm1_rows,
         adm0_rows,
         allow_partial_countries=allow_partial_countries,
     )
+    for row in rows:
+        row["hierarchy_validation_status"] = "CONSERVATION_PASS"
+    return rows, report
 
 
 def upsert_summary_rows(
