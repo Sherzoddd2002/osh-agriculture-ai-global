@@ -42,7 +42,7 @@ def _feature_zone(feature: dict[str, Any], iso3: str, level: str, index: int) ->
         props.get("shapeID")
         or props.get("shapeISO")
         or props.get("shapeID")
-        or f"{iso3}-{level}-{index:05d}"
+        or f"{iso3}-{index}"
     )
     geometry = feature.get("geometry")
     if not geometry:
