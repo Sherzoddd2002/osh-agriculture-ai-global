@@ -2,7 +2,7 @@
 
 The project supports two different modes. Choose the mode that matches the job of the computer.
 
-## 1. Shared central server (project owner's Windows host)
+## Optional: shared central server (project owner's Windows host)
 
 This is the mode for one shared website and one shared PostgreSQL database. Run it only on the Windows computer that already hosts PostgreSQL 17.11 and the database osh_agriculture_global.
 
@@ -29,7 +29,7 @@ The server listens on 127.0.0.1:8080. To give it a public HTTPS address, configu
 
 End users do not run the server installer. They open the owner's published HTTPS URL, register, choose their region, and upload a crop-yield CSV when they have one. Each user's private rows are stored in the same PostgreSQL database and filtered by account ownership.
 
-## 2. Per-user local mode from GitHub (no npm publication required)
+## Recommended: per-user local mode from GitHub (no npm publication required)
 
 Every person can install a private local copy on their own computer. The CLI creates a separate SQLite database and binds the web app to `127.0.0.1:8080`. This is not a shared website; data is not synchronized between computers.
 
@@ -40,13 +40,13 @@ Windows PowerShell:
 ```powershell
 git clone https://github.com/Sherzoddd2002/osh-agriculture-ai-global.git
 cd osh-agriculture-ai-global
-.\\ops\\local.ps1 install
+.\ops\local.ps1 install
 ```
 
 Direct CLI alternative:
 
 ```powershell
-node .\\bin\\cli.js install
+node .\bin\cli.js install
 ```
 
 The installer creates its runtime, environment file, worker, and SQLite database under the current user's application-data folder, then opens the local website. Keep the terminal open while the server runs.
@@ -54,10 +54,10 @@ The installer creates its runtime, environment file, worker, and SQLite database
 Management commands from the cloned repository:
 
 ```powershell
-.\\ops\\local.ps1 start
-.\\ops\\local.ps1 status
-.\\ops\\local.ps1 stop
-.\\ops\\local.ps1 update
+.\ops\local.ps1 start
+.\ops\local.ps1 status
+.\ops\local.ps1 stop
+.\ops\local.ps1 update
 ```
 
 On macOS/Linux, use `node ./bin/cli.js install` and the same CLI subcommands.
