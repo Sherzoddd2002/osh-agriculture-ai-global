@@ -28,13 +28,13 @@ Open PowerShell:
 ```powershell
 git clone https://github.com/Sherzoddd2002/osh-agriculture-ai-global.git
 cd osh-agriculture-ai-global
-.\\ops\\local.ps1 install
+.\ops\local.ps1 install
 ```
 
 The same command without the PowerShell helper is:
 
 ```powershell
-node .\\bin\\cli.js install
+node .\bin\cli.js install
 ```
 
 The installer downloads the current `main` source from GitHub, creates a private Python virtual environment, installs dependencies, creates the SQLite schema, starts the worker and web server, and opens the browser.
@@ -46,13 +46,13 @@ The web process runs in the foreground. Keep the PowerShell window open while us
 Run these commands from the cloned repository:
 
 ```powershell
-.\\ops\\local.ps1 start
-.\\ops\\local.ps1 status
-.\\ops\\local.ps1 stop
-.\\ops\\local.ps1 update
+.\ops\local.ps1 start
+.\ops\local.ps1 status
+.\ops\local.ps1 stop
+.\ops\local.ps1 update
 ```
 
-The direct CLI equivalents are `node .\\bin\\cli.js start|status|stop|update`.
+The direct CLI equivalents are `node .\bin\cli.js start|status|stop|update`.
 
 - `start` starts the worker and web server.
 - `status` reports whether the local web server and worker are running.
@@ -63,7 +63,7 @@ The direct CLI equivalents are `node .\\bin\\cli.js start|status|stop|update`.
 
 The CLI stores data outside the cloned source folder so source updates do not delete user data.
 
-- Windows: `%LOCALAPPDATA%\\OSH\\AgricultureAI\\data\\agriculture.sqlite3`
+- Windows: `%LOCALAPPDATA%\OSH\AgricultureAI\data\agriculture.sqlite3`
 - macOS: `~/Library/Application Support/OSH/AgricultureAI/data/agriculture.sqlite3`
 - Linux: `~/.local/share/osh-agriculture-ai-global/data/agriculture.sqlite3`
 
