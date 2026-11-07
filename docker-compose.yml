@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: osh
       POSTGRES_PASSWORD: osh_dev_password
     ports:
-      - "5434:5432"
+      - "127.0.0.1:5434:5432"
     volumes:
       - osh_global_pgdata:/var/lib/postgresql/data
       - ./backend/sql/001_extensions.sql:/docker-entrypoint-initdb.d/001_extensions.sql:ro
@@ -31,7 +31,7 @@ services:
       DATABASE_URL: postgresql+psycopg://osh:osh_dev_password@db:5432/osh_global
       CORS_ORIGINS: http://localhost:8080
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     depends_on:
       init:
         condition: service_completed_successfully
