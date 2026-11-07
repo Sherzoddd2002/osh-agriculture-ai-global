@@ -3,6 +3,7 @@ import hashlib
 import io
 import json
 import re
+import threading
 from datetime import date, datetime, timezone
 from typing import Optional
 import pandas as pd
@@ -27,15 +28,32 @@ from .ml.forecast import evaluate_and_predict
 app = FastAPI(title=settings.app_name, version="0.1.0", description="Global agricultural data integration and yield forecasting foundation")
 app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origin_list, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
+_worker_thread: threading.Thread | None = None
+
 
 @app.on_event("startup")
 def startup():
+    global _worker_thread
     if settings.app_env.lower() == "production":
         if settings.jwt_secret == "DEV_ONLY_CHANGE_ME" or len(settings.jwt_secret) < 32:
             raise RuntimeError("Production rejimida JWT_SECRET kamida 32 belgili maxfiy qiymat bo‘lishi kerak")
         if not settings.database_url.startswith(("postgresql+psycopg://", "postgresql://")):
             raise RuntimeError("Production server SQLite bilan ishga tushmaydi. Markaziy PostgreSQL DATABASE_URL talab qilinadi.")
     init_db()
+
+    # Fly single-Machine mode: run the queue worker in this web process so
+    # one Machine and one DATABASE_URL serve both HTTP and background jobs.
+    # Keep this disabled for deployments that run a separate worker process.
+    if settings.run_worker_in_web:
+        if _worker_thread is None or not _worker_thread.is_alive():
+            from .worker import main as worker_main
+
+            _worker_thread = threading.Thread(
+                target=worker_main,
+                name="osh-agriculture-background-worker",
+                daemon=True,
+            )
+            _worker_thread.start()
 
 
 @app.get("/", include_in_schema=False)
