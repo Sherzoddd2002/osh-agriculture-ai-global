@@ -48,7 +48,7 @@ Or run the CLI directly:
 node .\bin\cli.js install
 ```
 
-The installer opens <http://127.0.0.1:8080>. Keep the terminal window open while the local web server is running. From the same repository folder, use `.\ops\local.ps1 start|status|stop|update` to manage it. See [docs/LOCAL_PER_USER.md](docs/LOCAL_PER_USER.md).
+The installer opens <http://127.0.0.1:8080>. Keep the terminal window open while the local web server is running. From the same repository folder, use `.\ops\local.ps1 start, status, stop, and update` to manage it. See [docs/LOCAL_PER_USER.md](docs/LOCAL_PER_USER.md).
 
 Each computer has its own database and its own user data. Local instances do not synchronize with each other or with the maintainer's PostgreSQL database. The MAPSPAM rows imported into a developer's database are not included in a fresh local install; distributing those reference rows requires a separately versioned data bundle.
 
