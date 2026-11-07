@@ -19,10 +19,12 @@ if (-not $nodeCommand) {
 }
 
 $nodeVersion = (& $nodeCommand.Source --version 2>&1 | Out-String).Trim()
-if ($nodeVersion -notmatch '^v?(\d+)\.') {
+if ($nodeVersion -match '^v?(\d+)\.') {
+    $nodeMajor = [int]$Matches[1]
+} else {
     throw "Node.js versiyasini aniqlab bo‘lmadi: $nodeVersion"
 }
-if ([int]$Matches[1] -lt 20) {
+if ($nodeMajor -lt 20) {
     throw "Node.js 20+ kerak. Topilgan versiya: $nodeVersion"
 }
 
