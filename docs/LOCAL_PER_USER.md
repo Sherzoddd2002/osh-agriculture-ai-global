@@ -53,7 +53,7 @@ Run these commands from the cloned repository:
 .\ops\local.ps1 update
 ```
 
-The direct CLI equivalents are `node .\bin\cli.js start|status|stop|update`.
+The direct CLI equivalents are `node .\bin\cli.js start, status, stop, and update`.
 
 - `start` starts the worker and web server.
 - `status` reports whether the local web server and worker are running.
