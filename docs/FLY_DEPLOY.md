@@ -1,41 +1,60 @@
-# Fly.io deployment checklist
+# Fly.io deployment — one web Machine + external PostgreSQL
 
-1. Create a Fly.io app. Choose a primary region near the first expected users.
-2. Create a separate Fly Managed Postgres cluster and enable PostGIS. Connect it using the cluster's private connection URI.
-3. Set secrets:
+This low-cost topology uses **one Fly Machine** for FastAPI and its background worker, plus an external PostgreSQL provider. It deliberately does not provision Fly Managed Postgres or a second Fly worker Machine.
 
-```bash
-fly secrets set DATABASE_URL='postgresql+psycopg://USER:PASSWORD@HOST:5432/DB?sslmode=require'
-fly secrets set JWT_SECRET='USE_A_LONG_RANDOM_SECRET_AT_LEAST_32_CHARACTERS'
-fly secrets set APP_ENV=production
-```
+## Database
 
-4. Set the Fly app name in `fly.toml` to a globally unique name.
-5. Deploy the Docker image. The `release_command` runs the MVP schema bootstrap before Machines receive traffic:
+Use a persistent PostgreSQL database with TLS. For an initial no-cost launch, Supabase Free currently includes 500 MB of database size and 5 GB of egress. Free projects can pause after a week of low activity. This application’s worker polls the database regularly, so it normally generates database activity; the 500 MB database-size quota is the important limit. Confirm the measured database size is safely below 500 MB before migrating. This may fit the current ADM0/ADM1 launch dataset, but it will not fit the complete ADM2/ADM3 expansion.
+
+Do not put database credentials in Git. Set the connection URL as a Fly secret:
 
 ```bash
-fly deploy
+fly secrets set DATABASE_URL='postgresql+psycopg://USER:PASSWORD@HOST/DB?sslmode=require' -a osh-agriculture-ai-global
+fly secrets set JWT_SECRET='A_RANDOM_SECRET_AT_LEAST_32_CHARACTERS' -a osh-agriculture-ai-global
 ```
 
-6. Ensure one web Machine and one worker Machine exist:
+## One-Machine application
+
+The Fly configuration defines only the `web` process group. `RUN_WORKER_IN_WEB=true` starts the queue worker as a daemon thread inside the FastAPI process, avoiding a second Machine. Do not add Uvicorn `--workers > 1` while using this mode; each process would start another queue worker.
+
+The Fly Machine is configured at shared CPU, 512 MB RAM. This is a small starting size, not a capacity guarantee. Monitor memory and increase to 1 GB if the Machine is OOM-killed or the app becomes unstable.
 
 ```bash
-fly scale count 1 --process-group web
-fly scale count 1 --process-group worker
+fly deploy -a osh-agriculture-ai-global
+fly scale count 1 --process-group web -a osh-agriculture-ai-global
+fly status -a osh-agriculture-ai-global
 ```
 
-7. Check `https://YOUR-APP.fly.dev/api/v1/health` and `/docs`. Create a test account, select a polygon, upload a small CSV, run environmental enrichment, inspect coverage, and only then request a prediction.
+The web Machine stays running (`auto_stop_machines = "off"`) so background jobs continue when no requests are in flight. Fly compute is billed while running; this is not a perpetual free tier. Check the account's billing/trial status and current regional pricing before deploying.
+
+## Verify
+
+```bash
+fly checks list -a osh-agriculture-ai-global
+```
+
+Then open:
+
+- `https://osh-agriculture-ai-global.fly.dev/`
+- `https://osh-agriculture-ai-global.fly.dev/api/v1/health`
+- `https://osh-agriculture-ai-global.fly.dev/docs`
+
+The health endpoint must return `ok: true` and `database: connected`.
+
+## Data migration
+
+Keep the local PostgreSQL backup. Migrate data into the external cloud database before announcing the public site. The local Windows PostgreSQL server is not reachable from Fly.io unless a secured migration path is explicitly configured. Never expose local port 5433 to the public internet.
 
 ## Availability and cost
 
-`auto_stop_machines = "off"` with `auto_start_machines = false` keeps provisioned web Machines from automatically sleeping. It does not guarantee zero downtime. For stronger availability, deploy multiple web Machines, configure health checks/monitoring/alerts, use managed database backups, and rehearse restore procedures. The worker should have a separate Machine and should be monitored as well.
-
-Fly Machines, managed Postgres, storage, network egress, and external raster/data services can incur charges. Review current regional availability and pricing in the Fly dashboard before provisioning. Start small and configure spending alerts.
+- One shared-cpu-1x Machine with 512 MB RAM is the lowest practical starting point for this Python image; actual memory use must be monitored.
+- Supabase Free has a 500 MB database quota and can pause after a week of low activity; it is a launch tier, not a production SLA.
+- A single Fly Machine is a single point of failure. This is a budget-first MVP topology, not high availability.
+- Machine compute, egress, storage, and external database usage can incur charges. Review the Fly and Supabase dashboards and set billing alerts.
 
 ## Before production launch
 
 - Add Alembic migrations; the MVP bootstrap uses `create_all()` and raw PostGIS column creation.
 - Add rate limiting, email verification, password reset, abuse controls, file scanning, and privacy/terms pages.
-- Add object storage for raw uploads and raster outputs, rather than keeping large files on a Machine root filesystem.
-- Add NDVI, SMAP, and SoilGrids raster connectors with quality flags and source/license metadata.
+- Add object storage for raw uploads and raster outputs.
 - Add global training data review/approval, dataset consent withdrawal, reproducible model registry, country-held-out tests, and future-year tests.
