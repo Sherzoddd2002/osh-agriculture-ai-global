@@ -33,7 +33,7 @@ End users do not run the server installer. They open the owner's published HTTPS
 
 Every person can install a private local copy on their own computer. The CLI creates a separate SQLite database and binds the web app to `127.0.0.1:8080`. This is not a shared website; data is not synchronized between computers.
 
-Requirements: Node.js 20+, Python 3.11+, internet access for source download and external APIs. Docker and PostgreSQL are not required.
+Requirements: Git, Node.js 20+, Python 3.11+, and internet access for source download and external APIs. Docker and PostgreSQL are not required.
 
 Windows PowerShell:
 
