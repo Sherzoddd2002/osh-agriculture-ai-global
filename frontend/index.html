@@ -56,6 +56,30 @@
         <article class="panel map-panel"><div class="panel-title"><div><h3>Dunyo xaritasi</h3><small id="map-caption">Hudud tanlanmagan</small></div><span class="source-pill">geoBoundaries</span></div><div id="global-map"></div><div class="map-attribution">Xarita: CARTO / OpenStreetMap. Ma’muriy chegara: geoBoundaries gbOpen. Har bir boundary metadata va litsenziyasi bo‘yicha tekshirilishi kerak.</div></article>
         <aside class="panel selection-panel"><span class="eyebrow">TANLANGAN HUDUD</span><h3 id="selected-area-name">Hududni tanlang</h3><p id="selected-area-help">Xaritadagi chegarani bosing.</p><div class="selection-metrics"><div><small>Mamlakat</small><b id="selected-country">—</b></div><div><small>Daraja</small><b id="selected-level">—</b></div><div><small>Markaz koordinatasi</small><b id="selected-center">—</b></div></div><label class="climate-year-label">Tarixiy ma’lumot boshlanish yili<input id="climate-start-year" type="number" min="1981" max="2200" value="2010"></label><button class="primary-button full" id="save-location" disabled>Hududni saqlash va tahlil qilish</button><div class="notice compact">Hosildorlik CSV bo‘lmasa ham iqlim tarixi va ob-havo prognozi olinadi. Model faqat haqiqiy hosildorlik ma’lumoti bo‘lganda ishlaydi.</div><div id="saved-location-status" class="muted"></div></aside>
       </div>
+
+      <section class="panel mapspam-results-panel" id="mapspam-results-panel" aria-live="polite">
+        <div class="panel-title mapspam-panel-heading">
+          <div>
+            <span class="eyebrow">MAPSPAM 2020 V2R2</span>
+            <h3>Tanlangan hudud bo‘yicha ekin ko‘rsatkichlari</h3>
+            <small id="mapspam-context">Xaritadan mamlakat yoki ma’muriy hududni tanlang.</small>
+          </div>
+          <div class="mapspam-actions">
+            <label for="mapspam-technology">Texnologiya</label>
+            <select id="mapspam-technology">
+              <option value="all">Jami</option>
+              <option value="irrigated">Sug‘oriladigan</option>
+              <option value="rainfed">Lalmikor</option>
+            </select>
+            <button class="secondary-button" id="refresh-mapspam-summary" type="button">Yangilash</button>
+          </div>
+        </div>
+        <div class="notice compact mapspam-source-note">
+          MAPSPAM 2020 v2r2 — 2020-yil uchun raster baholashlari. Bu joriy yil kuzatuvi yoki dala o‘lchovi emas. Raster kataklari yo‘q hududlarda hosildorlik qiymati mavjud bo‘lmasligi mumkin.
+        </div>
+        <div id="mapspam-summary-status" class="muted" role="status">Hudud tanlangandan keyin server bazasidan ma’lumot olinadi.</div>
+        <div id="mapspam-summary-table" class="table-wrap"></div>
+      </section>
       <section class="climate-dashboard" id="location-climate-results" hidden>
         <div class="climate-dashboard-head"><div><span class="eyebrow">REGIONAL CLIMATE INTELLIGENCE</span><h2 id="climate-title">Hudud iqlim tahlili</h2><p id="climate-subtitle">Yillik tarixiy ko‘rsatkichlar, joriy ob-havo va qisqa muddatli prognoz.</p></div><span class="source-pill" id="climate-source-status">Ma’lumot kutilmoqda</span></div>
         <div id="climate-current-kpis" class="climate-current-grid"></div>
