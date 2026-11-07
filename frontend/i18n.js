@@ -182,7 +182,29 @@
     ["Hisobga kiring", "Sign in", "Войдите"],
     ["Dataset topilmadi", "Dataset not found", "Набор данных не найден"],
     ["Hudud topilmadi", "Region not found", "Регион не найден"],
-    ["Noma’lum xato", "Unknown error", "Неизвестная ошибка"]
+    ["Noma’lum xato", "Unknown error", "Неизвестная ошибка"],
+    ["Tanlangan hudud bo‘yicha ekin ko‘rsatkichlari", "Crop indicators for selected area", "Показатели культур для выбранной территории"],
+    ["Xaritadan mamlakat yoki ma’muriy hududni tanlang.", "Select a country or administrative area on the map.", "Выберите страну или административную территорию на карте."],
+    ["Texnologiya", "Technology", "Технология"],
+    ["Jami", "All", "Всего"],
+    ["Sug‘oriladigan", "Irrigated", "Орошаемые"],
+    ["Lalmikor", "Rainfed", "Богарные"],
+    ["Yangilash", "Refresh", "Обновить"],
+    ["MAPSPAM 2020 v2r2 — 2020-yil uchun raster baholashlari. Bu joriy yil kuzatuvi yoki dala o‘lchovi emas. Raster kataklari yo‘q hududlarda hosildorlik qiymati mavjud bo‘lmasligi mumkin.", "MAPSPAM 2020 v2r2 provides raster estimates for 2020. These are not current-year observations or field measurements. Areas without raster cells may have no yield value.", "MAPSPAM 2020 v2r2 — растровые оценки за 2020 год. Это не наблюдения текущего года и не измерения на поле. Для территорий без растровых ячеек значение урожайности может отсутствовать."],
+    ["Hudud tanlangandan keyin server bazasidan ma’lumot olinadi.", "Data will be retrieved from the server database after an area is selected.", "После выбора территории данные будут загружены из базы сервера."],
+    ["Xaritadan hudud tanlang.", "Select an area on the map.", "Выберите территорию на карте."],
+    ["Tanlangan hududning admin ID raqami aniqlanmadi.", "The selected area's admin ID could not be resolved.", "Не удалось определить ID выбранной административной территории."],
+    ["MAPSPAM ma’lumotlari server bazasidan yuklanmoqda…", "Loading MAPSPAM data from the server database…", "Загрузка данных MAPSPAM из базы сервера…"],
+    ["Bu hudud uchun MAPSPAM yozuvlari server bazasida topilmadi. Avval tekshirilgan CSV natijalarini server bazasiga import qilish kerak.", "No MAPSPAM records were found for this area in the server database. Verified CSV results must be imported first.", "В базе сервера не найдены записи MAPSPAM для этой территории. Сначала необходимо импортировать проверенные результаты CSV."],
+    ["Ekin", "Crop", "Культура"],
+    ["Yig‘ib olingan maydon (ga)", "Harvested area (ha)", "Убранная площадь (га)"],
+    ["Ishlab chiqarish (t)", "Production (t)", "Производство (т)"],
+    ["Hosildorlik (t/ga)", "Yield (t/ha)", "Урожайность (т/га)"],
+    ["Raster kataklari", "Raster cells", "Ячейки растра"],
+    ["Fazoviy holat", "Spatial status", "Пространственный статус"],
+    ["Diqqat: ayrim ma’muriy chegaralar turli yillarga tegishli; natijalar parent bilan to‘liq konservatsiya qilingan deb talqin qilinmaydi.", "Note: some administrative boundaries come from different years; these results must not be interpreted as fully conserved against the parent level.", "Внимание: некоторые административные границы относятся к разным годам; эти результаты нельзя считать полностью согласованными с родительским уровнем."],
+    ["46 ta ekin yozuvi", "46 crop records", "46 записей по культурам"],
+    ["MAPSPAM ma’lumotini olishda xato:", "Error loading MAPSPAM data:", "Ошибка загрузки данных MAPSPAM:"]
   ];
 
   const dictionaries = {
