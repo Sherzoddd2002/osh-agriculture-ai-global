@@ -15,7 +15,7 @@ For Uzbek setup instructions, see [README_UZ.md](README_UZ.md).
 - **Environmental sources:** geoBoundaries, NASA POWER annual historical weather, and Open-Meteo current/16-day forecast are connected. NDVI, SMAP, SoilGrids remain explicit `PLANNED_CONNECTOR` sources.
 - **Deployment:** GitHub source + local CLI for personal use; Docker Compose or a separately hosted central backend are optional alternatives.
 
-## Shared central Windows + PostgreSQL server
+## Optional: shared central Windows + PostgreSQL server
 
 For one shared multi-user website backed by an existing PostgreSQL 17.11 host, see [docs/CENTRAL_WINDOWS_POSTGRES.md](docs/CENTRAL_WINDOWS_POSTGRES.md). The owner can install/start the central server with:
 
@@ -39,16 +39,16 @@ Windows PowerShell:
 ```powershell
 git clone https://github.com/Sherzoddd2002/osh-agriculture-ai-global.git
 cd osh-agriculture-ai-global
-.\\ops\\local.ps1 install
+.\ops\local.ps1 install
 ```
 
 Or run the CLI directly:
 
 ```powershell
-node .\\bin\\cli.js install
+node .\bin\cli.js install
 ```
 
-The installer opens <http://127.0.0.1:8080>. Keep the terminal window open while the local web server is running. From the same repository folder, use `.\\ops\\local.ps1 start|status|stop|update` to manage it. See [docs/LOCAL_PER_USER.md](docs/LOCAL_PER_USER.md).
+The installer opens <http://127.0.0.1:8080>. Keep the terminal window open while the local web server is running. From the same repository folder, use `.\ops\local.ps1 start|status|stop|update` to manage it. See [docs/LOCAL_PER_USER.md](docs/LOCAL_PER_USER.md).
 
 Each computer has its own database and its own user data. Local instances do not synchronize with each other or with the maintainer's PostgreSQL database. The MAPSPAM rows imported into a developer's database are not included in a fresh local install; distributing those reference rows requires a separately versioned data bundle.
 
@@ -88,9 +88,11 @@ Generated yields are never re-labelled as observed values. A global training opt
 
 Review [docs/FLY_DEPLOY.md](docs/FLY_DEPLOY.md) before deployment. The web process has autostop disabled, and the worker is separate. This keeps the app from sleeping due to inactivity but does not guarantee zero downtime. Machines, managed Postgres, storage, data-source traffic, and egress can incur charges.
 
-## GitHub
+## GitHub source
 
-Create a new empty public repository named `osh-agriculture-ai-global`, then push this project. Do not upload `.env`, private user datasets, raw satellite rasters, credentials, or private OSH evidence. See [README_UZ.md](README_UZ.md).
+Repository: <https://github.com/Sherzoddd2002/osh-agriculture-ai-global>
+
+Clone the public source with `git clone https://github.com/Sherzoddd2002/osh-agriculture-ai-global.git`. Do not commit `.env`, private user datasets, raw satellite rasters, credentials, or private OSH evidence. See [README_UZ.md](README_UZ.md).
 
 ## Sources and licensing
 
