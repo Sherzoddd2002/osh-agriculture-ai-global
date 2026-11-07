@@ -14,6 +14,7 @@ The local CLI binds to loopback (`127.0.0.1`), so the website is not exposed to 
 
 ## Requirements
 
+- Git.
 - Node.js 20 or newer.
 - Python 3.11 or newer.
 - Internet access during first installation to download the source and Python packages.
