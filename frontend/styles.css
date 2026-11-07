@@ -10,3 +10,23 @@
 @media(max-width:1050px){.climate-current-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.climate-panels{grid-template-columns:1fr}}
 @media(max-width:600px){.climate-dashboard{padding:13px}.climate-dashboard-head{display:block}.climate-dashboard-head .source-pill{display:inline-block;margin-top:9px}.climate-current-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.annual-panel .table-wrap{overflow-x:auto}}
 .climate-model-note{margin:-3px 0 14px;padding:11px 14px;border-radius:11px;background:#fff;border:1px solid var(--line);color:var(--muted);font-size:12px}
+
+
+/* MAPSPAM regional summary panel */
+.mapspam-results-panel{margin:22px 0;padding:22px}
+.mapspam-panel-heading{align-items:flex-start;gap:18px}
+.mapspam-panel-heading h3{margin:4px 0 5px}
+.mapspam-panel-heading small{color:var(--muted)}
+.mapspam-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.mapspam-actions label{font-size:13px;color:var(--muted)}
+.mapspam-actions select{min-width:150px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:9px 11px;color:var(--ink);font:inherit}
+.mapspam-source-note{margin:14px 0}
+#mapspam-summary-status{margin:12px 0}
+#mapspam-summary-table table{min-width:760px}
+#mapspam-summary-table th,#mapspam-summary-table td{white-space:nowrap}
+@media(max-width:760px){
+  .mapspam-results-panel{padding:15px;margin:16px 0}
+  .mapspam-panel-heading{flex-direction:column}
+  .mapspam-actions{width:100%}
+  .mapspam-actions select{flex:1;min-width:120px}
+}

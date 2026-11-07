@@ -23,9 +23,118 @@ function initMap(){
 function featureName(f){const p=f?.properties||{};return p.shapeName||p.shape_name||p.shapeNameEn||p.NAME_1||p.NAME_2||p.name||p.NAME||p.admin||'Tanlangan hudud';}
 function coordsCenter(geom){let x=0,y=0,n=0;const walk=v=>{if(Array.isArray(v)&&typeof v[0]==='number'&&typeof v[1]==='number'){x+=v[0];y+=v[1];n++;}else if(Array.isArray(v))v.forEach(walk);};walk(geom.coordinates);return n?{lat:y/n,lon:x/n}:null;}
 function featureBounds(features){let minX=180,minY=90,maxX=-180,maxY=-90;const walk=v=>{if(Array.isArray(v)&&typeof v[0]==='number'&&typeof v[1]==='number'){minX=Math.min(minX,v[0]);maxX=Math.max(maxX,v[0]);minY=Math.min(minY,v[1]);maxY=Math.max(maxY,v[1]);}else if(Array.isArray(v))v.forEach(walk);};features.forEach(f=>walk(f.geometry?.coordinates));return minX<=maxX?[[minX,minY],[maxX,maxY]]:null;}
-function selectFeature(f){selectedFeature=f;$('selected-area-name').textContent=featureName(f);$('selected-area-help').textContent='Tanlangan chegara geoBoundaries GeoJSON polygonidan olindi.';$('selected-country').textContent=$('country-iso3').value.toUpperCase();$('selected-level').textContent=$('admin-level').value;const c=coordsCenter(f.geometry);$('selected-center').textContent=c?`${c.lat.toFixed(4)}, ${c.lon.toFixed(4)}`:'—';$('save-location').disabled=!token;const selectedIndex=boundaryFeatures.indexOf(f);const collection={type:'FeatureCollection',features:boundaryFeatures.map((x,i)=>({...x,properties:{...(x.properties||{}),__idx:i,__selected:i===selectedIndex?1:0}}))};if(map?.getSource('admin-boundaries'))map.getSource('admin-boundaries').setData(collection);$('map-caption').textContent=featureName(f);}
-async function loadBoundaries(){const code=$('country-iso3').value.trim().toUpperCase(),level=$('admin-level').value;const status=$('boundary-status');if(!/^[A-Z]{3}$/.test(code)){toast(status,'ISO-3 kodini kiriting (masalan UZB, KAZ, DEU).');return;}toast(status,'Chegaralar olinmoqda…');try{const data=await api(`/boundaries/${code}/${level}`);boundaryFeatures=data.features||[];selectedFeature=null;$('selected-area-name').textContent='Hududni tanlang';$('selected-country').textContent=code;$('selected-level').textContent=level;$('selected-center').textContent='—';$('save-location').disabled=true;if(map?.getSource('admin-boundaries'))map.getSource('admin-boundaries').setData({type:'FeatureCollection',features:boundaryFeatures.map((f,i)=>({...f,properties:{...(f.properties||{}),__idx:i}}))});if(boundaryFeatures.length&&map){const bounds=featureBounds(boundaryFeatures);if(bounds)map.fitBounds(bounds,{padding:42,maxZoom:level==='ADM0'?4:7,duration:900});}toast(status,`${boundaryFeatures.length} ta chegara yuklandi · ${data.metadata?.source||'geoBoundaries'}`);}catch(e){toast(status,e.message);}}
+function selectFeature(f){selectedFeature=f;$('selected-area-name').textContent=featureName(f);$('selected-area-help').textContent='Tanlangan chegara geoBoundaries GeoJSON polygonidan olindi.';$('selected-country').textContent=$('country-iso3').value.toUpperCase();$('selected-level').textContent=$('admin-level').value;const c=coordsCenter(f.geometry);$('selected-center').textContent=c?`${c.lat.toFixed(4)}, ${c.lon.toFixed(4)}`:'—';$('save-location').disabled=!token;const selectedIndex=boundaryFeatures.indexOf(f);const collection={type:'FeatureCollection',features:boundaryFeatures.map((x,i)=>({...x,properties:{...(x.properties||{}),__idx:i,__selected:i===selectedIndex?1:0}}))};if(map?.getSource('admin-boundaries'))map.getSource('admin-boundaries').setData(collection);$('map-caption').textContent=featureName(f);loadMapspamSummaries();}
+async function loadBoundaries(){const code=$('country-iso3').value.trim().toUpperCase(),level=$('admin-level').value;const status=$('boundary-status');if(!/^[A-Z]{3}$/.test(code)){toast(status,'ISO-3 kodini kiriting (masalan UZB, KAZ, DEU).');return;}toast(status,'Chegaralar olinmoqda…');try{const data=await api(`/boundaries/${code}/${level}`);boundaryFeatures=data.features||[];selectedFeature=null;loadMapspamSummaries();$('selected-area-name').textContent='Hududni tanlang';$('selected-country').textContent=code;$('selected-level').textContent=level;$('selected-center').textContent='—';$('save-location').disabled=true;if(map?.getSource('admin-boundaries'))map.getSource('admin-boundaries').setData({type:'FeatureCollection',features:boundaryFeatures.map((f,i)=>({...f,properties:{...(f.properties||{}),__idx:i}}))});if(boundaryFeatures.length&&map){const bounds=featureBounds(boundaryFeatures);if(bounds)map.fitBounds(bounds,{padding:42,maxZoom:level==='ADM0'?4:7,duration:900});}toast(status,`${boundaryFeatures.length} ta chegara yuklandi · ${data.metadata?.source||'geoBoundaries'}`);}catch(e){toast(status,e.message);}}
 $('load-boundaries').addEventListener('click',loadBoundaries);
+
+let mapspamRequestSequence = 0;
+
+function mapspamSelectedAdminId(feature, countryCode, level) {
+  if (level === 'ADM0') return countryCode;
+  const properties = feature && feature.properties ? feature.properties : {};
+  const directId = properties.shapeID || properties.shapeISO;
+  if (directId) return String(directId);
+  const index = boundaryFeatures.indexOf(feature);
+  return index >= 0 ? countryCode + '-' + (index + 1) : null;
+}
+
+function mapspamNumber(value, digits = 1) {
+  if (value === null || value === undefined || value === '') return '—';
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toLocaleString('en-US', {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits
+  }) : '—';
+}
+
+async function loadMapspamSummaries() {
+  const requestId = ++mapspamRequestSequence;
+  const status = $('mapspam-summary-status');
+  const table = $('mapspam-summary-table');
+  if (!selectedFeature) {
+    toast(status, 'Xaritadan hudud tanlang.');
+    table.innerHTML = '';
+    $('mapspam-context').textContent = 'Xaritadan mamlakat yoki ma’muriy hududni tanlang.';
+    return;
+  }
+
+  const countryCode = $('country-iso3').value.trim().toUpperCase();
+  const level = $('admin-level').value;
+  const adminId = mapspamSelectedAdminId(selectedFeature, countryCode, level);
+  if (!adminId) {
+    toast(status, 'Tanlangan hududning admin ID raqami aniqlanmadi.');
+    table.innerHTML = '';
+    return;
+  }
+
+  const technology = $('mapspam-technology').value || 'all';
+  const params = new URLSearchParams({
+    country_iso3: countryCode,
+    admin_level: level,
+    admin_id: adminId,
+    source_year: '2020',
+    technology: technology,
+    dataset_id: 'mapspam-2020-v2r2',
+    limit: '100'
+  });
+  const areaName = featureName(selectedFeature);
+  $('mapspam-context').textContent = countryCode + ' · ' + areaName + ' · ' + level + ' · ' + adminId;
+  toast(status, 'MAPSPAM ma’lumotlari server bazasidan yuklanmoqda…');
+  table.innerHTML = '';
+
+  try {
+    const result = await api('/global-raster-summaries?' + params.toString());
+    if (requestId !== mapspamRequestSequence) return;
+    const rows = result.items || [];
+    if (!rows.length) {
+      toast(status, 'Bu hudud uchun MAPSPAM yozuvlari server bazasida topilmadi. Avval tekshirilgan CSV natijalarini server bazasiga import qilish kerak.');
+      return;
+    }
+
+    const headers = [
+      'Ekin',
+      'Yig‘ib olingan maydon (ga)',
+      'Ishlab chiqarish (t)',
+      'Hosildorlik (t/ga)',
+      'Raster kataklari',
+      'Fazoviy holat'
+    ];
+    const body = rows.map(function(row) {
+      return '<tr><td>' + escapeHtml(row.crop_name || row.crop_code || '—') +
+        '</td><td>' + mapspamNumber(row.harvested_area_ha, 0) +
+        '</td><td>' + mapspamNumber(row.production_t, 0) +
+        '</td><td>' + mapspamNumber(row.yield_t_ha_area_weighted, 3) +
+        '</td><td>' + mapspamNumber(row.valid_cells, 0) +
+        '</td><td>' + escapeHtml(row.spatial_status || '—') + '</td></tr>';
+    }).join('');
+    table.innerHTML = '<table><thead><tr>' +
+      headers.map(function(header) { return '<th>' + header + '</th>'; }).join('') +
+      '</tr></thead><tbody>' + body + '</tbody></table>';
+
+    const validationStates = Array.from(new Set(
+      rows.map(function(row) { return row.hierarchy_validation_status; }).filter(Boolean)
+    ));
+    const boundaryWarning = validationStates.some(function(value) {
+      return value.includes('NOT_RECONCILED');
+    });
+    const note = boundaryWarning
+      ? 'Diqqat: ayrim ma’muriy chegaralar turli yillarga tegishli; natijalar parent bilan to‘liq konservatsiya qilingan deb talqin qilinmaydi.'
+      : '';
+    const completeness = rows.length === 46
+      ? '46 ta ekin yozuvi'
+      : rows.length + ' ta ekin yozuvi (kutilgan: 46)';
+    toast(status, completeness + ' topildi · MAPSPAM 2020 v2r2 · ' + technology +
+      ' · ' + (validationStates.join(', ') || 'validatsiya holati noma’lum') +
+      (note ? ' · ' + note : ''));
+  } catch (error) {
+    if (requestId !== mapspamRequestSequence) return;
+    toast(status, 'MAPSPAM ma’lumotini olishda xato: ' + error.message);
+  }
+}
+
+$('mapspam-technology').addEventListener('change', loadMapspamSummaries);
+$('refresh-mapspam-summary').addEventListener('click', loadMapspamSummaries);
+
 $('country-iso3').addEventListener('keydown',e=>{if(e.key==='Enter')loadBoundaries();});
 
 $('save-location').addEventListener('click',async()=>{if(!token){openAuth();return;}if(!selectedFeature)return;try{const code=$('country-iso3').value.toUpperCase(),level=$('admin-level').value;const payload={country_iso3:code,name:featureName(selectedFeature),admin_level:level,climate_start_year:Number($('climate-start-year').value)||2010,geojson:selectedFeature,source:'geoBoundaries gbOpen'};toast($('saved-location-status'),'Hudud saqlanmoqda va iqlim tahlili navbatga qo‘yilmoqda…');const res=await api('/locations',{method:'POST',headers:authHeaders(),body:JSON.stringify(payload)});selectedLocationId=res.id;toast($('saved-location-status'),`Hudud saqlandi · ${res.name}. Yillik iqlim job #${res.climate_job_id} boshlandi.`);await loadLocations();$('location-select').value=String(res.id);pollClimateJob(res.climate_job_id,res.id);}catch(e){toast($('saved-location-status'),e.message);}});
