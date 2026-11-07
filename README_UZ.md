@@ -22,7 +22,7 @@ Bu yangi global loyiha. U sizning mavjud `E:\OSH`, `osh` PostgreSQL bazangiz yok
 
 Sentinel-2 NDVI, SMAP va SoilGrids connector statuslari va integratsiya nuqtalari bor, ammo raster qidirish/yuklash, quality mask va poligon bo‘yicha zonal statistikalar hali ulanmagan. Sayt ularni tayyor ma’lumotdek ko‘rsatmaydi.
 
-## Markaziy server — barcha foydalanuvchilar uchun bitta PostgreSQL
+## Ixtiyoriy: markaziy server — barcha foydalanuvchilar uchun bitta PostgreSQL
 
 Agar barcha odamlarning ma’lumotlari sizning PostgreSQL serveringizga saqlanishi kerak bo‘lsa, lokal SQLite installer emas, markaziy server rejimini ishlating.
 
@@ -65,13 +65,13 @@ Windows PowerShell:
 ```powershell
 git clone https://github.com/Sherzoddd2002/osh-agriculture-ai-global.git
 cd osh-agriculture-ai-global
-.\\ops\\local.ps1 install
+.\ops\local.ps1 install
 ```
 
 Yoki CLI'ni bevosita ishga tushiring:
 
 ```powershell
-node .\\bin\\cli.js install
+node .\bin\cli.js install
 ```
 
 O‘rnatish tugagach brauzerda <http://127.0.0.1:8080> ochiladi. Web-server ishlayotgan paytda terminal oynasini yopmang.
@@ -79,15 +79,15 @@ O‘rnatish tugagach brauzerda <http://127.0.0.1:8080> ochiladi. Web-server ishl
 Boshqarish:
 
 ```powershell
-.\\ops\\local.ps1 start
-.\\ops\\local.ps1 status
-.\\ops\\local.ps1 stop
-.\\ops\\local.ps1 update
+.\ops\local.ps1 start
+.\ops\local.ps1 status
+.\ops\local.ps1 stop
+.\ops\local.ps1 update
 ```
 
 CLI ma’lumotlarni foydalanuvchining o‘z kompyuterida saqlaydi:
 
-- Windows: `%LOCALAPPDATA%\\OSH\\AgricultureAI\\data\\agriculture.sqlite3`
+- Windows: `%LOCALAPPDATA%\OSH\AgricultureAI\data\agriculture.sqlite3`
 - macOS: `~/Library/Application Support/OSH/AgricultureAI/data/agriculture.sqlite3`
 - Linux: `~/.local/share/osh-agriculture-ai-global/data/agriculture.sqlite3`
 
@@ -127,20 +127,17 @@ year,yield_t_ha,area_ha,production_t
 - AI yaratgan hindcast/forecast qiymatlari kuzatilgan haqiqiy hosildorlik sifatida global modelga qayta berilmaydi.
 - Global treningga qo‘shish roziligi alohida. Rozilikning o‘zi datasetni avtomatik tasdiqlamaydi; avval litsenziya, birlik, manba, vaqt qamrovi va sifat nazorati kerak.
 
-## GitHub’ga yuborish
+## GitHub manbasi
 
-GitHub’da `osh-agriculture-ai-global` nomli yangi bo‘sh **Public repository** yarating. Keyin loyiha papkasida:
+Loyihaning rasmiy public repository manzili: <https://github.com/Sherzoddd2002/osh-agriculture-ai-global>.
+
+Yangi foydalanuvchilar yuqoridagi `git clone` buyrug‘i bilan kodni oladi. Mavjud clone'ni yangilash uchun:
 
 ```powershell
-git init
-git add .
-git commit -m "Initial OSH Agriculture AI Global foundation"
-git branch -M main
-git remote add origin https://github.com/Sherzoddd2002/osh-agriculture-ai-global.git
-git push -u origin main
+git pull --ff-only origin main
 ```
 
-`.env`, foydalanuvchilar CSV fayllari, maxfiy API keylar va katta rastrlar `.gitignore` bilan chiqarib tashlangan. Yopiq ma’lumotlarni GitHub’ga qo‘ymang.
+`.env`, foydalanuvchilarning CSV fayllari, maxfiy API keylar, SQLite bazalari va katta rastrlar GitHub’ga joylanmasligi kerak. Ular `.gitignore` bilan chiqarib tashlangan bo‘lsa ham, commit qilishdan oldin tekshiring.
 
 ## Fly.io
 
