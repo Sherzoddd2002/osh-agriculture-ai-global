@@ -304,7 +304,7 @@ async function runCentralScript(action) {
 async function main() {
   if (Number(process.versions.node.split(".")[0]) < 20) throw new Error("Node.js 20+ kerak.");
   if (args.includes("--help") || command === "help") {
-    console.log("OSH Agriculture AI Global CLI\n\nLocal per-user mode (SQLite; no cloud server):\nFrom a GitHub checkout: node ./bin/cli.js install\nThen: node ./bin/cli.js start|status|stop|update\nAfter npm publication: npx osh-agriculture-ai-global install\n\nShared central server mode (Windows + existing PostgreSQL):\nAfter npm publication: npx osh-agriculture-ai-global server-install\nThen: npx osh-agriculture-ai-global server-start|status|stop|update\n\nEach local installation has its own database; local users do not share data.\nOptions: --no-open");
+    console.log("OSH Agriculture AI Global CLI\n\nRecommended local per-user mode (SQLite; no cloud server):\nFrom a GitHub checkout: node ./bin/cli.js install\nManage: node ./bin/cli.js start\n        node ./bin/cli.js status\n        node ./bin/cli.js stop\n        node ./bin/cli.js update\nAfter npm publication: npx osh-agriculture-ai-global install\n\nOptional shared central server mode (Windows + existing PostgreSQL):\nAfter npm publication: npx osh-agriculture-ai-global server-install\nManage with: server-start, server-status, server-stop, server-update\n\nEach local installation has its own database; local users do not share data.\nOptions: --no-open");
     return;
   }
   if (command === "install") await install();
