@@ -50,7 +50,7 @@ Keep the local PostgreSQL backup. Migrate data into the external cloud database 
 - One shared-cpu-1x Machine with 512 MB RAM is the lowest practical starting point for this Python image; actual memory use must be monitored.
 - Supabase Free has a 500 MB database quota and can pause after a week of low activity; it is a launch tier, not a production SLA.
 - A single Fly Machine is a single point of failure. This is a budget-first MVP topology, not high availability.
-- Machine compute, egress, storage, and external database usage can incur charges. Review the Fly and Neon dashboards and set billing alerts.
+- Machine compute, egress, storage, and external database usage can incur charges. Review the Fly and Supabase dashboards and set billing alerts.
 
 ## Before production launch
 
