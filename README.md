@@ -32,7 +32,7 @@ The central host stores users' records in one PostgreSQL database with account-l
 
 Each person can run the application on their own computer without Fly.io or a shared cloud database. The local CLI uses a private SQLite database and binds the web server to `127.0.0.1:8080`.
 
-Requirements: Node.js 20+, Python 3.11+, and internet access for the first install and external boundary/weather APIs. Docker and PostgreSQL are not required for this mode.
+Requirements: Git, Node.js 20+, Python 3.11+, and internet access for the first install and external boundary/weather APIs. Docker and PostgreSQL are not required for this mode.
 
 Windows PowerShell:
 
