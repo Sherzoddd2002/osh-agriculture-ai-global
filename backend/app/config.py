@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     geboundaries_base_url: str = "https://www.geoboundaries.org/api/current/gbOpen"
     max_upload_mb: int = 25
     worker_poll_seconds: int = 3
+    run_worker_in_web: bool = False
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
