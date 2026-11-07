@@ -2,7 +2,7 @@
 
 **A location-first agricultural data and yield-forecasting platform.** Users select a country and administrative area, upload historical crop observations, enrich the selected area with environmental datasets, run quality checks, and receive a clearly labelled yield estimate.
 
-> **Status: MVP foundation.** The current starter includes global administrative-boundary lookup (geoBoundaries), NASA POWER daily weather retrieval, CSV yield-data upload, PostgreSQL/PostGIS persistence, a database-backed background-job queue, a first local-model research endpoint, and a responsive web interface. Sentinel-2 NDVI, SMAP, and SoilGrids are represented as explicit connector slots; they are not silently fabricated or marked as available until their raster/data adapters and credentials are configured.
+> **Status: MVP foundation.** The starter includes global administrative-boundary lookup (geoBoundaries), NASA POWER daily weather retrieval, CSV yield-data upload, SQLite for personal local installations, optional PostgreSQL/PostGIS for a shared central deployment, a database-backed background-job queue, a research forecasting endpoint, and a responsive web interface. Sentinel-2 NDVI, SMAP, and SoilGrids are explicit connector slots; they are not presented as available until their raster/data adapters and credentials are configured.
 
 For Uzbek setup instructions, see [README_UZ.md](README_UZ.md).
 
@@ -10,10 +10,10 @@ For Uzbek setup instructions, see [README_UZ.md](README_UZ.md).
 
 - **Frontend:** vanilla HTML/CSS/JS + MapLibre GL JS.
 - **API:** FastAPI (Python).
-- **Database:** PostgreSQL + PostGIS (SQLAlchemy; geometry is stored in a PostGIS `geometry` column and GeoJSON metadata in JSONB).
-- **Background work:** a dedicated worker polls a PostgreSQL job queue using `FOR UPDATE SKIP LOCKED`.
+- **Database:** each personal local installation uses its own SQLite file. The optional shared-server/Docker deployment uses PostgreSQL; PostGIS is optional.
+- **Background work:** a local worker process polls the installation's own database-backed job queue. No cloud worker is required for personal mode.
 - **Environmental sources:** geoBoundaries, NASA POWER annual historical weather, and Open-Meteo current/16-day forecast are connected. NDVI, SMAP, SoilGrids remain explicit `PLANNED_CONNECTOR` sources.
-- **Deployment:** Docker and Fly.io process groups (`web` + `worker`); a separate managed PostGIS-compatible PostgreSQL cluster.
+- **Deployment:** GitHub source + local CLI for personal use; Docker Compose or a separately hosted central backend are optional alternatives.
 
 ## Shared central Windows + PostgreSQL server
 
@@ -28,17 +28,33 @@ This mode uses the dedicated osh_global_app role and osh_agriculture_global data
 
 The central host stores users' records in one PostgreSQL database with account-level ownership checks. The current Windows-host topology is a single point of failure; configure backups, monitoring, automatic startup, and security controls before unrestricted public signup.
 
-## Local one-command installer
+## Recommended: one local installation per person
 
-After the npm package is published by the repository owner:
+Each person can run the application on their own computer without Fly.io or a shared cloud database. The local CLI uses a private SQLite database and binds the web server to `127.0.0.1:8080`.
 
-```bash
-npx osh-agriculture-ai-global install
+Requirements: Node.js 20+, Python 3.11+, and internet access for the first install and external boundary/weather APIs. Docker and PostgreSQL are not required for this mode.
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/Sherzoddd2002/osh-agriculture-ai-global.git
+cd osh-agriculture-ai-global
+.\\ops\\local.ps1 install
 ```
 
-The local CLI stores each installation's data in its own SQLite database. Users do not share data or a central global training pool through this local mode. Shared multi-user operation requires a separately hosted backend and central database.
+Or run the CLI directly:
 
-## Quick start
+```powershell
+node .\\bin\\cli.js install
+```
+
+The installer opens <http://127.0.0.1:8080>. Keep the terminal window open while the local web server is running. From the same repository folder, use `.\\ops\\local.ps1 start|status|stop|update` to manage it. See [docs/LOCAL_PER_USER.md](docs/LOCAL_PER_USER.md).
+
+Each computer has its own database and its own user data. Local instances do not synchronize with each other or with the maintainer's PostgreSQL database. The MAPSPAM rows imported into a developer's database are not included in a fresh local install; distributing those reference rows requires a separately versioned data bundle.
+
+## Alternative: local Docker Compose stack
+
+For developers who prefer PostgreSQL/PostGIS in Docker rather than the personal SQLite installer:
 
 ```bash
 cp .env.example .env
@@ -46,7 +62,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Open <http://localhost:8080> and API docs at <http://localhost:8080/docs>.
+Open <http://127.0.0.1:8080> and API docs at <http://127.0.0.1:8080/docs>. Compose binds the web app and optional database port to loopback only. The named database volume persists between restarts; `docker compose down -v` deletes it.
 
 ## Dataset format
 
