@@ -6,7 +6,11 @@ primary_region = "ams"
 
 [processes]
   web = "uvicorn app.main:app --host 0.0.0.0 --port 8080"
-  worker = "python -m app.worker"
+
+[env]
+  APP_ENV = "production"
+  ENABLE_POSTGIS = "false"
+  RUN_WORKER_IN_WEB = "true"
 
 [deploy]
   release_command = "python -m app.init_db"
@@ -16,7 +20,7 @@ primary_region = "ams"
   force_https = true
   processes = ["web"]
   auto_stop_machines = "off"
-  auto_start_machines = false
+  auto_start_machines = true
 
 [[http_service.checks]]
   interval = "30s"
@@ -28,4 +32,4 @@ primary_region = "ams"
 [[vm]]
   cpu_kind = "shared"
   cpus = 1
-  memory = "1gb"
+  memory = "512mb"
