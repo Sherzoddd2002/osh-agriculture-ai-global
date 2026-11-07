@@ -4,7 +4,7 @@ This low-cost topology uses **one Fly Machine** for FastAPI and its background w
 
 ## Database
 
-Use a persistent PostgreSQL database with TLS. Neon Free currently includes 1 GB of Postgres storage, 100 CU-hours per project per month, and 5 GB of public network transfer. The free compute scales to zero after five minutes of inactivity, so the first query after idle can be slower. Keep an eye on storage and transfer limits; the full ADM2/ADM3 dataset may exceed the free 1 GB database allowance.
+Use a persistent PostgreSQL database with TLS. For an initial no-cost launch, Supabase Free currently includes 500 MB of database size and 5 GB of egress. Free projects can pause after a week of low activity. This application’s worker polls the database regularly, so it normally generates database activity; the 500 MB database-size quota is the important limit. Confirm the measured database size is safely below 500 MB before migrating. This may fit the current ADM0/ADM1 launch dataset, but it will not fit the complete ADM2/ADM3 expansion.
 
 Do not put database credentials in Git. Set the connection URL as a Fly secret:
 
@@ -48,7 +48,7 @@ Keep the local PostgreSQL backup. Migrate data into the external cloud database 
 ## Availability and cost
 
 - One shared-cpu-1x Machine with 512 MB RAM is the lowest practical starting point for this Python image; actual memory use must be monitored.
-- Neon Free storage/compute/network quotas are limits, not an uptime SLA.
+- Supabase Free has a 500 MB database quota and can pause after a week of low activity; it is a launch tier, not a production SLA.
 - A single Fly Machine is a single point of failure. This is a budget-first MVP topology, not high availability.
 - Machine compute, egress, storage, and external database usage can incur charges. Review the Fly and Neon dashboards and set billing alerts.
 
