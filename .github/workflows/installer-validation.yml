@@ -60,7 +60,8 @@ jobs:
           $files = @(
             "ops/start-central.ps1",
             "ops/stop-central.ps1",
-            "ops/status-central.ps1"
+            "ops/status-central.ps1",
+            "ops/local.ps1"
           )
           foreach ($file in $files) {
             $tokens = $null
