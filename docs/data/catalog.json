@@ -167,6 +167,62 @@
         "The ADM1 and ADM2 summaries use different boundary vintages and must not be summed as if their rows were disjoint.",
         "The public subset is separate from the central PostgreSQL inventory count above."
       ]
+    },
+    {
+      "id": "UZB_SIAT_ADM1_2010_2024_THREE_CROPS",
+      "name": "Uzbekistan official SIAT province production-to-sown-area series",
+      "status": "PUBLISHED_VIA_GITHUB_PAGES",
+      "files": [
+        "official-yield/UZB_ADM1_WHEA_2010_2024.json",
+        "official-yield/UZB_ADM1_CROPS_2010_2024.json"
+      ],
+      "admin_level": "ADM1",
+      "region_count": 13,
+      "crops": [
+        {
+          "code": "whea",
+          "name": "Wheat",
+          "records": 195,
+          "production_indicator": "1.03.03.0010",
+          "area_indicator": "1.03.03.0084"
+        },
+        {
+          "code": "pota",
+          "name": "Potato",
+          "records": 195,
+          "production_indicator": "1.03.03.0031",
+          "area_indicator": "1.03.03.0070"
+        },
+        {
+          "code": "cott",
+          "name": "Raw cotton",
+          "records": 195,
+          "production_indicator": "1.03.03.0073",
+          "area_indicator": "1.03.03.0069"
+        }
+      ],
+      "years": {
+        "first": 2010,
+        "last": 2024
+      },
+      "records": 585,
+      "method": "Annual production (thousand tonnes) * 1000 / planted area (hectares)",
+      "unit": "tonnes per planted hectare",
+      "license": "CC BY 4.0",
+      "sources": [
+        "https://siat.stat.uz/data/1458/?lang=en",
+        "https://siat.stat.uz/data/2761/?lang=en",
+        "https://siat.stat.uz/data/323/?lang=en",
+        "https://siat.stat.uz/data/2040/?lang=en",
+        "https://siat.stat.uz/data/2389/?lang=en",
+        "https://siat.stat.uz/data/2039/?lang=en"
+      ],
+      "caveats": [
+        "The ratio uses planted area, not harvested area, and is labelled as production-to-sown-area rather than field-measured yield.",
+        "Statistics are province-level only; no district or custom-field yield is inferred from the parent province.",
+        "Tashkent city is excluded; 13 agricultural ADM1 regions are included.",
+        "These are historical observations and AI research scenarios, not validated universal future forecasts."
+      ]
     }
   ]
 }
