@@ -185,19 +185,9 @@ for crop_code, max_yield in (("pota", 200.0), ("cott", 20.0)):
     if meta.get("region_count") != 13 or meta.get("record_count") != 195:
         raise SystemExit(f"FAIL: SIAT {crop_code} manifest record counts are inconsistent")
     for region in regions:
-        if normalize_name := region.get("name_uz"):
-            pass
-        else:
+        region_name = str(region.get("name_uz") or "").strip()
+        if not region_name:
             raise SystemExit(f"FAIL: SIAT {crop_code} has a blank province name")
-        normalized_region = re.sub(r"[^a-z0-9]+", "", normalize_name.lower())
-        normalized_boundary_names = {
-            re.sub(r"[^a-z0-9]+", "", name.lower())
-            for name in boundary_ids_by_level["ADM1"].values()
-        }
-        # geoBoundaries stores English labels; the browser localization test
-        # separately verifies the source-name to Uzbek display mapping.
-        if not normalized_region:
-            raise SystemExit(f"FAIL: SIAT {crop_code} province name is not usable")
         records = region.get("records") or []
         years = [row.get("year") for row in records]
         if years != list(range(2010, 2025)):
