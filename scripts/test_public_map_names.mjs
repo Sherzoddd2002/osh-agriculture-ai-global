@@ -88,10 +88,11 @@ const mapspamHarnessSource=[
  "function regionEscape(value){return String(value==null?\"\":value);}",
  extractFunction("regionFeatureName"),
  extractFunction("regionFmt"),
- extractFunction("renderMapspamReference"),
+ "async "+extractFunction("renderMapspamReference"),
  "return {render:renderMapspamReference,setArea:value=>{selectedAOI=value;},setCrop:value=>{activeCrop=value;},elements};"
 ].join("\n");
-const mapspamHarness=new Function("payload",mapspamHarnessSource)(mapspamReference);
+const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
+const mapspamHarness=await new AsyncFunction("payload",mapspamHarnessSource)(mapspamReference);
 const estimatedEntry=Object.entries(mapspamReference.levels.ADM2.areas).find(([,area])=>area.crops.whea.spatial_status==="ESTIMATED");
 assert.ok(estimatedEntry,"at least one district should have a wheat raster estimate");
 const [estimatedId,estimatedArea]=estimatedEntry;
