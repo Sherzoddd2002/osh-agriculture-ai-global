@@ -167,7 +167,7 @@
         </div>
         <div class="region-selected">
           <div><small>TANLANGAN AOI</small><strong id="region-name">Hudud tanlanmagan</strong><span id="region-meta">ADM2/ADM3 yoki qo‘lda chizilgan dala poligoni</span></div>
-          <div class="region-coords"><small>VAKILLIK NUQTASI</small><b id="region-center">—</b></div>
+          <div class="region-coords"><small>TAXMINIY MARKAZ KOORDINATASI</small><b id="region-center">—</b></div>
           <button class="btn-primary" id="region-analyze" disabled>Hududni tahlil qilish →</button>
         </div>
       </div>
@@ -292,8 +292,8 @@
         <article class="source-card"><div class="source-status">● ACTIVE · POINT WEATHER</div><h3>NASA POWER</h3><p>Tarixiy kunlik ob-havo: harorat, yog‘in, namlik, shamol, quyosh radiatsiyasi, GDD, issiq va sovuq kunlar. Hozircha tanlangan poligonning vakillik nuqtasi bo‘yicha.</p><a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">NASA POWER ↗</a></article>
         <article class="source-card"><div class="source-status">● ACTIVE · FORECAST</div><h3>Open-Meteo</h3><p>Joriy ob-havo va 16 kungacha prognoz: harorat, yog‘in, shamol, namlik va reference evapotranspiration. Prognoz kuzatuv emas.</p><a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo ↗</a></article>
         <article class="source-card"><div class="source-status">● STAC CATALOG CONNECTED</div><h3>Sentinel-2 L2A · NDVI PROCESSING NEXT</h3><p>Copernicus STAC katalogidan AOI, sana va cloud-cover filtri bilan sahnalarni qidirish ulandi. B04/B08 rasterlarini olish, SCL/CLD mask, NDVI hisoblash va mavsumiy zonal statistikalar hali bajarilmaydi. B04/B08 10 m; SCL/CLD 20 m.</p><a href="https://documentation.dataspace.copernicus.eu/APIs/STAC.html" target="_blank" rel="noopener">Copernicus STAC ↗</a></article>
-        <article class="source-card"><div class="source-status planned">◌ DATASET AVAILABLE · LOGIN + PROCESSING</div><h3>NASA SMAP · SPL3SMP_E v6</h3><p>Global kunlik surface soil-moisture mahsuloti mavjud. Yuklash uchun bepul NASA Earthdata Login, quality-flag filtri va raster zonal processing kerak. 9 km EASE-Grid — dala o‘lchovi emas.</p><a href="https://nsidc.org/data/spl3smp_e/versions/6" target="_blank" rel="noopener">NASA SMAP product ↗</a></article>
-        <article class="source-card"><div class="source-status planned">◌ WCS / WEBDAV AVAILABLE · ADAPTER NEXT</div><h3>SoilGrids · 250 m</h3><p>Global pH, SOC, azot, clay/sand/silt va bulk density xaritalari hamda noaniqlik qatlamlari mavjud. ISRIC REST API vaqtincha pausada; WCS GetCoverage yoki WebDAV VRT orqali AOI subset adapteri kerak.</p><a href="https://docs.isric.org/globaldata/soilgrids/wcs.html" target="_blank" rel="noopener">SoilGrids WCS ↗</a></article>
+        <article class="source-card"><div class="source-status auth">◌ DATASET ACCESS · EARTHDATA LOGIN REQUIRED</div><h3>NASA SMAP · SPL3SMP_E v6</h3><p>Global kunlik surface soil-moisture mahsuloti mavjud. Yuklash uchun bepul NASA Earthdata Login, quality-flag filtri va raster zonal processing kerak. 9 km EASE-Grid — dala o‘lchovi emas.</p><a href="https://nsidc.org/data/spl3smp_e/versions/6" target="_blank" rel="noopener">NASA SMAP product ↗</a></article>
+        <article class="source-card"><div class="source-status limited">◌ WCS / WEBDAV AVAILABLE · ZONAL ADAPTER NOT CONNECTED</div><h3>SoilGrids · 250 m</h3><p>Global pH, SOC, azot, clay/sand/silt va bulk density xaritalari hamda noaniqlik qatlamlari mavjud. ISRIC REST API vaqtincha pausada; WCS GetCoverage yoki WebDAV VRT orqali AOI subset adapteri kerak.</p><a href="https://docs.isric.org/globaldata/soilgrids/wcs.html" target="_blank" rel="noopener">SoilGrids WCS ↗</a></article>
       </div>
       <div class="info-note"><b>Readiness qoidasi:</b> katalog mavjudligi raster qiymati hisoblanganini anglatmaydi. Sentinel-2 hozir scene discovery darajasida; SMAP va SoilGrids uchun data access + raster mask + zonal statistics + sifat nazorati yakunlanmaguncha ularning qiymatlari AI feature sifatida ishlatilmaydi.</div>
       <div class="library-row"><strong>TECH STACK · IMPLEMENTED IN REPOSITORY</strong><div class="library-tags"><span>Python 3.12</span><span>FastAPI</span><span>PostgreSQL 17</span><span>PostGIS</span><span>SQLite</span><span>SQLAlchemy</span><span>Pandas</span><span>NumPy</span><span>scikit-learn</span><span>Rasterio</span><span>Shapely</span><span>MapLibre GL JS</span></div></div>
@@ -375,7 +375,7 @@ window.__setDemoState=function(state){
  const found=features.find(x=>iso3(x)==="UZB")||features.find(x=>countryName(x)==="Uzbekistan")||features[0];
  if(found)choose(found,false);
  if(state==="result"){
-  document.getElementById("archive").scrollIntoView({behavior:"auto",block:"start"});
+  document.getElementById("field-analysis").scrollIntoView({behavior:"auto",block:"start"});
  }
 };
 if(window.maplibregl){
@@ -706,21 +706,26 @@ function solveLinearSystem(matrix,vector){
 }
 function fitRegionRidge(xRows,yRows,xValid,alpha){
  const p=xValid.length,n=xRows.length;
- const xMean=Array(p).fill(0);
+ const xMean=Array(p).fill(0),xScale=Array(p).fill(1);
  let yMean=0;
  for(let i=0;i<p;i++)xMean[i]=xRows.reduce((sum,row)=>sum+row[i],0)/n;
+ for(let i=0;i<p;i++){
+  const variance=xRows.reduce((sum,row)=>sum+Math.pow(row[i]-xMean[i],2),0)/n;
+  xScale[i]=Math.sqrt(variance)||1;
+ }
  yMean=yRows.reduce((a,b)=>a+b,0)/n;
+ const standardized=xRows.map(row=>row.map((v,i)=>(v-xMean[i])/xScale[i]));
  const matrix=Array.from({length:p},()=>Array(p).fill(0));
  const vector=Array(p).fill(0);
  for(let r=0;r<n;r++){
-  const centered=xRows[r].map((v,i)=>v-xMean[i]);
+  const centered=standardized[r];
   const y=yRows[r]-yMean;
   for(let i=0;i<p;i++){vector[i]+=centered[i]*y;for(let j=0;j<p;j++)matrix[i][j]+=centered[i]*centered[j];}
  }
  for(let i=0;i<p;i++)matrix[i][i]+=alpha;
  const beta=solveLinearSystem(matrix,vector);
- const intercept=yMean-xMean.reduce((sum,v,i)=>sum+v*beta[i],0);
- return intercept+xValid.reduce((sum,v,i)=>sum+v*beta[i],0);
+ const validStandardized=xValid.map((v,i)=>(v-xMean[i])/xScale[i]);
+ return yMean+validStandardized.reduce((sum,v,i)=>sum+v*beta[i],0);
 }
 function runRegionRidge(series,targetYear){
  if(series.length<8)throw new Error("Kamida 8 ta haqiqiy yillik yield kuzatuvi kerak. Mavjud: "+series.length);
