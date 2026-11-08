@@ -12,6 +12,8 @@
 
 ---
 
+> **GitHub Pages’ni bir marta yoqish:** repository egasi GitHub’da **Settings → Pages → Build and deployment → Source: GitHub Actions** ni tanlaydi. Keyin **Actions → Deploy public demo to GitHub Pages → Run workflow** orqali saytni chiqaradi. Kutilayotgan manzil: https://sherzoddd2002.github.io/osh-agriculture-ai-global/ .
+
 ## Ochiq demo va loyiha haqida
 
 **Dunyo bo‘yicha hudud tanlash, qishloq xo‘jaligi ma’lumotlarini birlashtirish va hosildorlikni prognozlash platformasi.**
