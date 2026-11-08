@@ -17,7 +17,7 @@ html = HTML_PATH.read_text(encoding="utf-8")
 required_ids = {
     "map", "region-iso3", "region-level", "region-load", "region-search",
     "region-select", "region-analyze", "region-yield-file", "region-run-model",
-    "region-model-result", "region-crop-select", "crop-select", "crop-chips",
+    "region-model-result", "region-crop-select", "region-mapspam-result", "crop-select", "crop-chips",
 }
 found_ids = set(re.findall(r'\bid=["\']([^"\']+)["\']', html))
 missing = sorted(required_ids - found_ids)
@@ -89,6 +89,7 @@ manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 if manifest.get("country_iso3") != "UZB":
     raise SystemExit("FAIL: boundary manifest country is not UZB")
 
+boundary_ids_by_level: dict[str, dict[str, str]] = {}
 for level, expected_count in (("ADM1", 14), ("ADM2", 199)):
     details = (manifest.get("levels") or {}).get(level) or {}
     filename = details.get("file")
@@ -108,6 +109,7 @@ for level, expected_count in (("ADM1", 14), ("ADM2", 199)):
     metadata = payload.get("metadata") or {}
     if metadata.get("country_iso3") != "UZB" or metadata.get("admin_level") != level:
         raise SystemExit(f"FAIL: UZB {level} metadata identity mismatch")
+    boundary_ids: dict[str, str] = {}
     for index, feature in enumerate(payload["features"]):
         geometry = feature.get("geometry") if isinstance(feature, dict) else None
         if not geometry:
@@ -115,6 +117,13 @@ for level, expected_count in (("ADM1", 14), ("ADM2", 199)):
         parsed = shape(geometry)
         if parsed.is_empty or not parsed.is_valid or parsed.geom_type not in {"Polygon", "MultiPolygon"}:
             raise SystemExit(f"FAIL: UZB {level} feature {index} has invalid geometry")
+        props = feature.get("properties") or {}
+        shape_id = str(props.get("shapeID") or "")
+        shape_name = str(props.get("shapeName") or "")
+        if not shape_id or not shape_name or shape_id in boundary_ids:
+            raise SystemExit(f"FAIL: UZB {level} feature {index} has missing/duplicate shapeID or shapeName")
+        boundary_ids[shape_id] = shape_name
+    boundary_ids_by_level[level] = boundary_ids
     print(f"PASS: UZB {level}: {len(payload['features'])} valid polygon features")
 
 official_info = manifest.get("official_yield") or {}
@@ -138,6 +147,66 @@ for region in official["regions"]:
         if not isinstance(value, (int, float)) or not 0 < value < 30:
             raise SystemExit(f"FAIL: invalid official wheat yield row: {region.get('name_uz')} / {row}")
 print(f"PASS SIAT province wheat yield: {len(official['regions'])} regions, {sum(len(r['records']) for r in official['regions'])} records")
+
+# The public MAPSPAM snapshot is built from the real-data Actions artifact and
+# joined by exact geoBoundaries shapeID, not by approximate district-name text.
+mapspam_path = DOCS / "data" / "mapspam" / "UZB_MAPSPAM_2020_ADM1_ADM2.json"
+if not mapspam_path.is_file():
+    raise SystemExit("FAIL: validated public MAPSPAM 2020 ADM1/ADM2 dataset is missing")
+mapspam = json.loads(mapspam_path.read_text(encoding="utf-8"))
+if (
+    mapspam.get("country_iso3") != "UZB"
+    or mapspam.get("dataset_id") != "mapspam-2020-v2r2"
+    or mapspam.get("source_year") != 2020
+    or mapspam.get("technology") != "all"
+    or mapspam.get("license") != "CC BY-SA 4.0"
+    or mapspam.get("source_url") != "https://doi.org/10.7910/DVN/SWPENT"
+):
+    raise SystemExit("FAIL: MAPSPAM public snapshot metadata/license/source is invalid")
+if "renderMapspamReference" not in html or "./data/mapspam/UZB_MAPSPAM_2020_ADM1_ADM2.json" not in html:
+    raise SystemExit("FAIL: MAPSPAM 2020 public data is not connected to the selected-area UI")
+if "NO_RASTER_CELLS" not in html or "NULL / mavjud emas" not in html:
+    raise SystemExit("FAIL: no-raster-cell MAPSPAM rows must display NULL, not zero yield")
+mapspam_levels = mapspam.get("levels") or {}
+for level, expected_count in (("ADM1", 14), ("ADM2", 199)):
+    level_data = mapspam_levels.get(level) or {}
+    areas = level_data.get("areas") or {}
+    if level_data.get("area_count") != expected_count or set(areas) != set(boundary_ids_by_level[level]):
+        raise SystemExit(f"FAIL: MAPSPAM {level} area IDs/count do not match public boundaries")
+    if level_data.get("crop_count") != 46:
+        raise SystemExit(f"FAIL: MAPSPAM {level} does not declare 46 crop layers")
+    if str(level_data.get("boundary_year")) != str((manifest.get("levels") or {}).get(level, {}).get("boundary_year")):
+        raise SystemExit(f"FAIL: MAPSPAM {level} boundary vintage does not match public GeoJSON")
+    for area_id, area in areas.items():
+        if area.get("name") != boundary_ids_by_level[level][area_id]:
+            raise SystemExit(f"FAIL: MAPSPAM {level} area name does not match its shapeID")
+        crops = area.get("crops") or {}
+        if set(crops) != set(crop_codes):
+            raise SystemExit(f"FAIL: MAPSPAM {level} {area_id} must contain exactly 46 crop rows")
+        if level == "ADM2" and area.get("parent_admin_id") not in mapspam_levels.get("ADM1", {}).get("areas", {}):
+            raise SystemExit(f"FAIL: MAPSPAM ADM2 {area_id} has an unknown ADM1 parent")
+        for crop_code, row in crops.items():
+            status = row.get("spatial_status")
+            cells = row.get("valid_cells")
+            yield_value = row.get("yield_t_ha")
+            if status == "NO_RASTER_CELLS":
+                if cells != 0 or yield_value is not None:
+                    raise SystemExit(f"FAIL: MAPSPAM {level}/{area_id}/{crop_code} must keep NULL yield when no raster cells exist")
+            elif status == "ESTIMATED":
+                if not isinstance(cells, int) or cells <= 0 or not isinstance(yield_value, (int, float)) or not 0 < yield_value < 30:
+                    raise SystemExit(f"FAIL: MAPSPAM {level}/{area_id}/{crop_code} has invalid estimated yield/cell count")
+            else:
+                raise SystemExit(f"FAIL: MAPSPAM {level}/{area_id}/{crop_code} has unknown spatial status")
+            for field in ("physical_area_ha", "harvested_area_ha", "production_t"):
+                value = row.get(field)
+                if not isinstance(value, (int, float)) or not (value >= 0):
+                    raise SystemExit(f"FAIL: MAPSPAM {level}/{area_id}/{crop_code} invalid {field}")
+print(
+    "PASS MAPSPAM 2020 public reference: "
+    f"{mapspam_levels['ADM1']['area_count']} ADM1 / "
+    f"{mapspam_levels['ADM2']['area_count']} ADM2 / 46 crops; "
+    "shapeID and parent links verified"
+)
 
 scripts = re.findall(r"<script>([\s\S]*?)</script>", html, flags=re.IGNORECASE)
 if len(scripts) != 1:
