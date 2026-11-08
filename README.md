@@ -1,14 +1,24 @@
 # Dunyo bo‘yicha hosil prognozi, NASA ma’lumotlari asosida
 
-**OSH Agriculture AI Global** — global qishloq xo‘jaligi ma’lumotlari, hududiy tahlil va hosildorlik prognozi uchun ochiq tadqiqot platformasi.
+**OSH Agriculture AI Global** — FAOSTAT tarixiy statistikasi, MAPSPAM fazoviy ekin qatlamlari, iqlim manbalari va ML tahlilini birlashtiruvchi global agrar research platforma.
 
-🌍 **[Interaktiv 3D demo’ni ochish](https://sherzoddd2002.github.io/osh-agriculture-ai-global/)** · [GitHub repository](https://github.com/Sherzoddd2002/osh-agriculture-ai-global)
+🌍 **[Global data dashboard’ni ochish](https://sherzoddd2002.github.io/osh-agriculture-ai-global/)** · [GitHub repository](https://github.com/Sherzoddd2002/osh-agriculture-ai-global) · [JSON data manifest](docs/data/catalog.json)
 
-![OSH Agriculture AI Global public demo](docs/assets/osh-global-preview.png)
+![OSH Agriculture AI Global — verified data dashboard](docs/assets/osh-global-preview.png)
 
-[Qisqa demo: xaritada mamlakatni tanlash → tahlil jarayoni](docs/assets/demo-walkthrough.gif)
+[Qisqa demo: 3D globus, data archive va model laboratoriyasi](docs/assets/demo-walkthrough.gif)
 
-> **Muhim:** NASA POWER platformaga tarixiy ob-havo ma’lumotlarini beradi; u hosildorlik modeli emas. Ochiq GitHub Pages demo hozircha 3D xarita va hudud tanlashni namoyish etadi. Haqiqiy hosil prognozi uchun backend API va yetarli, tekshirilgan hosildorlik tarixi kerak. Demo soxta prognoz raqamlarini ko‘rsatmaydi. Bu — ommaviy loyiha vitrinasidir, fermer xo‘jaligi uchun ishlab turgan prognoz xizmati emas.
+## Ma’lumotlar inventarizatsiyasi · 2026-11-08
+
+| Arxiv | Bazadagi qatorlar | Qamrov |
+|---|---:|---|
+| FAOSTAT QCL | **610,299** | 1961–2024 · 202 mamlakat/hudud · 169 item kodi |
+| IFPRI MAPSPAM 2020 v2r2 | **228,620** | 153 mamlakat · 46 ekin · ADM0/ADM1/ADM2 |
+| **Jami** | **838,919** | Ikki alohida manbaning yozuvlari |
+
+**Qo‘shimcha katalog:** CROPGRIDS v1.08 (2020) 173 ekin qatlamiga ega, lekin u markaziy reference bazaga import qilinmagan va yuqoridagi jami qatorlarga kiritilmagan.
+
+> **Ilmiy aniqlik:** FAOSTAT QCL milliy darajadagi yillik statistika; tuman kuzatuvi emas. MAPSPAM 2020 — taxminan 9.3 km gridli bitta reference yil, joriy yil yoki dala o‘lchovi emas. NASA POWER tarixiy ob-havo feature manbasi; hosildorlik modelining o‘zi emas. Public dashboard markaziy PostgreSQL bazasining tekshirilgan inventarizatsiyasini ko‘rsatadi, lekin xom shaxsiy DB qatorlarini ommaga chiqarmaydi. NDVI, SMAP va SoilGrids connectorlari hali rejalashtirilgan. Bu — ommaviy loyiha vitrinasidir, fermer xo‘jaligi uchun ishlab turgan prognoz xizmati emas.
 
 ---
 
