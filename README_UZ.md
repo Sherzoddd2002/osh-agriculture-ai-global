@@ -35,7 +35,7 @@ Bu yangi global loyiha. U sizning mavjud `E:\OSH`, `osh` PostgreSQL bazangiz yok
 Public sayt **GitHub Pages + GitHub Actions** asosida ishlaydi. Saytni ochgan odamga Python, PostgreSQL yoki alohida server kerak emas.
 
 - Global 3D xaritada mamlakatlar ko‘rinadi va tanlanadi.
-- O‘zbekistonning **14 ta ADM1 viloyati** va **199 ta ADM2 tumani** GitHub Pages uchun statik GeoJSON sifatida tayyorlanadi. Har bir poligon xaritada bosiladi yoki hudud nomi bo‘yicha qidiriladi.
+- Barcha qo‘llab-quvvatlanadigan mamlakatlar uchun geoBoundaries manbasidagi **ADM1 va ADM2** chegaralari GitHub Pages’ga davlat kesimida statik GeoJSON qilib joylanadi. Faqat tanlangan mamlakat va daraja yuklanadi; ma’lumot mavjud bo‘lmagan daraja aniq xabar beradi. O‘zbekistonning **14 ta ADM1 viloyati** va **199 ta ADM2 tumani** MAPSPAM `shapeID` bog‘lanishini saqlash uchun alohida tekshirilgan paket sifatida qoladi.
 - Maydon chizish vositasi bilan xaritada o‘zingizning Polygon hududingizni chizishingiz mumkin.
 - Tanlangan hudud markazining taxminiy koordinatasi bo‘yicha Open-Meteo ERA5-Land tarixiy ob-havo qatori va 7 kunlik ob-havo ma’lumoti olinadi. Bu poligon bo‘yicha zonal o‘rtacha emas.
 - Copernicus STAC orqali so‘nggi 12 oydagi Sentinel-2 L2A sahnalari (bulutlilik ≤30%) qidiriladi. Bu hozircha scene metadata; NDVI rasteri hisoblanmaydi.
@@ -48,7 +48,7 @@ Public sayt **GitHub Pages + GitHub Actions** asosida ishlaydi. Saytni ochgan od
 
 [Dashboard’ni oching](https://sherzoddd2002.github.io/osh-agriculture-ai-global/) → **Maydon tahlili** bo‘limiga o‘ting.
 
-1. Sayt ochilganda **ADM2 · Tumanlar** qatlami avtomatik yuklanadi (199 ta tuman). Xaritada tuman poligonini bosing yoki qidiruvga nomini yozing.
+1. Sayt ochilganda O‘zbekiston **ADM2 · Tumanlar** qatlami avtomatik yuklanadi (199 ta tuman). Boshqa mamlakatni xaritada bosing yoki ISO-3 kodini (masalan, `KAZ`, `DEU`, `USA`) kiriting, so‘ng ADM1/ADM2 qatlamini yuklang.
 2. Viloyat kesimiga o‘tish uchun **ADM1 · Viloyatlar** ni tanlang va **Chegaralarni yuklash** tugmasini bosing (14 ta viloyat). Tuman qatlamiga qaytish ham shu usulda bajariladi.
 3. **Hududni tahlil qilish** orqali tarixiy ERA5-Land ob-havo qatori va 7 kunlik prognozni oling; Sentinel-2 sahnalari alohida ko‘rsatiladi.
 4. Shu natijalar ichida tanlangan tuman/viloyat va 46 ekindan biri uchun **MAPSPAM 2020** hosildorlik, ishlab chiqarish, fizik/yig‘ib olingan maydon hamda yaroqli raster kataklari ko‘rinadi. `NO_RASTER_CELLS` holatida yield `NULL` bo‘ladi; 0 deb ko‘rsatilmaydi.
