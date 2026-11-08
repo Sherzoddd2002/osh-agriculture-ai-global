@@ -85,7 +85,7 @@ const mapspamHarnessSource=[
  "Object.defineProperty(elements['region-crop-select'],'value',{get:()=>activeCrop});",
  "function $(id){return elements[id];}",
  "const fetch=(url)=>Promise.resolve({ok:true,json:()=>Promise.resolve(payload)});",
- extractFunction("regionEscape"),
+ "function regionEscape(value){return String(value==null?\"\":value);}",
  extractFunction("regionFeatureName"),
  extractFunction("regionFmt"),
  extractFunction("renderMapspamReference"),
