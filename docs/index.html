@@ -23,6 +23,54 @@
 @media(max-width:1180px){.sidebar{width:210px}.main{margin-left:210px}.source-grid{grid-template-columns:repeat(3,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}.model-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:900px){.sidebar{width:64px;padding:18px 8px}.brand{padding:0;justify-content:center}.brand>span:last-child,.nav-label,.nav a .nav-text,.side-card,.side-foot{display:none}.nav{gap:8px}.nav a{justify-content:center;padding:12px 4px}.nav-icon{width:auto;font-size:18px}.main{margin-left:64px}.hero{grid-template-columns:1fr}.globe-layout{grid-template-columns:1fr}.selection{display:grid;grid-template-columns:1fr 1fr;align-items:start}.selection .kicker,.selection h3,.selection p,.selection .hint{grid-column:1/-1}.selection-actions{grid-column:1/-1}.spatial-layout{grid-template-columns:1fr}.source-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.topbar{height:68px;padding:0 13px}.topbar h1{font-size:15px}.top-right .date-pill{display:none}.content{padding:17px 12px 32px}.hero-copy{padding:12px 1px}.hero h2{font-size:36px;letter-spacing:-1.5px}.hero-panel{min-height:170px}.metrics{gap:7px}.metric{min-height:100px;padding:12px}.metric strong{font-size:24px}.section-head{align-items:start}.section-head h2{font-size:19px}.archive-grid{grid-template-columns:1fr}.facts-grid{grid-template-columns:repeat(3,1fr)}.globe{height:360px}.selection{display:flex}.model-grid{grid-template-columns:1fr 1fr}.pipeline-steps{grid-template-columns:1fr 1fr}.pipe-step:last-child{grid-column:1/-1}.model-rules{grid-template-columns:1fr}.source-grid{grid-template-columns:1fr 1fr}.status-pill{font-size:0;padding:8px}.status-pill i{margin:0}.section-index{display:none}}
+
+
+/* Public small-area analysis workspace */
+.region-panel,.region-result-card{padding:18px}
+.region-controls{display:grid;grid-template-columns:1fr .8fr auto 1.4fr;gap:10px;align-items:end}
+.region-controls label,.region-yield-controls label{display:grid;gap:5px;color:#9ab0be;font-size:9px;font-weight:800}
+.region-controls input,.region-controls select,.region-yield-controls input{min-width:0;width:100%;padding:10px 11px;border-radius:9px;border:1px solid #29485a;background:#091a27;color:#e9f2f6;outline:none;font-size:11px}
+.region-controls input:focus,.region-controls select:focus,.region-yield-controls input:focus{border-color:var(--mint)}
+.region-draw-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:13px 0}
+.region-draw-row button:disabled{opacity:.4;cursor:not-allowed}
+.region-status{font-size:9px;color:#8da5b4;margin-left:5px;min-width:180px;flex:1}
+.region-selected{display:grid;grid-template-columns:1.4fr 1fr auto;align-items:center;gap:15px;border:1px solid #2a4c5d;border-radius:13px;background:#0a1e2b;padding:14px}
+.region-selected small,.region-coords small{display:block;color:#7e99a9;font-size:8px;letter-spacing:1.1px;font-weight:900}
+.region-selected strong{display:block;font-size:16px;margin:3px 0}
+.region-selected span{color:#8ca5b5;font-size:9px}
+.region-coords b{display:block;font-size:11px;margin-top:4px}
+.region-results{margin-top:13px}
+.region-result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.region-result-head{display:flex;justify-content:space-between;align-items:start;gap:10px;margin-bottom:13px}
+.region-result-head h3{margin:3px 0;font-size:15px}
+.region-result-head small{color:#91a8b6;font-size:9px}
+.region-weather-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.region-kpi{padding:10px;border:1px solid #274253;border-radius:10px;background:#0a1b29}
+.region-kpi small{display:block;color:#8ca4b2;font-size:8px}
+.region-kpi strong{display:block;font-size:19px;color:#65dfba;margin:3px 0}
+.region-kpi span{font-size:8px;color:#8299a8}
+.region-table-wrap{overflow:auto;margin-top:12px}
+.region-table-wrap table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:9px;color:#d9e7ee}
+.region-table-wrap th,.region-table-wrap td{padding:8px 9px;text-align:right;border-bottom:1px solid #1d394a}
+.region-table-wrap th:first-child,.region-table-wrap td:first-child{text-align:left}
+.region-table-wrap th{color:#91aab9;background:#142b3d}
+.region-scene-summary{padding:12px;border:1px solid #29485a;border-radius:11px;background:#0a1c2a;color:#b7cad5;font-size:10px}
+.region-footnote{font-size:9px;color:#7f98a8;line-height:1.65;margin:12px 0 0}
+.region-empty{padding:15px;color:#8ea7b5;font-size:10px}
+.region-yield-card{margin-top:12px}
+.region-yield-controls{display:grid;grid-template-columns:1.2fr .8fr .9fr .7fr auto;gap:9px;align-items:end}
+.region-yield-controls input[type=file]{padding:8px;font-size:9px}
+.region-model-result{margin-top:13px;padding:13px;border:1px solid #2a4b5d;border-radius:11px;background:#0a1c2a;color:#a9beca;font-size:10px;line-height:1.7}
+.region-model-result strong{color:var(--mint)}
+.region-model-result table{width:100%;border-collapse:collapse;margin-top:10px;font-size:9px}
+.region-model-result th,.region-model-result td{padding:7px 9px;border-bottom:1px solid #294457;text-align:right}
+.region-model-result th:first-child,.region-model-result td:first-child{text-align:left}
+.source-status.catalog{color:var(--mint)}
+.source-status.auth{color:var(--gold)}
+.source-status.limited{color:#e3aa78}
+@media(max-width:1050px){.region-controls{grid-template-columns:1fr 1fr}.region-controls button{width:100%}.region-selected{grid-template-columns:1fr 1fr}.region-selected button{grid-column:1/-1}.region-yield-controls{grid-template-columns:1fr 1fr}.region-yield-controls button{grid-column:1/-1;width:100%}}
+@media(max-width:760px){.region-result-grid{grid-template-columns:1fr}.region-weather-kpis{grid-template-columns:repeat(2,1fr)}.region-selected{grid-template-columns:1fr}.region-yield-controls{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -35,6 +83,7 @@
       <a class="active" href="#overview"><span class="nav-icon">⌂</span><span class="nav-text">Bosh sahifa</span></a>
       <a href="#globe"><span class="nav-icon">◎</span><span class="nav-text">Global 3D xarita</span></a>
       <a href="#archive"><span class="nav-icon">▤</span><span class="nav-text">Data arxivi</span></a>
+      <a href="#field-analysis"><span class="nav-icon">⌖</span><span class="nav-text">Maydon tahlili</span></a>
       <a href="#spatial"><span class="nav-icon">▦</span><span class="nav-text">MAPSPAM / 46 ekin</span></a>
       <a href="#models"><span class="nav-icon">⌘</span><span class="nav-text">Model laboratoriyasi</span></a>
       <a href="#environment"><span class="nav-icon">☁</span><span class="nav-text">Iqlim manbalari</span></a>
@@ -95,6 +144,63 @@
           <div class="hint">Muhim: FAOSTAT tarixiy qatorlari milliy darajadagi statistikadir. MAPSPAM 2020 rasteridan hisoblangan admin xulosalari esa alohida fazoviy qatlam; xaritadagi mamlakat tanlovi o‘z-o‘zidan tuman bo‘yicha aniq qiymatni anglatmaydi.</div>
         </aside>
       </div>
+    </section>
+
+    <section class="section" id="field-analysis">
+      <div class="section-head">
+        <div><div class="eyebrow">02 / SMALL-AREA ANALYSIS</div><h2>Tuman yoki dalangizni belgilang</h2>
+          <p>ADM1–ADM5 chegarasini yuklang yoki xaritada o‘zingiz dala poligonini chizing. Tanlangan maydon uchun ERA5-Land iqlim qatori va Sentinel-2 sahna katalogini tekshiring.</p>
+        </div><span class="section-index">GEOBOUNDARIES · OPEN-METEO · CDSE STAC</span>
+      </div>
+      <div class="panel region-panel">
+        <div class="region-controls">
+          <label>Country ISO-3<input id="region-iso3" maxlength="3" value="UZB" autocomplete="off"></label>
+          <label>Ma’muriy daraja<select id="region-level"><option>ADM1</option><option>ADM2</option><option>ADM3</option><option>ADM4</option><option>ADM5</option></select></label>
+          <button class="btn-primary" id="region-load">Chegaralarni yuklash</button>
+          <label>Yuklangan hudud<select id="region-select" disabled><option value="">Avval chegaralarni yuklang</option></select></label>
+        </div>
+        <div class="region-draw-row">
+          <button class="btn-secondary" type="button" id="region-draw-start">＋ Maydon chizish</button>
+          <button class="btn-secondary" type="button" id="region-draw-finish" disabled>Poligonni tugatish</button>
+          <button class="btn-secondary" type="button" id="region-draw-cancel" disabled>Bekor qilish</button>
+          <span class="region-status" id="region-status" role="status">Mamlakatni tanlang yoki globusdan mamlakatni bosing.</span>
+        </div>
+        <div class="region-selected">
+          <div><small>TANLANGAN AOI</small><strong id="region-name">Hudud tanlanmagan</strong><span id="region-meta">ADM2/ADM3 yoki qo‘lda chizilgan dala poligoni</span></div>
+          <div class="region-coords"><small>VAKILLIK NUQTASI</small><b id="region-center">—</b></div>
+          <button class="btn-primary" id="region-analyze" disabled>Hududni tahlil qilish →</button>
+        </div>
+      </div>
+
+      <div class="region-results" id="region-results" hidden>
+        <div class="region-result-grid">
+          <article class="panel region-result-card">
+            <div class="region-result-head"><div><span class="eyebrow">WEATHER REANALYSIS</span><h3>Tarixiy iqlim tahlili</h3><small>Open-Meteo · ERA5-Land · vakillik nuqtasi</small></div><span class="tag">MODELLED REANALYSIS</span></div>
+            <div class="region-weather-kpis" id="region-weather-kpis"><div class="region-empty">Iqlim qatori olinmoqda…</div></div>
+            <div class="region-table-wrap" id="region-weather-table"></div>
+            <p class="region-footnote">Bu ERA5-Land reanalysis hisoblari. Ular bevosita dala sensor o‘lchovi ham, poligon bo‘yicha zonal o‘rtacha ham emas.</p>
+          </article>
+          <article class="panel region-result-card">
+            <div class="region-result-head"><div><span class="eyebrow">SENTINEL-2 L2A</span><h3>Sun’iy yo‘ldosh sahnalari</h3><small>Copernicus Data Space · STAC catalogue</small></div><span class="tag">SCENE DISCOVERY</span></div>
+            <div class="region-scene-summary" id="region-scene-summary">Sahna qidiruvi kutilmoqda…</div>
+            <div class="region-table-wrap" id="region-scene-table"></div>
+            <p class="region-footnote">Bu sahnalar katalogi. NDVI rasteri hali hisoblanmaydi: B04/B08 assetlarini olish, SCL/CLD cloud-shadow mask va pixel zonal-statistikasi alohida processing talab qiladi.</p>
+          </article>
+        </div>
+
+        <article class="panel region-result-card region-yield-card">
+          <div class="region-result-head"><div><span class="eyebrow">RESEARCH MODEL / CSV INPUT</span><h3>Hosildorlik uchun Ridge baseline ssenariysi</h3><small>O‘zingizdagi haqiqiy yillik yield CSV faylini yuklang. Hisob brauzerda bajariladi.</small></div><span class="tag">LOCAL · NO UPLOAD</span></div>
+          <div class="region-yield-controls">
+            <label>CSV fayl<input type="file" id="region-yield-file" accept=".csv,text/csv"></label>
+            <label>Yil ustuni<input id="region-year-column" value="year"></label>
+            <label>Hosildorlik ustuni<input id="region-yield-column" value="yield_t_ha"></label>
+            <label>Maqsadli yil<input type="number" id="region-target-year" value="2027" min="1900" max="2200"></label>
+            <button class="btn-primary" id="region-run-model" disabled>Ridge ssenariysini hisoblash</button>
+          </div>
+          <div class="region-model-result" id="region-model-result">Kamida 8 ta kuzatilgan yillik hosildorlik qatori kerak. Ushbu baseline faqat siz yuklagan CSV’ga moslanadi; Sentinel-2/SMAP/SoilGrids featurelari yoki universal global model deb talqin qilinmaydi.</div>
+        </article>
+      </div>
+      <div class="info-note"><b>Kichik maydon haqida:</b> geoBoundaries faqat ma’muriy chegaralarni beradi. Fermer dalasini aniqlash uchun yuqoridagi “Maydon chizish”dan foydalaning. Har bir manbaning haqiqiy grid aniqligi natijada alohida ko‘rsatiladi; kichik poligon chizish 9 km SMAP/MAPSPAM ma’lumotini 10 metrli dala ma’lumotiga aylantirmaydi.</div>
     </section>
 
     <section class="section" id="archive">
