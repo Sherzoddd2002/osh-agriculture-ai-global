@@ -37,6 +37,66 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Locate latest successful public Pages snapshot
+        id: previous_pages
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: "pages.yml",
+              branch: "main",
+              status: "success",
+              per_page: 10
+            });
+            const run = runs.data.workflow_runs.find(item => item.id !== context.runId);
+            if (!run) {
+              core.setOutput("available", "false");
+              core.info("No previous successful Pages snapshot; the build will use live sources.");
+              return;
+            }
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: run.id,
+              per_page: 100
+            });
+            const artifact = artifacts.data.artifacts.find(item =>
+              item.name === "github-pages" && !item.expired
+            );
+            if (!artifact) {
+              core.setOutput("available", "false");
+              core.info("No reusable Pages artifact; the build will use live sources.");
+              return;
+            }
+            core.setOutput("available", "true");
+            core.setOutput("run-id", String(run.id));
+            core.info(`Reusing public data from Pages run ${run.id}`);
+      - name: Download previous public Pages snapshot
+        if: steps.previous_pages.outputs.available == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          run-id: ${{ steps.previous_pages.outputs.run-id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          path: .previous-pages
+      - name: Restore validated static GeoJSON and SIAT cache
+        if: steps.previous_pages.outputs.available == 'true'
+        run: |
+          mkdir -p .previous-pages/site docs/data/boundaries docs/data/official-yield
+          if [ -f .previous-pages/artifact.tar ]; then
+            tar -xf .previous-pages/artifact.tar -C .previous-pages/site
+          else
+            echo "Previous Pages artifact has no artifact.tar" >&2
+            exit 1
+          fi
+          test -f .previous-pages/site/data/boundaries/UZB_ADM1.geojson
+          test -f .previous-pages/site/data/boundaries/UZB_ADM2.geojson
+          test -f .previous-pages/site/data/official-yield/UZB_ADM1_WHEA_2010_2024.json
+          cp -f .previous-pages/site/data/boundaries/*.geojson docs/data/boundaries/
+          cp -f .previous-pages/site/data/official-yield/*.json docs/data/official-yield/
       - name: Install boundary validation dependencies
         run: python -m pip install "fastapi>=0.115,<1" "httpx>=0.27,<1" "shapely>=2.0,<3"
       - name: Build and validate Uzbekistan ADM1/ADM2 GeoJSON
