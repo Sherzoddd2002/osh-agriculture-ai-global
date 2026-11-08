@@ -1,95 +1,294 @@
 <!doctype html>
 <html lang="uz">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="OSH Agriculture AI Global — dunyo bo‘yicha qishloq xo‘jaligi ma’lumotlari va hosildorlik prognozi uchun interaktiv demo.">
-<title>OSH Agriculture AI Global · Public Demo</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="OSH Agriculture AI Global — FAOSTAT va MAPSPAM tarixiy ma'lumotlari, 3D globus, iqlim manbalari va ML model laboratoriyasi.">
+<meta name="theme-color" content="#07131f">
+<title>OSH Agriculture AI Global — Data Intelligence</title>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.css">
 <style>
-:root{color-scheme:dark;--bg:#06111d;--panel:#0d1d2c;--panel2:#102638;--line:#1b3548;--text:#e9f3f7;--muted:#91a7b6;--mint:#39d9a6;--gold:#f2c879}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% -15%,#16424a55,transparent 42%),var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
-a{color:inherit}.shell{max-width:1500px;margin:auto;padding:24px clamp(14px,3vw,42px) 36px}
-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px}.brand{display:flex;align-items:center;gap:12px;text-decoration:none}.logo{width:44px;height:44px;display:grid;place-items:center;border:1px solid #39d9a655;border-radius:14px;background:#39d9a614;font-size:24px}.brand b{display:block;letter-spacing:1.4px}.brand small{display:block;color:var(--mint);font-size:10px;letter-spacing:2.5px;font-weight:800}.top-link{border:1px solid var(--line);border-radius:999px;padding:10px 16px;text-decoration:none;color:#c6d7df;font-size:13px}
-.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:24px;align-items:end;margin:34px 0 24px;padding:30px 0 8px}.eyebrow{font-size:10px;letter-spacing:2px;font-weight:850;color:var(--mint)}h1{font-size:clamp(34px,5vw,66px);line-height:1.02;letter-spacing:-2.6px;margin:14px 0 18px;max-width:850px;text-wrap:balance}.hero p{max-width:760px;color:#a9bdc9;font-size:16px;margin:0}.hero-note{border:1px solid #39d9a644;background:linear-gradient(145deg,#102f38dd,#0b1d2bdd);border-radius:20px;padding:22px;color:#b9d1d9;font-size:13px;box-shadow:0 18px 55px #0005;backdrop-filter:blur(18px)}.hero-note b{display:block;color:var(--mint);margin-bottom:5px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}.stat{background:linear-gradient(145deg,#102538,#0b1a28);border:1px solid #244357;border-radius:15px;padding:16px 18px;box-shadow:inset 0 1px #ffffff08}.stat b{display:block;font-size:15px}.stat span{font-size:11px;color:var(--muted)}
-.workspace{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,.7fr);gap:16px;align-items:stretch}.map-card,.side-card{background:linear-gradient(145deg,#102638,#091a29);border:1px solid #244357;border-radius:22px;overflow:hidden;box-shadow:0 24px 65px #0006}.map-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px}.map-head h2{font-size:17px;margin:2px 0}.map-head small{color:var(--muted)}.pill{font-size:9px;letter-spacing:1px;color:var(--mint);border:1px solid #39d9a644;background:#39d9a612;border-radius:999px;padding:7px 10px;font-weight:800}
-.globe{height:620px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 48%,#1b4558,#071321 70%)}#map{position:absolute;inset:0}.hud{position:absolute;z-index:2;pointer-events:none;top:16px;left:18px;right:18px;display:flex;justify-content:space-between;gap:12px;color:#9db9c7;font-size:9px;font-weight:800;letter-spacing:1.3px;text-shadow:0 1px 8px #000}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 12px var(--mint);margin-right:7px}.map-foot{position:absolute;z-index:2;bottom:15px;left:18px;right:18px;display:flex;justify-content:space-between;color:#8da7b5;font-size:9px;letter-spacing:1px;pointer-events:none;text-shadow:0 1px 8px #000}
-.side-card{padding:25px;display:flex;flex-direction:column;gap:18px;min-height:100%;background:radial-gradient(ellipse at 100% 0%,#1c4b4530,transparent 48%),linear-gradient(145deg,#102638,#091a29)}.side-card h3{margin:0;font-size:21px}.muted{color:var(--muted)}.selected{padding:17px;border-radius:16px;border:1px solid #39d9a644;background:linear-gradient(135deg,#39d9a615,#39d9a604)}.selected small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:1.2px}.selected strong{display:block;font-size:20px;margin-top:3px}.field label{display:block;color:#b9cbd5;font-size:12px;margin-bottom:7px}.field select{width:100%;padding:12px;border-radius:10px;border:1px solid #294457;background:#091827;color:var(--text);font:inherit}.btn{border:0;border-radius:12px;padding:15px 18px;background:linear-gradient(120deg,#54e6b7,#20b995);color:#042019;font-weight:900;cursor:pointer;box-shadow:0 10px 30px #39d9a626;transition:transform .2s,filter .2s}.btn:hover{transform:translateY(-2px)}.btn:hover{filter:brightness(1.08)}.result{border:1px solid #f2c87944;background:#f2c8790d;padding:14px;border-radius:13px;color:#d7c8a6;font-size:12px}.result b{display:block;color:var(--gold);margin-bottom:4px}.result[hidden]{display:none}.side-note{font-size:11px;color:#8299a8;margin-top:auto;line-height:1.55}
-footer{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:20px;margin-top:24px;color:#8197a5;font-size:11px}
-.maplibregl-ctrl-group{background:#0a1b2b!important;border:1px solid #345064!important}.maplibregl-ctrl-group button{background-color:transparent!important}.maplibregl-ctrl-icon{filter:invert(.85)}.maplibregl-ctrl-attrib{background:#06111dcc!important;color:#9db3c0!important}.maplibregl-ctrl-attrib a{color:#65dcb9!important}
-@media(max-width:900px){.hero{grid-template-columns:1fr}.workspace{grid-template-columns:1fr}.globe{height:500px}.side-card{min-height:360px}}
-@media(max-width:560px){.shell{padding:16px 12px 28px}.top-link{font-size:11px;padding:8px 11px}.stats{grid-template-columns:1fr}.globe{height:390px}.map-head{padding:14px}.side-card{padding:17px}.map-foot{font-size:8px}}
+:root{color-scheme:dark;--bg:#07131f;--panel:#0d1d2b;--panel2:#102638;--panel3:#122c3d;--line:#1e394b;--line2:#2b4d5f;--text:#e9f2f6;--muted:#8fa7b7;--soft:#b7c9d3;--mint:#3cddb0;--mint2:#1ba889;--gold:#eac477;--blue:#7db6e8;--red:#df8d7e;--radius:18px}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:86px}body{margin:0;background:radial-gradient(ellipse at 72% -12%,#153c4c66,transparent 38%),radial-gradient(ellipse at 20% 35%,#10263855,transparent 40%),var(--bg);color:var(--text);font:14px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{cursor:pointer}.app{min-height:100vh}.sidebar{width:244px;position:fixed;inset:0 auto 0 0;z-index:20;padding:24px 16px 18px;background:linear-gradient(180deg,#0b1a27f5,#081521f8);border-right:1px solid #20394a;display:flex;flex-direction:column;gap:26px}.brand{display:flex;align-items:center;gap:12px;padding:2px 8px}.brand-mark{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:23px;background:linear-gradient(145deg,#173a3c,#10232f);border:1px solid #3cddb066;box-shadow:0 8px 25px #0005}.brand b{display:block;letter-spacing:1.5px;font-size:15px}.brand small{display:block;color:var(--mint);font-size:9px;letter-spacing:2px;font-weight:850}.nav-label{color:#597183;font-size:9px;font-weight:900;letter-spacing:1.8px;padding:0 12px;margin-bottom:4px}.nav{display:grid;gap:5px}.nav a{padding:11px 12px;border-radius:11px;color:#9db2c0;display:flex;align-items:center;gap:11px;font-size:12px;border:1px solid transparent;transition:.2s}.nav a:hover,.nav a.active{background:#14303c;border-color:#295248;color:#ebfbf6}.nav a.active .nav-icon{color:var(--mint)}.nav-icon{font-size:16px;width:18px;text-align:center;color:#7793a4}.side-card{margin-top:auto;border:1px solid #274355;border-radius:15px;padding:14px;background:linear-gradient(145deg,#102a38,#0c1c29)}.side-card small{color:#7792a1;font-size:9px;letter-spacing:1.2px;font-weight:800}.side-card b{display:block;margin:7px 0 2px;font-size:13px}.side-card p{margin:0;color:#8fa6b4;font-size:10px}.side-foot{color:#637c8c;font-size:9px;padding:0 9px}
+.main{margin-left:244px;min-width:0}.topbar{height:76px;position:sticky;top:0;z-index:15;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(18px,3vw,42px);background:#081622e8;backdrop-filter:blur(18px);border-bottom:1px solid #1e394b}.top-eyebrow{font-size:9px;letter-spacing:2px;color:var(--mint);font-weight:900}.topbar h1{font-size:19px;margin:2px 0 0;letter-spacing:-.3px}.top-right{display:flex;align-items:center;gap:10px}.status-pill,.date-pill{border:1px solid var(--line2);border-radius:999px;padding:7px 11px;color:#abc0cc;font-size:10px;white-space:nowrap}.status-pill i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--mint);margin-right:7px;box-shadow:0 0 10px var(--mint)}.content{max-width:1600px;margin:auto;padding:26px clamp(16px,3vw,42px) 48px}
+.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(290px,.8fr);gap:20px;align-items:stretch;margin:8px 0 19px}.hero-copy{padding:24px 4px 22px}.kicker{color:var(--mint);font-size:9px;letter-spacing:2px;font-weight:900}.hero h2{font-size:clamp(34px,4.4vw,59px);line-height:1.03;letter-spacing:-2.3px;margin:14px 0 16px;max-width:800px}.hero h2 span{color:var(--mint)}.hero-copy p{max-width:720px;color:#a8bdc9;font-size:14px;line-height:1.75;margin:0}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:23px}.btn-primary,.btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 15px;border-radius:11px;font-size:11px;font-weight:850;transition:.2s}.btn-primary{background:linear-gradient(120deg,#52e6b7,#20ae91);color:#062019;border:0;box-shadow:0 10px 28px #39d9a622}.btn-primary:hover{transform:translateY(-2px);filter:brightness(1.06)}.btn-secondary{background:#102637;border:1px solid #2b4b5d;color:#c1d2dc}.btn-secondary:hover{border-color:var(--mint);color:#fff}.hero-panel{position:relative;overflow:hidden;border:1px solid #285165;border-radius:20px;padding:21px;background:radial-gradient(circle at 92% 2%,#20796855,transparent 43%),linear-gradient(145deg,#102b3b,#0b1c29);box-shadow:0 24px 55px #0004;display:flex;flex-direction:column;justify-content:space-between;min-height:225px}.hero-panel:after{content:"";position:absolute;width:210px;height:210px;right:-55px;top:20px;border-radius:50%;border:1px solid #3cddb044;box-shadow:0 0 0 18px #3cddb00a,0 0 0 38px #3cddb008}.hero-panel small{font-size:9px;letter-spacing:1.8px;color:#91b9c6;font-weight:900;position:relative;z-index:1}.hero-panel strong{font-size:38px;letter-spacing:-1.5px;position:relative;z-index:1}.hero-panel strong em{font-size:13px;letter-spacing:0;color:var(--mint);font-style:normal}.hero-panel p{font-size:11px;color:#9cb5c1;max-width:300px;margin:0;position:relative;z-index:1}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:18px 0 28px}.metric{position:relative;overflow:hidden;padding:16px 17px;border-radius:15px;border:1px solid #244154;background:linear-gradient(145deg,#102537,#0b1b29);min-height:113px}.metric:after{content:"";position:absolute;width:85px;height:85px;right:-28px;bottom:-39px;border-radius:50%;background:#3cddb00e}.metric .label{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#8ca5b4;font-weight:850}.metric strong{display:block;font-size:29px;letter-spacing:-1px;margin:7px 0 1px;font-variant-numeric:tabular-nums}.metric span{font-size:10px;color:#86a0af}.metric.green strong{color:var(--mint)}.metric.gold strong{color:var(--gold)}.section{margin:32px 0 0;scroll-margin-top:90px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:14px}.section-head .eyebrow{color:var(--mint);font-size:9px;letter-spacing:1.9px;font-weight:900}.section-head h2{font-size:23px;letter-spacing:-.6px;margin:3px 0 4px}.section-head p{color:#8ea5b3;font-size:11px;margin:0;max-width:760px}.section-index{font-size:10px;color:#678394;border:1px solid #254153;padding:7px 10px;border-radius:999px;white-space:nowrap}
+.panel{border:1px solid #244154;border-radius:var(--radius);background:linear-gradient(145deg,#102536,#0a1b28);box-shadow:0 16px 42px #0002}.globe-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(260px,.7fr);gap:13px}.map-panel{overflow:hidden}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 19px;border-bottom:1px solid #1b3546}.panel-head h3{margin:2px 0 0;font-size:15px}.panel-head small{color:#8ba3b1;font-size:10px}.tag{font-size:9px;border-radius:999px;padding:6px 9px;border:1px solid #2a5a50;color:var(--mint);background:#39ddb00b;font-weight:850;letter-spacing:.8px;white-space:nowrap}.globe{height:485px;position:relative;background:radial-gradient(ellipse at 50% 50%,#153c51,#07121e 72%)}#map{position:absolute;inset:0}.map-hud{position:absolute;z-index:2;top:14px;left:16px;right:16px;display:flex;justify-content:space-between;gap:10px;pointer-events:none;color:#9ab1be;text-shadow:0 1px 8px #000;font-size:8px;letter-spacing:1.3px;font-weight:900}.map-hud .live{color:var(--mint)}.map-foot{position:absolute;z-index:2;bottom:12px;left:16px;right:16px;display:flex;justify-content:space-between;color:#819aaa;pointer-events:none;text-shadow:0 1px 8px #000;font-size:8px;letter-spacing:1px}.map-note{padding:11px 17px;color:#7893a2;font-size:9px;border-top:1px solid #1b3546}
+.selection{padding:20px;display:flex;flex-direction:column;gap:15px;background:radial-gradient(circle at 100% 0%,#1a58472b,transparent 43%),linear-gradient(145deg,#102737,#0a1b28)}.selection h3{font-size:18px;margin:2px 0 0}.selection p{color:#8fa8b6;font-size:11px;margin:0;line-height:1.6}.selection-box{border:1px solid #34746488;background:linear-gradient(135deg,#39ddb015,#39ddb004);border-radius:14px;padding:14px}.selection-box small{display:block;color:#87a7b3;font-size:8px;letter-spacing:1.3px;font-weight:900}.selection-box strong{display:block;font-size:23px;margin:3px 0}.selection-box span{font-size:10px;color:var(--mint)}.mini-facts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mini-fact{padding:11px;border-radius:11px;background:#0b1e2b;border:1px solid #203d50}.mini-fact small{display:block;color:#7e98a7;font-size:8px;text-transform:uppercase;letter-spacing:.8px}.mini-fact b{display:block;font-size:14px;margin-top:3px}.field{display:grid;gap:6px}.field label{font-size:9px;color:#9cb2bf;font-weight:800}.field select,.field input{width:100%;background:#091a27;border:1px solid #294557;color:#e7f0f4;padding:10px 11px;border-radius:9px;font-size:11px;outline:none}.field select:focus,.field input:focus{border-color:var(--mint)}.selection-actions{display:grid;gap:8px}.selection-actions button{width:100%}.hint{font-size:9px;color:#7893a3;line-height:1.55;margin-top:auto}
+.archive-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.dataset-card{padding:19px;position:relative;overflow:hidden}.dataset-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.dataset-top small{font-size:9px;letter-spacing:1.4px;color:var(--mint);font-weight:900}.data-type{border:1px solid #28465a;border-radius:999px;padding:5px 8px;font-size:8px;color:#a5bbc7}.dataset-card h3{font-size:17px;margin:13px 0 6px}.dataset-card p{font-size:10px;color:#91a9b7;margin:0;line-height:1.65}.dataset-number{font-size:32px;letter-spacing:-1.2px;font-weight:900;margin:14px 0 2px;font-variant-numeric:tabular-nums}.dataset-number span{font-size:11px;color:#8ca6b5;font-weight:600;letter-spacing:0}.facts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:15px}.fact{padding:10px;border-radius:10px;background:#0b1d2a;border:1px solid #1e394b}.fact b{display:block;font-size:14px;color:#e7f1f5}.fact small{color:#7f9aa9;font-size:8px}.dataset-footer{margin-top:14px;padding-top:12px;border-top:1px solid #1c3748;display:flex;justify-content:space-between;gap:9px;align-items:center;flex-wrap:wrap}.dataset-footer a{font-size:9px;color:var(--mint);font-weight:850}.dataset-footer span{font-size:9px;color:#7e98a8}.info-note{margin-top:12px;padding:12px 14px;border-radius:11px;background:#10283a;border:1px solid #28465b;color:#a3b9c5;font-size:10px;line-height:1.65}.info-note b{color:var(--gold)}
+.spatial-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);gap:13px}.spatial-card{padding:19px}.spatial-card h3{font-size:14px;margin:0 0 3px}.spatial-card>p{font-size:10px;color:#819baa;margin:0 0 17px}.level-row{display:grid;grid-template-columns:42px 1fr 88px;align-items:center;gap:10px;margin:16px 0}.level-row label{font-size:11px;color:#b5c8d1;font-weight:850}.bar-track{height:10px;border-radius:99px;background:#071622;overflow:hidden;border:1px solid #1e3b4e}.bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1e9b83,#4bdfb5);box-shadow:0 0 14px #39ddb044}.level-value{text-align:right}.level-value b{display:block;font-size:12px;font-variant-numeric:tabular-nums}.level-value small{color:#7e98a7;font-size:8px}.total-line{border-top:1px solid #1d384a;margin-top:17px;padding-top:13px;display:flex;justify-content:space-between;color:#92aab8;font-size:10px}.total-line b{color:var(--text);font-size:15px}.crop-browser{padding:19px}.crop-browser-top{display:flex;justify-content:space-between;gap:12px;align-items:center}.crop-browser h3{margin:0;font-size:14px}.crop-browser-top span{color:var(--mint);font-size:9px;font-weight:900}.crop-search{margin:13px 0 11px}.crop-search input{width:100%;padding:10px 12px;border:1px solid #29485a;border-radius:10px;background:#091a27;color:#e8f0f4;font-size:10px;outline:none}.crop-chips{display:flex;flex-wrap:wrap;gap:6px;max-height:225px;overflow:auto;padding-right:3px}.crop-chip{padding:6px 8px;border:1px solid #254558;border-radius:8px;background:#0b202d;color:#a8bdc8;font-size:9px}.crop-chip b{color:var(--mint);font-size:8px;margin-right:4px}.crop-chip:hover{border-color:var(--mint);color:#fff}.crop-chip[hidden]{display:none}.crop-detail{margin-top:12px;background:#0b202c;border:1px solid #274758;border-radius:10px;padding:10px;color:#90a8b6;font-size:9px;line-height:1.6}.crop-detail b{color:#eaf2f5}
+.model-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.model-card{padding:15px;border-radius:14px;border:1px solid #264457;background:linear-gradient(145deg,#102637,#0a1b29);min-height:111px}.model-symbol{font-size:10px;color:var(--mint);font-weight:900;letter-spacing:1px}.model-card b{display:block;font-size:12px;margin:9px 0 3px}.model-card small{font-size:9px;color:#829baa}.benchmark-card{border-color:#725f3b;background:linear-gradient(145deg,#302b20,#111e28)}.benchmark-card .model-symbol{color:var(--gold)}.pipeline{padding:18px;margin-top:13px}.pipeline h3{font-size:13px;margin:0 0 13px}.pipeline-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.pipe-step{padding:10px;border-radius:10px;background:#0a1b28;border:1px solid #1e394a}.pipe-step small{display:block;color:var(--mint);font-size:8px;font-weight:900}.pipe-step b{display:block;margin-top:4px;font-size:10px}.pipe-step span{display:block;margin-top:4px;color:#819aa8;font-size:8px}.model-rules{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:11px}.rule{padding:12px;border:1px solid #253f50;border-radius:11px;background:#0c1e2b}.rule b{display:block;color:var(--gold);font-size:14px}.rule small{color:#879eac;font-size:8px}
+.source-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.source-card{padding:15px;border-radius:14px;border:1px solid #254456;background:linear-gradient(145deg,#102637,#0b1b28);min-height:155px}.source-status{font-size:8px;letter-spacing:1px;font-weight:900;color:var(--mint)}.source-status.planned{color:var(--gold)}.source-card h3{font-size:12px;margin:9px 0 5px;word-break:break-word}.source-card p{font-size:9px;color:#8ea7b5;margin:0;line-height:1.6}.source-card a{display:inline-block;color:var(--mint);font-size:8px;margin-top:9px;font-weight:850}.library-row{margin-top:12px;padding:16px;border:1px solid #254557;border-radius:14px;background:#0d202e}.library-row strong{display:block;font-size:11px;margin-bottom:9px}.library-tags{display:flex;flex-wrap:wrap;gap:6px}.library-tags span{padding:6px 8px;border-radius:8px;background:#112b3a;border:1px solid #25495b;color:#a8bdc8;font-size:9px}
+.footer{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;border-top:1px solid #1f394a;margin-top:33px;padding:17px 2px;color:#708a99;font-size:9px}.footer a{color:var(--mint)}
+@media(max-width:1180px){.sidebar{width:210px}.main{margin-left:210px}.source-grid{grid-template-columns:repeat(3,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}.model-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.sidebar{width:64px;padding:18px 8px}.brand{padding:0;justify-content:center}.brand>span:last-child,.nav-label,.nav a .nav-text,.side-card,.side-foot{display:none}.nav{gap:8px}.nav a{justify-content:center;padding:12px 4px}.nav-icon{width:auto;font-size:18px}.main{margin-left:64px}.hero{grid-template-columns:1fr}.globe-layout{grid-template-columns:1fr}.selection{display:grid;grid-template-columns:1fr 1fr;align-items:start}.selection .kicker,.selection h3,.selection p,.selection .hint{grid-column:1/-1}.selection-actions{grid-column:1/-1}.spatial-layout{grid-template-columns:1fr}.source-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.topbar{height:68px;padding:0 13px}.topbar h1{font-size:15px}.top-right .date-pill{display:none}.content{padding:17px 12px 32px}.hero-copy{padding:12px 1px}.hero h2{font-size:36px;letter-spacing:-1.5px}.hero-panel{min-height:170px}.metrics{gap:7px}.metric{min-height:100px;padding:12px}.metric strong{font-size:24px}.section-head{align-items:start}.section-head h2{font-size:19px}.archive-grid{grid-template-columns:1fr}.facts-grid{grid-template-columns:repeat(3,1fr)}.globe{height:360px}.selection{display:flex}.model-grid{grid-template-columns:1fr 1fr}.pipeline-steps{grid-template-columns:1fr 1fr}.pipe-step:last-child{grid-column:1/-1}.model-rules{grid-template-columns:1fr}.source-grid{grid-template-columns:1fr 1fr}.status-pill{font-size:0;padding:8px}.status-pill i{margin:0}.section-index{display:none}}
 </style>
 </head>
 <body>
-<div class="shell">
-<header><a class="brand" href="./"><span class="logo">🌱</span><span><b>OSH AGRICULTURE AI</b><small>GLOBAL INTELLIGENCE</small></span></a><a class="top-link" href="https://github.com/Sherzoddd2002/osh-agriculture-ai-global" target="_blank" rel="noopener">GitHub repository ↗</a></header>
-<section class="hero"><div><span class="eyebrow">GLOBAL AGRICULTURE INTELLIGENCE · RESEARCH PREVIEW</span><h1>Dunyo bo‘yicha hosilni <span style="color:var(--mint)">ma’lumotlar bilan</span> anglaymiz.</h1><p>Yer sharidan mamlakatni tanlang. OSH Agriculture AI global hosildorlik, iqlim va ekin ma’lumotlarini bir joyda tahlil qilish uchun yaratilmoqda.</p></div><div class="hero-note"><b>NASA POWER · OPEN-METEO</b>NASA POWER tarixiy ob-havo ma’lumotlari va Open-Meteo prognozi platformaning ekologik ma’lumot qatlamlaridan biridir. NASA ob-havo ma’lumoti — hosil modelining o‘zi emas.</div></section>
-<div class="stats"><div class="stat"><b>Global miqyos</b><span>Mamlakat va ma’muriy hududlar</span></div><div class="stat"><b>Climate intelligence</b><span>NASA POWER va Open-Meteo</span></div><div class="stat"><b>Ilmiy ehtiyotkorlik</b><span>Ma’lumot yetarli bo‘lmasa, prognoz berilmaydi</span></div></div>
-<section class="workspace">
-<article class="map-card"><div class="map-head"><div><span class="eyebrow">LIVE INTERACTIVE EXPERIENCE</span><h2>Global 3D xarita</h2><small id="map-status">Dunyo xaritasi yuklanmoqda…</small></div><span class="pill">PUBLIC DEMO</span></div><div class="globe"><div id="map"></div><div class="hud"><span><i class="dot"></i>GLOBAL MAP ONLINE</span><span id="globe-state">GLOBE VIEW</span></div><div class="map-foot"><span>DRAG · AYLANtirish</span><span>CLICK · HUDUD TANLASH</span></div></div></article>
-<aside class="side-card"><div><span class="eyebrow">01 / LOCATION</span><h3>Hududni tanlang</h3><p class="muted" style="font-size:12px;margin:5px 0 0">Globusdagi mamlakatni bosing yoki xaritani aylantiring.</p></div><div class="selected"><small>Tanlangan mamlakat</small><strong id="country-name">Hali tanlanmagan</strong><span class="muted" id="country-code" style="font-size:11px">—</span></div><div class="field"><label for="crop">Ekin turi</label><select id="crop"><option value="Wheat">Bug‘doy / Wheat</option><option value="Maize">Makkajo‘xori / Maize</option><option value="Rice">Guruch / Rice</option><option value="Cotton">Paxta / Cotton</option><option value="Soybeans">Soya / Soybeans</option></select></div><button class="btn" id="forecast">Prognoz jarayonini ko‘rish →</button><div class="result" id="result" hidden><b>Public demo — prognoz API ulanmagan</b><span id="result-text">Tanlangan hudud va ekin uchun haqiqiy prognoz hisoblashga backend hamda tekshirilgan hosildorlik tarixi kerak. Bu demo hozircha xarita va hudud tanlashni ko‘rsatadi; raqamli natija uydirmaydi.</span></div><p class="side-note">Bu ochiq demo xarita va hudud tanlash tajribasini namoyish etadi. Haqiqiy hosildorlik prognozi hali ommaviy API orqali ulanmagan. Natijalar tayyor bo‘lmaguncha fermer qarori uchun soxta raqam ko‘rsatilmaydi.</p></aside>
-</section>
-<footer><span>© OSH Agriculture AI Global · Research MVP</span><span>Boundaries: geo-countries / Natural Earth · Basemap: CARTO / OpenStreetMap · MapLibre GL JS</span></footer>
+<div class="app">
+<aside class="sidebar">
+  <a class="brand" href="#overview"><span class="brand-mark">🌱</span><span><b>OSH</b><small>AGRICULTURE AI · GLOBAL</small></span></a>
+  <div>
+    <div class="nav-label">WORKSPACE</div>
+    <nav class="nav">
+      <a class="active" href="#overview"><span class="nav-icon">⌂</span><span class="nav-text">Bosh sahifa</span></a>
+      <a href="#globe"><span class="nav-icon">◎</span><span class="nav-text">Global 3D xarita</span></a>
+      <a href="#archive"><span class="nav-icon">▤</span><span class="nav-text">Data arxivi</span></a>
+      <a href="#spatial"><span class="nav-icon">▦</span><span class="nav-text">MAPSPAM / 46 ekin</span></a>
+      <a href="#models"><span class="nav-icon">⌘</span><span class="nav-text">Model laboratoriyasi</span></a>
+      <a href="#environment"><span class="nav-icon">☁</span><span class="nav-text">Iqlim manbalari</span></a>
+    </nav>
+  </div>
+  <div class="side-card"><small>REFERENCE DATA SNAPSHOT</small><b>838,919 ta yozuv</b><p>FAOSTAT QCL + MAPSPAM · 08 Nov 2026</p></div>
+  <div class="side-foot">Research workspace · v1.0</div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div><div class="top-eyebrow">GLOBAL AGRICULTURAL INTELLIGENCE</div><h1 id="page-title">Global data workspace</h1></div>
+    <div class="top-right"><span class="status-pill"><i></i> VERIFIED DATA INVENTORY</span><span class="date-pill">SNAPSHOT · 08 NOV 2026</span></div>
+  </header>
+
+  <div class="content">
+    <section class="hero" id="overview">
+      <div class="hero-copy">
+        <div class="kicker">OSH · GLOBAL EDITION / RESEARCH DATA PLATFORM</div>
+        <h2>Dunyo bo‘yicha hosilni <span>ma’lumotlar bilan</span> anglaymiz.</h2>
+        <p>FAOSTAT tarixiy hosildorlik statistikasi, MAPSPAM fazoviy ekin qatlamlari va NASA ob-havo ma’lumotlari bitta agrar tahlil muhitida. Bu sahifada loyihada yig‘ilgan ma’lumotlar, ularning qamrovi va ML pipeline ko‘rsatiladi.</p>
+        <div class="hero-actions"><a class="btn-primary" href="#archive">Data arxivini ko‘rish <b>→</b></a><a class="btn-secondary" href="#models">Model laboratoriyasi <span>↗</span></a></div>
+      </div>
+      <div class="hero-panel">
+        <small>VERIFIED REFERENCE DATABASE · CENTRAL POSTGRESQL</small>
+        <strong id="combined-records">838,919 <em>rows</em></strong>
+        <p>Ikki alohida tarixiy manbadan import qilingan yozuvlar. Statistik qatorlar va fazoviy raster xulosalari alohida talqin qilinadi.</p>
+      </div>
+    </section>
+
+    <div class="metrics">
+      <article class="metric green"><div class="label">FAOSTAT QCL</div><strong id="faostat-count">610,299</strong><span>annual crop records · 1961–2024</span></article>
+      <article class="metric"><div class="label">MAPSPAM summaries</div><strong id="mapspam-count">228,620</strong><span>spatial administrative summaries · 2020</span></article>
+      <article class="metric gold"><div class="label">FAOSTAT coverage</div><strong id="country-count">202</strong><span>countries / reporting areas</span></article>
+      <article class="metric"><div class="label">Crop catalogue</div><strong><span id="faostat-crops" style="font-size:29px;color:var(--text)">169</span> + <span id="mapspam-crops" style="font-size:29px;color:var(--mint)">46</span></strong><span>FAOSTAT item codes + MAPSPAM crop layers</span></article>
+    </div>
+
+    <section class="section" id="globe">
+      <div class="section-head"><div><div class="eyebrow">01 / GEOSPATIAL WORKSPACE</div><h2>Global 3D xarita</h2><p>Globusdagi mamlakatni tanlang. Xarita hududni ko‘rsatadi; quyidagi arxiv kartalari esa bazada saqlangan umumiy qamrovni ko‘rsatadi.</p></div><span class="section-index">COUNTRY SELECTION</span></div>
+      <div class="globe-layout">
+        <article class="panel map-panel">
+          <div class="panel-head"><div><div class="eyebrow">INTERACTIVE GLOBE</div><h3>Yer shari · mamlakat chegaralari</h3><small id="map-status">Globus yuklanmoqda…</small></div><span class="tag">MAPLIBRE GL JS</span></div>
+          <div class="globe"><div id="map"></div><div class="map-hud"><span class="live">● GLOBAL MAP ONLINE</span><span id="globe-state">GLOBE VIEW</span></div><div class="map-foot"><span>DRAG · AYLANtirish</span><span>CLICK · COUNTRY SELECT</span></div></div>
+          <div class="map-note">Base map: CARTO / OpenStreetMap · Country boundaries: geo-countries / Natural Earth. This map selects countries; it is not a MAPSPAM zonal raster viewer.</div>
+        </article>
+        <aside class="panel selection">
+          <div><div class="eyebrow">SELECTED COUNTRY</div><h3 id="country-name">O‘zbekiston</h3><p>Tanlangan mamlakat bo‘yicha manbalar va dataset qamrovi haqida ma’lumot.</p></div>
+          <div class="selection-box"><small>COUNTRY ISO-3</small><strong id="country-code">UZB</strong><span>FAOSTAT QCL archive · annual national data</span></div>
+          <div class="mini-facts">
+            <div class="mini-fact"><small>FAOSTAT countries</small><b>202</b></div>
+            <div class="mini-fact"><small>Archive period</small><b>1961–2024</b></div>
+            <div class="mini-fact"><small>MAPSPAM snapshot</small><b>2020</b></div>
+            <div class="mini-fact"><small>MAPSPAM countries</small><b>153</b></div>
+          </div>
+          <div class="field"><label for="crop-select">MAPSPAM crop layer · catalogue filter</label><select id="crop-select"><option value="whea">Wheat</option><option value="cott">Cotton</option><option value="rice">Rice</option><option value="maiz">Maize</option><option value="soyb">Soybean</option></select></div>
+          <div class="selection-actions"><a class="btn-primary" href="#spatial">46 ta ekin qatlamini ko‘rish →</a><a class="btn-secondary" href="#archive">Dataset qamroviga o‘tish ↗</a></div>
+          <div class="hint">Muhim: FAOSTAT tarixiy qatorlari milliy darajadagi statistikadir. MAPSPAM 2020 rasteridan hisoblangan admin xulosalari esa alohida fazoviy qatlam; xaritadagi mamlakat tanlovi o‘z-o‘zidan tuman bo‘yicha aniq qiymatni anglatmaydi.</div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="archive">
+      <div class="section-head"><div><div class="eyebrow">02 / HISTORICAL DATA LIBRARY</div><h2>Biz yig‘gan ma’lumotlar</h2><p>Quyidagi raqamlar 2026-11-08 kuni tekshirilgan markaziy PostgreSQL reference bazasi inventarizatsiyasidan olingan.</p></div><span class="section-index">838,919 TOTAL ROWS</span></div>
+      <div class="archive-grid">
+        <article class="panel dataset-card">
+          <div class="dataset-top"><small>FAO · FAOSTAT QCL</small><span class="data-type">ANNUAL STATISTICS</span></div>
+          <h3>Crops and Livestock Products</h3>
+          <p>Milliy ekin statistikasi: yig‘ib olingan maydon, ishlab chiqarish hajmi va hosildorlik. Har bir mamlakat/ekin uchun mavjud yillar farq qilishi mumkin.</p>
+          <div class="dataset-number">610,299 <span>records stored</span></div>
+          <div class="facts-grid"><div class="fact"><b>202</b><small>countries / areas</small></div><div class="fact"><b>169</b><small>item codes</small></div><div class="fact"><b>1961–2024</b><small>year range</small></div></div>
+          <div class="dataset-footer"><a href="https://www.fao.org/faostat/en/#data/QCL" target="_blank" rel="noopener">FAOSTAT QCL source ↗</a><span>National-level · annual</span></div>
+        </article>
+        <article class="panel dataset-card">
+          <div class="dataset-top"><small>IFPRI · MAPSPAM 2020 v2r2</small><span class="data-type">SPATIAL RASTER</span></div>
+          <h3>Global Spatially-Disaggregated Crop Production</h3>
+          <p>46 ekin uchun fizik maydon, yig‘ib olingan maydon, ishlab chiqarish va hosildorlik. Sug‘oriladigan, lalmikor va jami texnologiya qatlamlari mavjud.</p>
+          <div class="dataset-number">228,620 <span>admin summary rows</span></div>
+          <div class="facts-grid"><div class="fact"><b>153</b><small>countries</small></div><div class="fact"><b>46</b><small>crop layers</small></div><div class="fact"><b>5′</b><small>grid resolution</small></div></div>
+          <div class="dataset-footer"><a href="https://cgiar-climate-data-hub.github.io/catalog/spam2020/" target="_blank" rel="noopener">MAPSPAM data hub ↗</a><span>Reference year · 2020 only</span></div>
+        </article>
+      </div>
+      <div class="info-note"><b>Talqin qilish:</b> FAOSTAT QCL — milliy tarixiy statistika; u tuman ma’lumoti emas. MAPSPAM — 2020-yilga tegishli taxminiy gridded qatlam; joriy yil yoki dala o‘lchovi emas. Ikki dataset bir-birining o‘rnini bosmaydi, ular turli miqyosdagi manbalarni birlashtirish uchun ishlatiladi.</div>
+    </section>
+
+    <section class="section" id="spatial">
+      <div class="section-head"><div><div class="eyebrow">03 / SPATIAL DISAGGREGATION</div><h2>MAPSPAM admin qamrovi va 46 ekin</h2><p>Markaziy bazaga import qilingan fazoviy xulosalar ma’muriy darajalar bo‘yicha quyidagicha taqsimlangan.</p></div><span class="section-index">ADM0 · ADM1 · ADM2</span></div>
+      <div class="spatial-layout">
+        <article class="panel spatial-card">
+          <h3>Ma’muriy darajalar bo‘yicha yozuvlar</h3><p>Jami 228,620 ta MAPSPAM summary row. Bar uzunligi shu jami ichidagi ulushni anglatadi.</p>
+          <div class="level-row"><label>ADM0</label><div class="bar-track"><div class="bar-fill" style="width:2.9%"></div></div><div class="level-value"><b>6,578</b><small>2.9%</small></div></div>
+          <div class="level-row"><label>ADM1</label><div class="bar-track"><div class="bar-fill" style="width:47.2%"></div></div><div class="level-value"><b>107,962</b><small>47.2%</small></div></div>
+          <div class="level-row"><label>ADM2</label><div class="bar-track"><div class="bar-fill" style="width:49.9%"></div></div><div class="level-value"><b>114,080</b><small>49.9%</small></div></div>
+          <div class="total-line"><span>Imported summary rows</span><b>228,620</b></div>
+          <div class="info-note"><b>Spatial QA:</b> ADM0, ADM1 va ADM2 turli ierarxiya qatlamlari. Ularni o‘zaro qo‘shib, alohida hududlardek talqin qilmang. Chegara vintaji mos kelmagan parent-child bog‘lanishlar alohida reconciliation status bilan saqlanadi. Raster katagi yo‘q bo‘lsa, qiymat NULL qoladi — 0 qilib to‘ldirilmaydi.</div>
+        </article>
+        <article class="panel crop-browser">
+          <div class="crop-browser-top"><h3>MAPSPAM crop catalogue</h3><span>46 CROPS</span></div>
+          <div class="crop-search"><input id="crop-search" type="search" placeholder="Ekin nomi yoki kodi bo‘yicha izlash…"></div>
+          <div class="crop-chips" id="crop-chips"></div>
+          <div class="crop-detail" id="crop-detail"><b>WHEA · Wheat</b><br>MAPSPAM v2r2 rasteridagi crop dimension. Tanlangan kod shu sahifadagi katalog bo‘yicha ko‘rsatiladi; alohida mamlakat yield qiymati emas.</div>
+        </article>
+      </div>
+      <div class="info-note">MAPSPAM grid: 5 arc-minute, ekvatorda taxminan 9.3 km. Ishlab chiqarish va maydon yig‘iladi; hosildorlik esa hosil maydoni bilan vaznlangan o‘rtacha orqali hisoblanadi. Raster manbasi: <a href="https://doi.org/10.7910/DVN/SWPENT" target="_blank" rel="noopener">IFPRI / Harvard Dataverse DOI ↗</a>.</div>
+    </section>
+
+    <section class="section" id="models">
+      <div class="section-head"><div><div class="eyebrow">04 / MACHINE LEARNING LAB</div><h2>Model laboratoriyasi</h2><p>Python pipeline ichida ishlatiladigan estimatorlar va validatsiya qoidalari. Bular tayyor global model aniqligi degani emas.</p></div><span class="section-index">TIME-AWARE VALIDATION</span></div>
+      <div class="model-grid">
+        <article class="model-card"><div class="model-symbol">01 · LINEAR</div><b>Linear Regression</b><small>Oddiy chiziqli baseline/challenger</small></article>
+        <article class="model-card"><div class="model-symbol">02 · REGULARIZED</div><b>Ridge Regression</b><small>L2 regularizatsiyali model</small></article>
+        <article class="model-card"><div class="model-symbol">03 · REGULARIZED</div><b>ElasticNet</b><small>L1 + L2 regularizatsiya</small></article>
+        <article class="model-card"><div class="model-symbol">04 · ENSEMBLE</div><b>Random Forest</b><small>Bagged tree ensemble</small></article>
+        <article class="model-card"><div class="model-symbol">05 · ENSEMBLE</div><b>Extra Trees</b><small>Randomized tree ensemble</small></article>
+        <article class="model-card"><div class="model-symbol">06 · BOOSTING</div><b>HistGradientBoosting</b><small>Histogram-based gradient boosting</small></article>
+        <article class="model-card benchmark-card"><div class="model-symbol">BENCHMARK</div><b>Persistence</b><small>Oldingi hosil yilini benchmark sifatida ishlatish</small></article>
+        <article class="model-card benchmark-card"><div class="model-symbol">GLOBAL BASELINE</div><b>Ridge + Persistence</b><small>FAOSTAT milliy/global tarixiy trend ssenariysi</small></article>
+        <article class="model-card"><div class="model-symbol">VALIDATION</div><b>Expanding-window OOF</b><small>Vaqt tartibi saqlanadi; kelajak ma’lumoti train’ga o‘tmaydi</small></article>
+      </div>
+      <article class="panel pipeline">
+        <h3>Data → feature → model → benchmark → scenario</h3>
+        <div class="pipeline-steps">
+          <div class="pipe-step"><small>01 · INPUT</small><b>FAOSTAT / CSV</b><span>Yield, area, production</span></div>
+          <div class="pipe-step"><small>02 · ENRICH</small><b>Weather features</b><span>Temp, rain, GDD, hot/frost days</span></div>
+          <div class="pipe-step"><small>03 · QA</small><b>Time validation</b><span>Missingness, aligned years, leakage checks</span></div>
+          <div class="pipe-step"><small>04 · COMPARE</small><b>OOF MAE</b><span>Six estimators vs Persistence</span></div>
+          <div class="pipe-step"><small>05 · OUTPUT</small><b>Scenario</b><span>Climatology assumption labelled</span></div>
+        </div>
+        <div class="model-rules">
+          <div class="rule"><b>≥ 8</b><small>valid yield observations required</small></div>
+          <div class="rule"><b>≥ 2</b><small>usable weather features required</small></div>
+          <div class="rule"><b>OOF MAE</b><small>reported beside Persistence benchmark</small></div>
+        </div>
+      </article>
+      <div class="info-note"><b>Model status:</b> ML estimatorlari va FAOSTAT Ridge baseline kodi mavjud. Personal dataset modeli yetarli tarixiy yield va ob-havo feature'lari bo‘lsa ishlaydi. Bu hali barcha mamlakatlar/tumanlar uchun country-held-out va future-year testlardan o‘tgan universal global model emas. Kelajak ob-havosi mavjud bo‘lmasa, forecast so‘nggi 5 yillik ob-havo normasi bilan ssenariy sifatida belgilanadi.</div>
+    </section>
+
+    <section class="section" id="environment">
+      <div class="section-head"><div><div class="eyebrow">05 / ENVIRONMENTAL DATA SOURCES</div><h2>Iqlim, tuproq va satellite qatlamlari</h2><p>Ulangan manbalar va keyingi integratsiya bosqichlari ajratilgan. Rejadagi connectorlar tayyor ma’lumot sifatida ko‘rsatilmaydi.</p></div><span class="section-index">SOURCE REGISTRY</span></div>
+      <div class="source-grid">
+        <article class="source-card"><div class="source-status">● ACTIVE</div><h3>NASA POWER</h3><p>Tarixiy kunlik ob-havo: harorat, yog‘in, namlik, shamol, quyosh radiatsiyasi, GDD, issiq va sovuq kunlar.</p><a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">NASA POWER ↗</a></article>
+        <article class="source-card"><div class="source-status">● ACTIVE</div><h3>Open-Meteo</h3><p>Joriy ob-havo va 16 kungacha prognoz: harorat, yog‘in, shamol, namlik va reference evapotranspiration.</p><a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo ↗</a></article>
+        <article class="source-card"><div class="source-status planned">◌ PLANNED</div><h3>Sentinel-2 NDVI</h3><p>STAC qidiruv, cloud mask, raster processing va mavsumiy NDVI agregatsiyasi talab etiladi.</p><a href="https://dataspace.copernicus.eu/" target="_blank" rel="noopener">Copernicus ↗</a></article>
+        <article class="source-card"><div class="source-status planned">◌ PLANNED</div><h3>NASA SMAP</h3><p>Soil moisture mahsuloti, depth, quality flags va hududiy raster qayta ishlash talab etiladi.</p><a href="https://nsidc.org/data/smap" target="_blank" rel="noopener">NASA SMAP ↗</a></article>
+        <article class="source-card"><div class="source-status planned">◌ PLANNED</div><h3>SoilGrids</h3><p>pH, SOC, azot, clay/sand/silt va bulk density kabi tuproq xususiyatlari uchun connector rejada.</p><a href="https://soilgrids.org/" target="_blank" rel="noopener">SoilGrids ↗</a></article>
+      </div>
+      <div class="library-row"><strong>TECH STACK · IMPLEMENTED IN REPOSITORY</strong><div class="library-tags"><span>Python 3.12</span><span>FastAPI</span><span>PostgreSQL 17</span><span>PostGIS</span><span>SQLite</span><span>SQLAlchemy</span><span>Pandas</span><span>NumPy</span><span>scikit-learn</span><span>Rasterio</span><span>Shapely</span><span>MapLibre GL JS</span></div></div>
+      <div class="info-note"><b>Spatial limitation:</b> NASA POWER va Open-Meteo ushbu MVP’da tanlangan poligonning vakillik nuqtasida ishlaydi; bu butun tuman bo‘yicha zonal o‘rtacha emas. NDVI, SMAP va SoilGrids raster adapterlari hali faol emas.</div>
+    </section>
+
+    <footer class="footer"><span>© OSH Agriculture AI Global · Reference data inventory snapshot · 08 Nov 2026</span><span><a href="./data/catalog.json" target="_blank">JSON manifest ↗</a> · <a href="https://github.com/Sherzoddd2002/osh-agriculture-ai-global" target="_blank" rel="noopener">GitHub repository ↗</a></span></footer>
+  </div>
+</main>
 </div>
+
 <script src="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.js"></script>
 <script>
 (function(){
 const $=id=>document.getElementById(id);
-let map, features=[], selected=null;
-function props(f){return f&&f.properties||{}}
-function countryName(f){const p=props(f);return p.ADMIN||p.name||p.NAME||p.NAME_EN||'Tanlangan hudud'}
-function iso(f){const p=props(f);return p.ISO_A3||p['ISO3166-1-Alpha-3']||p.ADM0_A3||p.iso_a3||'—'}
-function choose(f,animate=true){
+const cropList=[
+["whea","Wheat"],["rice","Rice"],["maiz","Maize"],["barl","Barley"],["mill","Small millet"],["pmil","Pearl millet"],["sorg","Sorghum"],["ocer","Other cereals"],["pota","Potato"],["swpo","Sweet potato"],["yams","Yams"],["cass","Cassava"],["orts","Other roots"],["bean","Bean"],["chic","Chickpea"],["cowp","Cowpea"],["pige","Pigeon pea"],["lent","Lentil"],["opul","Other pulses"],["soyb","Soybean"],["grou","Groundnut"],["cnut","Coconut"],["oilp","Oil palm"],["sunf","Sunflower"],["rape","Rapeseed"],["sesa","Sesame seed"],["ooil","Other oil crops"],["sugc","Sugarcane"],["sugb","Sugarbeet"],["cott","Cotton"],["ofib","Other fibre crops"],["coff","Arabica coffee"],["rcof","Robusta coffee"],["coco","Cocoa"],["teas","Tea"],["toba","Tobacco"],["bana","Banana"],["plnt","Plantain"],["citr","Citrus"],["trof","Other tropical fruit"],["temf","Temperate fruit"],["toma","Tomato"],["onio","Onion"],["vege","Other vegetables"],["rubb","Rubber"],["rest","Rest of crops"]
+];
+function comma(n){return Number(n||0).toLocaleString("en-US");}
+function renderCropList(filter){
+ const q=(filter||"").trim().toLowerCase();
+ $("crop-chips").innerHTML=cropList.map(function(c){
+  const match=(c[0]+" "+c[1]).toLowerCase().includes(q);
+  return '<button type="button" class="crop-chip" data-code="'+c[0]+'" data-name="'+c[1]+'" '+(match?'':'hidden')+'><b>'+c[0].toUpperCase()+'</b>'+c[1]+'</button>';
+ }).join("");
+}
+$("crop-search").addEventListener("input",e=>renderCropList(e.target.value));
+$("crop-chips").addEventListener("click",e=>{
+ const button=e.target.closest("button[data-code]");
+ if(!button)return;
+ $("crop-select").value=button.dataset.code;
+ $("crop-detail").innerHTML="<b>"+button.dataset.code.toUpperCase()+" · "+button.dataset.name+"</b><br>MAPSPAM 2020 v2r2 katalogidagi ekin qatlamlaridan biri. Bazadagi summary qatorlari ma’muriy daraja va texnologiya bo‘yicha saqlanadi.";
+});
+renderCropList("");
+document.querySelectorAll(".nav a").forEach(function(link){
+ link.addEventListener("click",function(){
+  document.querySelectorAll(".nav a").forEach(x=>x.classList.remove("active"));
+  link.classList.add("active");
+ });
+});
+document.querySelectorAll(".crop-chip[data-code='whea']").forEach(x=>x.classList.add("selected"));
+
+let catalog=null;
+fetch("./data/catalog.json").then(r=>{if(!r.ok)throw new Error("manifest "+r.status);return r.json();}).then(function(data){
+ catalog=data;
+ $("combined-records").textContent=comma(data.combined_record_count)+" ";
+ const faostat=data.datasets.find(x=>x.id==="FAOSTAT_QCL");
+ const spam=data.datasets.find(x=>x.id==="mapspam-2020-v2r2");
+ $("faostat-count").textContent=comma(faostat.records);
+ $("mapspam-count").textContent=comma(spam.records);
+ $("country-count").textContent=comma(faostat.countries_or_areas);
+ $("faostat-crops").textContent=comma(faostat.crop_item_codes);
+ $("mapspam-crops").textContent=comma(spam.crops);
+}).catch(function(error){console.warn("Data inventory manifest could not load",error);});
+
+let map=null,features=[],selected=null;
+function countryName(f){const p=f&&f.properties||{};return p.ADMIN||p.name||p.NAME||p.NAME_EN||"Tanlangan mamlakat";}
+function iso3(f){const p=f&&f.properties||{};return p.ISO_A3||p["ISO3166-1-Alpha-3"]||p.ADM0_A3||p.iso_a3||"—";}
+function choose(f,animate){
+ if(!f)return;
  const previous=selected;
  selected=f;
- $('country-name').textContent=countryName(f);
- $('country-code').textContent='ISO-3: '+iso(f);
- $('map-status').textContent='Tanlandi: '+countryName(f);
- $('result').hidden=true;
- if(map&&map.getSource('countries')){
-  if(previous&&previous.id!==f.id)map.setFeatureState({source:'countries',id:previous.id},{selected:false});
-  map.setFeatureState({source:'countries',id:f.id},{selected:true});
-  const b=new maplibregl.LngLatBounds();
-  const walk=c=>{if(typeof c[0]==='number'){b.extend(c);return;}c.forEach(walk);};
-  walk(f.geometry.coordinates);
-  if(animate&&b.isValid())map.fitBounds(b,{padding:90,maxZoom:4.5,duration:900});
+ $("country-name").textContent=countryName(f);
+ $("country-code").textContent=iso3(f);
+ $("map-status").textContent="Tanlandi: "+countryName(f)+" · "+iso3(f);
+ if(map&&map.getSource("countries")){
+  if(previous&&previous.id!==f.id)map.setFeatureState({source:"countries",id:previous.id},{selected:false});
+  map.setFeatureState({source:"countries",id:f.id},{selected:true});
+  if(animate){
+   const bounds=new maplibregl.LngLatBounds();
+   function walk(c){if(typeof c[0]==="number"){bounds.extend(c);return;}c.forEach(walk);}
+   walk(f.geometry.coordinates);
+   if(bounds.isValid())map.fitBounds(bounds,{padding:80,maxZoom:4.5,duration:900});
+  }
  }
 }
 window.__setDemoState=function(state){
- const f=features.find(x=>countryName(x)==='Uzbekistan')||features.find(x=>iso(x)==='UZB')||features[0];
- if(!f)return;
- choose(f,false);
- if(state==='result'){
-  $('result').hidden=false;
-  $('result-text').textContent='Tanlangan hudud: '+countryName(f)+'. Ekin: '+$('crop').selectedOptions[0].textContent+'. Haqiqiy hisoblash uchun production backend va mos tarixiy hosildorlik qatori kerak.';
+ const found=features.find(x=>iso3(x)==="UZB")||features.find(x=>countryName(x)==="Uzbekistan")||features[0];
+ if(found)choose(found,false);
+ if(state==="result"){
+  document.getElementById("archive").scrollIntoView({behavior:"auto",block:"start"});
  }
 };
-if(!window.maplibregl){$('map-status').textContent='MapLibre yuklanmadi. Internet aloqasini tekshiring.';return;}
-map=new maplibregl.Map({container:'map',style:'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',center:[25,18],zoom:1.25,minZoom:.85,maxZoom:8,renderWorldCopies:false,attributionControl:true});
-map.addControl(new maplibregl.NavigationControl({showCompass:true,showZoom:true}),'top-right');
-map.on('style.load',()=>{try{map.setProjection({type:'globe'});map.setSky({'atmosphere-blend':['interpolate',['linear'],['zoom'],0,.95,3,.82,6,.2,7,0]});}catch(e){console.warn(e);}});
-map.on('load',async()=>{
- try{
-  const r=await fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
-  if(!r.ok)throw new Error('Country boundaries HTTP '+r.status);
-  const data=await r.json();features=data.features||[];
-  features.forEach((f,i)=>{f.id=i;});
-  map.addSource('countries',{type:'geojson',data,generateId:false});
-  map.addLayer({id:'country-fill',type:'fill',source:'countries',paint:{'fill-color':['case',['boolean',['feature-state','selected'],false],'#f2c879','#1b806f'],'fill-opacity':['case',['boolean',['feature-state','selected'],false],.34,.12],'fill-outline-color':'#53dcb2'}});
-  map.addLayer({id:'country-lines',type:'line',source:'countries',paint:{'line-color':['case',['boolean',['feature-state','selected'],false],'#ffd88a','#56dcb5'],'line-width':['case',['boolean',['feature-state','selected'],false],2.1,['interpolate',['linear'],['zoom'],1,.45,4,1,7,1.5]],'line-opacity':.82}});
-  map.addLayer({id:'country-hover',type:'fill',source:'countries',paint:{'fill-color':'#f2c879','fill-opacity':.25},filter:['==',['get','ISO_A3'],'__NONE__']});
-  map.on('click','country-fill',e=>{if(e.features&&e.features[0])choose(e.features[0]);});
-  map.on('mousemove','country-fill',()=>map.getCanvas().style.cursor='pointer');
-  map.on('mouseleave','country-fill',()=>map.getCanvas().style.cursor='');
-  $('map-status').textContent='Mamlakatni tanlash uchun xaritadagi hududni bosing.';
- }catch(e){console.error(e);$('map-status').textContent='Davlat chegaralari yuklanmadi. Keyinroq qayta urinib ko‘ring.';}
-});
-$('forecast').addEventListener('click',()=>{
- if(!selected){$('result').hidden=false;$('result-text').textContent='Avval globusdan mamlakat tanlang.';return;}
- $('result').hidden=false;
- $('result-text').textContent='Tanlangan hudud: '+countryName(selected)+'. Ekin: '+$('crop').selectedOptions[0].textContent+'. Haqiqiy hisoblash uchun production backend va tekshirilgan tarixiy hosildorlik ma’lumoti kerak. Demo soxta prognoz raqamini ko‘rsatmaydi.';
-});
+if(window.maplibregl){
+ map=new maplibregl.Map({
+  container:"map",
+  style:"https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+  center:[64,35],zoom:1.28,minZoom:.85,maxZoom:8,renderWorldCopies:false,attributionControl:true
+ });
+ map.addControl(new maplibregl.NavigationControl({showCompass:true,showZoom:true}),"top-right");
+ map.on("style.load",function(){try{map.setProjection({type:"globe"});map.setSky({"atmosphere-blend":["interpolate",["linear"],["zoom"],0,.95,3,.82,6,.2,7,0]});}catch(e){console.warn(e);}});
+ map.on("load",async function(){
+  try{
+   const response=await fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson");
+   if(!response.ok)throw new Error("Country GeoJSON HTTP "+response.status);
+   const geo=await response.json();
+   features=geo.features||[];
+   features.forEach((f,i)=>{f.id=i;});
+   map.addSource("countries",{type:"geojson",data:geo,generateId:false});
+   map.addLayer({id:"country-fill",type:"fill",source:"countries",paint:{"fill-color":["case",["boolean",["feature-state","selected"],false],"#eac477","#1d826f"],"fill-opacity":["case",["boolean",["feature-state","selected"],false],.38,.13],"fill-outline-color":"#59dcb8"}});
+   map.addLayer({id:"country-lines",type:"line",source:"countries",paint:{"line-color":["case",["boolean",["feature-state","selected"],false],"#f5d38c","#48cda8"],"line-width":["case",["boolean",["feature-state","selected"],false],2.1,.55],"line-opacity":.9}});
+   map.on("click","country-fill",function(e){if(e.features&&e.features[0])choose(e.features[0],true);});
+   map.on("mousemove","country-fill",()=>map.getCanvas().style.cursor="pointer");
+   map.on("mouseleave","country-fill",()=>map.getCanvas().style.cursor="");
+   const uz=features.find(x=>iso3(x)==="UZB")||features.find(x=>countryName(x)==="Uzbekistan");
+   if(uz)choose(uz,false);
+   else $("map-status").textContent="Mamlakatni tanlash uchun chegarani bosing.";
+  }catch(error){console.error(error);$("map-status").textContent="Chegaralar yuklanmadi. Tashqi GeoJSON xizmati vaqtincha ishlamasligi mumkin.";}
+ });
+}else{$("map-status").textContent="MapLibre kutubxonasi yuklanmadi.";}
 })();
 </script>
-</body></html>
+</body>
+</html>
