@@ -439,6 +439,31 @@ $('refresh-climate').addEventListener('click',async()=>{if(!token){openAuth();re
 
 function fmt(value,digits=1){return value===null||value===undefined||Number.isNaN(Number(value))?'—':Number(value).toFixed(digits);}
 function pollClimateJob(jobId,locationId){if(currentClimateJobId===jobId)return;currentClimateJobId=jobId;const check=async()=>{try{const j=await api(`/location-climate-jobs/${jobId}`,{headers:authHeaders(false)});const progressText=`Iqlim tahlili: ${j.status} · ${j.progress}% · ${j.message||''}`;toast($('saved-location-status'),progressText);toast($('environment-status'),progressText);$('location-climate-results').hidden=false;$('climate-title').textContent='Hudud iqlim tahlili';$('climate-subtitle').textContent=j.message||'Tarixiy qator va prognoz olinmoqda.';$('climate-source-status').textContent=j.status;if(j.status==='COMPLETED'){currentClimateJobId=null;await loadClimate(locationId);return;}if(j.status==='FAILED'){currentClimateJobId=null;toast($('saved-location-status'),`Iqlim tahlili xatosi: ${j.error||'Noma’lum xato'}`);return;}setTimeout(check,3000);}catch(e){toast($('saved-location-status'),e.message);}};check();}
+async function searchSentinel2Scenes(){
+  if(!token){openAuth();toast($('sentinel2-search-status'),'Sentinel-2 katalogini saqlangan hudud bo‘yicha qidirish uchun hisobga kiring.');return;}
+  const locationId=Number($('environment-location-select').value||selectedLocationId);
+  if(!locationId){toast($('sentinel2-search-status'),'Avval xaritada hududni chizing yoki tanlang va saqlang.');return;}
+  const start=$('sentinel2-start-date').value||'2024-01-01';
+  const end=$('sentinel2-end-date').value||new Date().toISOString().slice(0,10);
+  const cloud=Number($('sentinel2-max-cloud').value);
+  if(start>end){toast($('sentinel2-search-status'),'Boshlanish sanasi tugash sanasidan keyin bo‘lishi mumkin emas.');return;}
+  const results=$('sentinel2-scene-results');
+  results.innerHTML='';
+  toast($('sentinel2-search-status'),'Copernicus STAC katalogidan hududga kesishadigan L2A sahnalari qidirilmoqda…');
+  try{
+    const params=new URLSearchParams({start_date:start,end_date:end,max_cloud_percent:String(Number.isFinite(cloud)?cloud:30),limit:'50'});
+    const data=await api(`/locations/${locationId}/sentinel2-scenes?${params.toString()}`,{headers:authHeaders(false)});
+    if(!data.items?.length){
+      toast($('sentinel2-search-status'),`Sahna topilmadi · ${data.start_date}–${data.end_date} · cloud ≤ ${data.max_cloud_percent}%`);
+      results.innerHTML='<div class="empty-state">Ushbu davr va hudud uchun mos Sentinel-2 L2A sahnasi topilmadi. Sanani kengaytiring yoki cloud limitni oshiring.</div>';
+      return;
+    }
+    results.innerHTML=`<table><thead><tr><th>Acquisition date</th><th>Scene ID</th><th>Cloud %</th><th>Assets</th></tr></thead><tbody>${data.items.map(item=>`<tr><td>${escapeHtml(item.datetime||'—')}</td><td>${escapeHtml(item.id||'—')}</td><td>${fmt(item.cloud_cover_percent,1)}</td><td>${escapeHtml((item.assets_available||[]).join(', ')||'No B04/B08/SCL asset keys in response')}</td></tr>`).join('')}</tbody></table>`;
+    toast($('sentinel2-search-status'),`${data.returned} ta Sentinel-2 L2A sahnasi topildi · STAC katalog qidiruvi. NDVI hali hisoblanmagan.${data.next_page_available?' Keyingi sahifa ham mavjud.':''}`);
+  }catch(e){toast($('sentinel2-search-status'),e.message);}
+}
+$('search-sentinel2').addEventListener('click',searchSentinel2Scenes);
+
 async function loadClimate(locationId){if(!token||!locationId)return;try{const data=await api(`/locations/${locationId}/climate`,{headers:authHeaders(false)});$('environment-location-select').value=String(locationId);$('location-select').value=String(locationId);$('environment-status').textContent=`Tanlangan hudud: ${data.location.name} · NASA POWER va Open-Meteo holati yangilandi.`;$('location-climate-results').hidden=false;$('climate-title').textContent=`${data.location.name} · yillik iqlim`;$('climate-subtitle').textContent=`Koordinata: ${fmt(data.location.centroid.lat,4)}, ${fmt(data.location.centroid.lon,4)} · tarixiy kuzatuvlar va joriy prognoz`;const weather=data.weather||{};const current=weather.current||{};const units=weather.current_units||{};const cards=[['Hozirgi harorat',current.temperature_2m,units.temperature_2m||'°C'],['His qilinadi',current.apparent_temperature,units.apparent_temperature||'°C'],['Nisbiy namlik',current.relative_humidity_2m,units.relative_humidity_2m||'%'],['Hozirgi yog‘in',current.precipitation,units.precipitation||'mm'],['Shamol',current.wind_speed_10m,units.wind_speed_10m||'km/h']];$('climate-current-kpis').innerHTML=cards.map(([label,value,unit])=>`<article class="climate-kpi"><small>${label}</small><strong>${fmt(value,1)} <em>${unit}</em></strong></article>`).join('');const days=weather.daily||[];$('climate-forecast-days').innerHTML=days.slice(0,8).map(day=>`<div class="forecast-day"><b>${escapeHtml(day.date)}</b><strong>${fmt(day.temperature_max_c,0)}° / ${fmt(day.temperature_min_c,0)}°</strong><span>Yog‘in: ${fmt(day.precipitation_sum_mm,1)} mm</span><span>Ehtimol: ${fmt(day.precipitation_probability_max_pct,0)}%</span></div>`).join('')||'<div class="empty-state">Prognoz mavjud emas. Manba holatini tekshiring.</div>';const annual=data.annual||[];$('annual-row-count').textContent=`${annual.length} yil`;$('annual-climate-rows').innerHTML=annual.slice().reverse().map(row=>`<tr><td>${row.year}</td><td>${fmt(row.wx_t2m_mean_c,1)} °C</td><td>${fmt(row.wx_precip_sum_mm,0)} mm</td><td>${fmt(row.wx_hot_days_ge_35c,0)}</td><td>${fmt(row.wx_frost_days_lt_0c,0)}</td><td>${fmt(row.wx_coverage_pct,1)}%</td></tr>`).join('')||'<tr><td colspan="6" class="empty-state">Yillik iqlim ma’lumoti hali olinmagan.</td></tr>';const forecastStatus=weather.status||'PENDING';$('climate-source-status').textContent=`NASA: ${annual.length?'AVAILABLE':'PENDING'} · Prognoz: ${forecastStatus}`;const latest=data.latest_job;const modelStatus=latest?.result?.model_status;if(modelStatus==='NOT_RUN_NO_YIELD_DATA')$('climate-model-note').textContent='Hosildorlik bo‘yicha kuzatuvlar yuklanmagan. Shu sababli yield modeli ishga tushirilmadi; hududning iqlim tarixi va ob-havo prognozi ko‘rsatilmoqda.';else if(modelStatus)$('climate-model-note').textContent=`Hudud iqlim job’i: ${latest.status}. Ekin datasetini yuklasangiz, hosildorlik modeli alohida avtomatik tahlil qiladi.`;else $('climate-model-note').textContent='Hosildorlik ma’lumoti bo‘lmasa, model prognozi hisoblanmaydi.';if(latest&&['QUEUED','RUNNING'].includes(latest.status))pollClimateJob(latest.id,locationId);}catch(e){console.warn(e);toast($('saved-location-status'),e.message);}}
 
 $('upload-dataset').addEventListener('click',async()=>{if(!token){openAuth();return;}const locationId=Number($('location-select').value),file=$('yield-file').files[0];if(!locationId||!file){toast($('upload-status'),'Hududni tanlang va CSV faylni biriktiring.');return;}const form=new FormData();form.append('location_id',locationId);form.append('crop_code',$('crop-code').value||'WHEAT');form.append('name',file.name);form.append('year_column',$('year-column').value||'year');form.append('yield_column',$('yield-column').value||'yield_t_ha');form.append('area_column',$('area-column').value||'');form.append('area_basis',$('area-basis').value);form.append('season_start',$('season-start').value);form.append('season_end',$('season-end').value);form.append('global_consent',$('global-consent').checked?'true':'false');form.append('file',file);toast($('upload-status'),'CSV tekshirilmoqda va bazaga yozilmoqda…');try{const res=await api('/datasets/upload',{method:'POST',headers:authHeaders(false),body:form});currentDatasetId=res.dataset_id;toast($('upload-status'),`Dataset SQL bazaga saqlandi: ${res.row_count} qator · ${res.year_range[0]}–${res.year_range[1]}. Avtomatik ob-havo va model tahlili job #${res.analysis_job_id} boshlandi.`);await loadDatasets();$('forecast-dataset').value=String(currentDatasetId);$('process-dataset').disabled=true;currentJobId=res.analysis_job_id;pollJob();}catch(e){toast($('upload-status'),e.message);}});
@@ -453,7 +478,15 @@ $('refresh-datasets').addEventListener('click',loadDatasets);$('process-dataset'
 $('run-prediction').addEventListener('click',async()=>{if(!token){openAuth();return;}const datasetId=Number($('forecast-dataset').value)||currentDatasetId;if(!datasetId){toast($('prediction-result'),'Avval dataset yuklang.');return;}const payload={dataset_id:datasetId,target_year:Number($('target-year').value)};if($('forecast-model').value)payload.model=$('forecast-model').value;$('prediction-result').innerHTML='<div class="empty-state">Model hisoblayapti…</div>';try{const r=await api('/predictions',{method:'POST',headers:authHeaders(),body:JSON.stringify(payload)});renderPrediction(r);}catch(e){$('prediction-result').textContent=e.message;}});
 function renderPrediction(r){$('prediction-result').innerHTML=`<div class="panel-title"><div><span class="eyebrow">${escapeHtml(r.prediction_type)}</span><h3>${escapeHtml(r.location)} · ${r.target_year} scenario</h3></div><span class="source-pill">${escapeHtml(r.selected_model)}</span></div><div class="result-kpis"><div><small>Hosildorlik ssenariysi</small><strong>${Number(r.predicted_yield_t_ha).toFixed(3)} t/ha</strong></div><div><small>Oxirgi kuzatilgan</small><strong>${Number(r.reference_last_observed_yield_t_ha).toFixed(3)} t/ha</strong></div><div><small>OOF MAE</small><strong>${r.selected_model_oof_mae_t_ha===null?'—':Number(r.selected_model_oof_mae_t_ha).toFixed(4)}</strong></div></div><p><b>Benchmark:</b> Persistence MAE ${Number(r.persistence_oof_mae_t_ha).toFixed(4)} t/ha · ${escapeHtml(r.benchmark_status)}</p><p><b>Ob-havo farazi:</b> ${escapeHtml(r.weather_assumption)}</p><h4>Modellar taqqoslanishi</h4><div class="table-wrap"><table><thead><tr><th>Model</th><th>OOF qator</th><th>MAE t/ha</th><th>Persistence'dan yaxshi</th></tr></thead><tbody>${r.model_comparison.map(m=>`<tr><td>${escapeHtml(m.model)}</td><td>${m.oof_rows}</td><td>${m.oof_mae_t_ha===null?'—':Number(m.oof_mae_t_ha).toFixed(4)}</td><td>${m.beats_persistence?'Ha':'Yo‘q'}</td></tr>`).join('')}</tbody></table></div><div class="notice">${escapeHtml(r.governance_note)}</div>`;}
 
-async function loadSources(){try{const r=await api('/sources');$('source-cards').innerHTML=Object.entries(r.sources).map(([key,s])=>`<article class="source-card"><span class="source-state ${s.status==='ACTIVE'?'':'planned'}">${s.status==='ACTIVE'?'ULANGAN':'ULANISH REJASIDA'}</span><h3>${escapeHtml(key)}</h3><p>${escapeHtml(s.coverage)}</p><small>${escapeHtml(s.note)}</small><p><a href="${s.url}" target="_blank" rel="noopener">Manba →</a></p></article>`).join('');}catch(e){$('source-cards').textContent=e.message;}}
+async function loadSources(){try{
+  const r=await api('/sources');
+  $('source-cards').innerHTML=Object.entries(r.sources).map(([key,source])=>{
+    const status=source.status||'UNKNOWN';
+    const stateClass=status==='ACTIVE'?'':'partial';
+    const label=source.status_label||(status==='ACTIVE'?'ULANGAN':'ULANMAGAN');
+    return `<article class="source-card"><span class="source-state ${stateClass}">${escapeHtml(label)}</span><h3>${escapeHtml(key)}</h3><p>${escapeHtml(source.coverage)}</p><small>${escapeHtml(source.note)}</small><p><a href="${source.url}" target="_blank" rel="noopener">Manba →</a></p></article>`;
+  }).join('');
+}catch(e){$('source-cards').textContent=e.message;}}
 
 
 
@@ -508,7 +541,6 @@ async function loadGlobalSeries(){
 }
 
 async function runGlobalYieldForecast(){
-  if(!token){openAuth();toast($('global-data-status'),'Prognoz ssenariysi uchun avval hisobga kiring. Tarixiy ma’lumotlar esa ochiq.');return;}
   const country=$('global-country').value;
   const crop=$('global-crop').value;
   const target=Number($('global-end-year').value)||2024;
@@ -531,5 +563,12 @@ $('refresh-global-crops').addEventListener('click',()=>{globalCropCatalogLoaded=
 $('load-global-series').addEventListener('click',loadGlobalSeries);
 $('global-yield-forecast').addEventListener('click',runGlobalYieldForecast);
 
-async function boot(){try{const h=await api('/health');$('server-status').textContent=`Online · ${h.version}`;}catch(e){$('server-status').textContent='Server ulanmagan';}initMap();loadSources();if(token){setAuthUI({email:'Hisobga ulangan'});await loadLocations();await loadDatasets();}else setAuthUI(null);}
+async function boot(){try{
+  const h=await api('/health');
+  const worker=h.background_worker||{};
+  const workerLabel=worker.status==='ONLINE'?'worker online':'worker OFFLINE';
+  $('server-status').textContent=`API online · DB ${h.database||'unknown'} · ${workerLabel}`;
+}catch(e){$('server-status').textContent='API server ulanmagan';}
+initMap();loadSources();$('sentinel2-end-date').value=new Date().toISOString().slice(0,10);
+if(token){setAuthUI({email:'Hisobga ulangan'});await loadLocations();await loadDatasets();}else setAuthUI(null);}
 boot();
