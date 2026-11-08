@@ -54,6 +54,71 @@ assert.match(resetElements["region-model-result"].textContent,/qayta tanlang/,
 
 const adm1Payload=JSON.parse(fs.readFileSync(path.join(docs,"data","boundaries","UZB_ADM1.geojson"),"utf8"));
 const officialYield=JSON.parse(fs.readFileSync(path.join(docs,"data","official-yield","UZB_ADM1_WHEA_2010_2024.json"),"utf8"));
+
+const mapspamPath=path.join(docs,"data","mapspam","UZB_MAPSPAM_2020_ADM1_ADM2.json");
+assert.ok(fs.existsSync(mapspamPath),"verified MAPSPAM public data package is missing");
+const mapspamReference=JSON.parse(fs.readFileSync(mapspamPath,"utf8"));
+assert.equal(mapspamReference.dataset_id,"mapspam-2020-v2r2");
+assert.equal(mapspamReference.source_year,2020);
+assert.equal(mapspamReference.license,"CC BY-SA 4.0");
+const cropListMatch=html.match(/const cropList=(\\[[\\s\\S]*?\\n\\]);/);
+assert.ok(cropListMatch,"website crop list is missing");
+const publicCropList=new Function("return "+cropListMatch[1])();
+assert.equal(publicCropList.length,46);
+for(const [level,count] of Object.entries({ADM1:14,ADM2:199})){
+ const areas=mapspamReference.levels[level].areas;
+ assert.equal(Object.keys(areas).length,count,level+" MAPSPAM area count");
+ for(const area of Object.values(areas)){
+  assert.equal(Object.keys(area.crops).length,46,level+" area must have all 46 crops");
+ }
+}
+const adm1ForMapspam=JSON.parse(fs.readFileSync(path.join(docs,"data","boundaries","UZB_ADM1.geojson"),"utf8"));
+const adm2ForMapspam=JSON.parse(fs.readFileSync(path.join(docs,"data","boundaries","UZB_ADM2.geojson"),"utf8"));
+const mapspamHarnessSource=[
+ nameObject[0],
+ "let mapspamReferenceCache=null;let selectedAOI=null;let activeCrop='whea';",
+ "const cropList="+cropListMatch[1]+";",
+ "const elements={'region-mapspam-result':{innerHTML:'',textContent:''},'region-crop-select':{}};",
+ "Object.defineProperty(elements['region-crop-select'],'value',{get:()=>activeCrop});",
+ "function $(id){return elements[id];}",
+ "const fetch=(url)=>Promise.resolve({ok:true,json:()=>Promise.resolve(payload)});",
+ extractFunction("regionEscape"),
+ extractFunction("regionFeatureName"),
+ extractFunction("regionFmt"),
+ extractFunction("renderMapspamReference"),
+ "return {render:renderMapspamReference,setArea:value=>{selectedAOI=value;},setCrop:value=>{activeCrop=value;},elements};"
+].join("\\n");
+const mapspamHarness=new Function("payload",mapspamHarnessSource)(mapspamReference);
+const estimatedEntry=Object.entries(mapspamReference.levels.ADM2.areas).find(([,area])=>area.crops.whea.spatial_status==="ESTIMATED");
+assert.ok(estimatedEntry,"at least one district should have a wheat raster estimate");
+const [estimatedId,estimatedArea]=estimatedEntry;
+const estimatedFeature=adm2ForMapspam.features.find(feature=>feature.properties.shapeID===estimatedId);
+assert.ok(estimatedFeature,"estimated district must join to its exact boundary shapeID");
+mapspamHarness.setArea(estimatedFeature);
+mapspamHarness.setCrop("whea");
+const estimatedResult=await mapspamHarness.render(estimatedFeature,"whea");
+assert.equal(estimatedResult.status,"ESTIMATED");
+assert.ok(estimatedResult.yield>0);
+assert.equal(estimatedResult.area,regionFeatureName(estimatedFeature));
+assert.match(mapspamHarness.elements["region-mapspam-result"].innerHTML,/t\\/ha/);
+assert.match(mapspamHarness.elements["region-mapspam-result"].innerHTML,new RegExp(regionFeatureName(estimatedFeature)));
+
+const missingEntry=Object.entries(mapspamReference.levels.ADM2.areas).find(([,area])=>area.crops.whea.spatial_status==="NO_RASTER_CELLS");
+assert.ok(missingEntry,"district wheat NO_RASTER_CELLS case should be represented");
+const [missingId]=missingEntry;
+const missingFeature=adm2ForMapspam.features.find(feature=>feature.properties.shapeID===missingId);
+mapspamHarness.setArea(missingFeature);
+const missingResult=await mapspamHarness.render(missingFeature,"whea");
+assert.equal(missingResult.status,"NO_RASTER_CELLS");
+assert.match(mapspamHarness.elements["region-mapspam-result"].innerHTML,/NULL \\/ mavjud emas/);
+assert.doesNotMatch(mapspamHarness.elements["region-mapspam-result"].innerHTML,/0\\.00 t\\/ha/);
+
+const customFeature={type:"Feature",properties:{shapeName:"Custom field"},geometry:{type:"Polygon",coordinates:[[[0,0],[1,0],[1,1],[0,1],[0,0]]]}};
+mapspamHarness.setArea(customFeature);
+const customResult=await mapspamHarness.render(customFeature,"whea");
+assert.equal(customResult.status,"CUSTOM_AOI");
+assert.match(mapspamHarness.elements["region-mapspam-result"].textContent,/Qo‘lda chizilgan maydon/);
+console.log("PASS MAPSPAM browser lookup: exact ADM2 shapeID, localized result, estimated yield, NULL handling and custom AOI guard");
 assert.equal(officialYield.regions.length,13,"SIAT wheat source should cover 13 agricultural provinces");
 const geoNames=new Set(adm1Payload.features.map(feature=>normalizeRegionSearch(regionFeatureName(feature))));
 for(const region of officialYield.regions){
