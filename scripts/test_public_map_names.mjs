@@ -55,6 +55,27 @@ assert.match(resetElements["region-model-result"].textContent,/qayta tanlang/,
 const adm1Payload=JSON.parse(fs.readFileSync(path.join(docs,"data","boundaries","UZB_ADM1.geojson"),"utf8"));
 const officialYield=JSON.parse(fs.readFileSync(path.join(docs,"data","official-yield","UZB_ADM1_WHEA_2010_2024.json"),"utf8"));
 
+const officialCropYield=JSON.parse(fs.readFileSync(path.join(docs,"data","official-yield","UZB_ADM1_CROPS_2010_2024.json"),"utf8"));
+assert.equal(officialCropYield.country_iso3,"UZB");
+assert.equal(officialCropYield.admin_level,"ADM1");
+assert.equal(officialCropYield.license,"CC BY 4.0");
+assert.deepEqual(Object.keys(officialCropYield.crops).sort(),["cott","pota"]);
+for(const [cropCode,maxYield] of [["pota",200],["cott",20]]){
+ const crop=officialCropYield.crops[cropCode];
+ assert.equal(crop.crop_code,cropCode);
+ assert.equal(crop.license,"CC BY 4.0");
+ assert.equal(crop.district_yield_available,false);
+ assert.equal(crop.unit,"tonnes per planted hectare");
+ assert.equal(crop.regions.length,13);
+ for(const region of crop.regions){
+  assert.equal(region.records.length,15,cropCode+" must have 2010–2024 for each province");
+  assert.deepEqual(region.records.map(row=>row.year),Array.from({length:15},(_,i)=>2010+i));
+  for(const row of region.records){
+   assert.ok(row.yield>0&&row.yield<maxYield,cropCode+" yield outside broad plausibility bounds");
+   assert.ok(row.production_t>0&&row.sown_area_ha>0);
+  }
+ }
+}
 const mapspamPath=path.join(docs,"data","mapspam","UZB_MAPSPAM_2020_ADM1_ADM2.json");
 assert.ok(fs.existsSync(mapspamPath),"verified MAPSPAM public data package is missing");
 const mapspamReference=JSON.parse(fs.readFileSync(mapspamPath,"utf8"));
@@ -131,6 +152,14 @@ for(const region of officialYield.regions){
   "SIAT province does not match any localized ADM1 boundary: "+region.name_uz
  );
 }
+for(const cropCode of ["pota","cott"]){
+ for(const region of officialCropYield.crops[cropCode].regions){
+  assert.ok(
+   geoNames.has(normalizeRegionSearch(region.name_uz)),
+   "SIAT "+cropCode+" province does not match any localized ADM1 boundary: "+region.name_uz
+  );
+ }
+}
 const expected={ADM1:14,ADM2:199};
 let checked=0;
 for(const [level,count] of Object.entries(expected)){
@@ -149,30 +178,40 @@ for(const [level,count] of Object.entries(expected)){
  console.log("PASS UZB "+level+": "+count+" Uzbek-localized names");
 }
 
-const officialNamesMatch=html.match(/const OFFICIAL_WHEAT_ADM1_NAMES=(\[[\s\S]*?\]);/);
-assert.ok(officialNamesMatch,"official ADM1 wheat allow-list is missing");
+const officialNamesMatch=html.match(/const OFFICIAL_PROVINCE_ADM1_NAMES=(\[[\s\S]*?\]);/);
+assert.ok(officialNamesMatch,"official ADM1 province allow-list is missing");
+const officialCropsMatch=html.match(/const OFFICIAL_PROVINCE_CROP_CONFIG=(\{[\s\S]*?\n\});/);
+assert.ok(officialCropsMatch,"official province crop configuration is missing");
 const gateSource=[
  nameObject[0],
  extractFunction("normalizeRegionSearch"),
  extractFunction("regionFeatureName"),
  officialNamesMatch[0],
+ officialCropsMatch[0],
  'let selectedAOI=null;let selectedCrop="whea";function $(id){return {value:selectedCrop};}',
- extractFunction("canUseOfficialProvinceWheat"),
- 'return {check:()=>canUseOfficialProvinceWheat(),setArea:value=>{selectedAOI=value;},setCrop:value=>{selectedCrop=value;}};'
+ extractFunction("canUseOfficialProvinceCrop"),
+ 'return {check:()=>canUseOfficialProvinceCrop(),setArea:value=>{selectedAOI=value;},setCrop:value=>{selectedCrop=value;}};'
 ].join("\n");
 const gate=new Function(gateSource)();
 gate.setArea({properties:{shapeName:"Andijan Region",shapeType:"ADM1"}});
-assert.equal(gate.check(),true,"Andijan ADM1 wheat should use official SIAT");
+for(const cropCode of ["whea","pota","cott"]){
+ gate.setCrop(cropCode);
+ assert.equal(gate.check(),true,"Andijan ADM1 "+cropCode+" should use its official SIAT series");
+}
 gate.setArea({properties:{shapeName:"Tashkent",shapeType:"ADM1"}});
-assert.equal(gate.check(),false,"Tashkent city has no official province wheat time series");
+assert.equal(gate.check(),false,"Tashkent city has no agricultural province crop forecast series");
 gate.setArea({properties:{shapeName:"Andijan Region",shapeType:"ADM2"}});
-assert.equal(gate.check(),false,"districts must not inherit province yield");
+for(const cropCode of ["whea","pota","cott"]){
+ gate.setCrop(cropCode);
+ assert.equal(gate.check(),false,"districts must not inherit ADM1 "+cropCode+" yield");
+}
 gate.setArea({properties:{shapeName:"Andijan Region",shapeType:"ADM1"}});
-gate.setCrop("cott");
-assert.equal(gate.check(),false,"non-wheat crops must require their own yield data");
-gate.setCrop("whea");
+gate.setCrop("rice");
+assert.equal(gate.check(),false,"other crops must require their own authentic yield data");
+gate.setCrop("pota");
 gate.setArea({properties:{shapeName:"Custom field"}});
 assert.equal(gate.check(),false,"custom AOIs must require user-provided yield data");
+
 
 const andijan=regionFeatureName({properties:{shapeName:"Andijan Region",shapeType:"ADM1"}});
 const chilanzar=regionFeatureName({properties:{shapeName:"Chilanzar",shapeType:"ADM2"}});
