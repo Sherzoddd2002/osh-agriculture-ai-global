@@ -40,7 +40,7 @@ SOURCE_REGISTRY = {
     },
     "SOILGRIDS": {
         "status": "WCS_AVAILABLE_REST_PAUSED",
-        "status_label": "WCS / WEBDAV MAVJUD · REST API VAQTINCHA TO‘XTATILGAN",
+        "status_label": "WCS/WEBDAV MANBA MAVJUD · AOI ADAPTER KERAK · REST PAUSED",
         "coverage": "Global 250 m soil-property prediction maps at six standard depth intervals, with 90% prediction uncertainty layers.",
         "outputs": ["pH", "SOC", "total nitrogen", "clay", "sand", "silt", "bulk density", "CEC", "coarse fragments", "90% uncertainty interval"],
         "note": "The SoilGrids REST API is currently paused by ISRIC. Use WCS GetCoverage for AOI subsets or WebDAV VRT files instead. These are modelled regional soil properties, not laboratory tests or field-scale ground truth.",
