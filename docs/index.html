@@ -941,16 +941,17 @@ async function renderMapspamReference(feature,cropCode){
   return {status:"NOT_FOUND"};
  }
  const cropName=crop?crop[1]:cropCode.toUpperCase();
+ const displayAreaName=regionFeatureName(feature)||area.name;
  if(record.spatial_status==="NO_RASTER_CELLS"||record.yield_t_ha===null){
-  output.innerHTML="<b>"+regionEscape(area.name)+" · "+regionEscape(cropName)+"</b><div class='region-mapspam-status'>Ushbu hudud/ekin kombinatsiyasida 2020-yil MAPSPAM rasteridan yaroqli katak topilmadi. Hosildorlik <b>NULL / mavjud emas</b> — bu 0 t/ha degani emas.</div><div class='region-mapspam-kpis'>"+
+  output.innerHTML="<b>"+regionEscape(displayAreaName)+" · "+regionEscape(cropName)+"</b><div class='region-mapspam-status'>Ushbu hudud/ekin kombinatsiyasida 2020-yil MAPSPAM rasteridan yaroqli katak topilmadi. Hosildorlik <b>NULL / mavjud emas</b> — bu 0 t/ha degani emas.</div><div class='region-mapspam-kpis'>"+
    [["Valid raster kataklari","0"],["Hosildorlik","—"],["Ishlab chiqarish","—"],["Yig‘ib olingan maydon","—"],["Fizik maydon","—"],["Manba yili","2020"]].map(k=>"<div class='region-mapspam-kpi'><small>"+k[0]+"</small><strong>"+k[1]+"</strong></div>").join("")+
    "</div><div class='region-mapspam-status'>Spatial status: NO_RASTER_CELLS. Qiymat yo‘q joyda nol hosildorlik yasalmaydi.</div>";
-  return {status:"NO_RASTER_CELLS",area:area.name,crop:cropName};
+  return {status:"NO_RASTER_CELLS",area:displayAreaName,crop:cropName};
  }
- output.innerHTML="<b>"+regionEscape(area.name)+" · "+regionEscape(cropName)+"</b><div class='region-mapspam-kpis'>"+
+ output.innerHTML="<b>"+regionEscape(displayAreaName)+" · "+regionEscape(cropName)+"</b><div class='region-mapspam-kpis'>"+
   [["Hosildorlik",regionFmt(record.yield_t_ha,2)+" t/ha"],["Ishlab chiqarish",regionFmt(record.production_t,1)+" t"],["Yig‘ib olingan maydon",regionFmt(record.harvested_area_ha,1)+" ha"],["Fizik maydon",regionFmt(record.physical_area_ha,1)+" ha"],["Valid raster kataklari",regionFmt(record.valid_cells,0)],["Manba yili","2020"]].map(k=>"<div class='region-mapspam-kpi'><small>"+k[0]+"</small><strong>"+k[1]+"</strong></div>").join("")+
   "</div><div class='region-mapspam-status'>Spatial status: ESTIMATED · 5 arc-minute grid. Viloyat chegara vintage’i: "+regionEscape(String(mapspamReferenceCache.levels[level].boundary_year))+"; tuman vintage’i: "+regionEscape(String(mapspamReferenceCache.levels.ADM2.boundary_year))+". Bu tarixiy gridded estimate, kelajak bashorati emas.</div>";
- return {status:"ESTIMATED",area:area.name,crop:cropName,yield:record.yield_t_ha};
+ return {status:"ESTIMATED",area:displayAreaName,crop:cropName,yield:record.yield_t_ha};
 }
 async function fetchRegionWeather(center){
  const today=new Date();
