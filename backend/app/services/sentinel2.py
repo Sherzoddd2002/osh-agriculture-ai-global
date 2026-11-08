@@ -56,7 +56,13 @@ async def search_sentinel2_scenes(
         selected_assets = {}
         for key, asset in assets.items():
             normalised = key.lower()
-            if normalised in {"b04", "b08", "scl", "cld", "data-mask", "datamask"}:
+            if (
+                normalised.startswith("b04")
+                or normalised.startswith("b08")
+                or normalised.startswith("scl")
+                or normalised.startswith("cld")
+                or normalised in {"data-mask", "datamask"}
+            ):
                 selected_assets[key] = {
                     "href": asset.get("href"),
                     "type": asset.get("type"),
