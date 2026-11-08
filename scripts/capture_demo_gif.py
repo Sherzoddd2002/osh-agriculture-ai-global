@@ -30,6 +30,16 @@ with sync_playwright() as p:
 
     frames.append(Image.open(__import__("io").BytesIO(page.screenshot(full_page=True))).convert("RGB"))
     page.evaluate("window.__setDemoState && window.__setDemoState('selected')")
+    crop_selector = page.locator("#region-crop-select")
+    crop_selector_count = crop_selector.locator("option").count()
+    if crop_selector_count != 46:
+        raise RuntimeError("AI crop selector should list all 46 MAPSPAM crops; found " + str(crop_selector_count))
+    crop_selector.select_option("cott")
+    if page.locator("#crop-select").input_value() != "cott":
+        raise RuntimeError("AI crop selector did not synchronize to MAPSPAM crop selection")
+    crop_selector.select_option("whea")
+    if page.locator("#crop-select").input_value() != "whea":
+        raise RuntimeError("AI crop selector failed to restore wheat selection")
     page.wait_for_timeout(1300)
     frames.append(Image.open(__import__("io").BytesIO(page.screenshot(full_page=True))).convert("RGB"))
     page.evaluate("window.__setDemoState && window.__setDemoState('result')")
