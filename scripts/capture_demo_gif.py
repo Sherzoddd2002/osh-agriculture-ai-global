@@ -22,7 +22,12 @@ with sync_playwright() as p:
     page.goto(url, wait_until="domcontentloaded", timeout=60000)
     try:
         page.wait_for_selector("#map canvas", timeout=30000)
-        page.wait_for_timeout(9000)
+        page.wait_for_function(
+            "() => document.querySelector('#region-select').options.length >= 200 && "
+            "document.querySelector('#region-status').textContent.includes('199 ta ADM2 polygon yuklandi')",
+            timeout=90000,
+        )
+        page.wait_for_timeout(1500)
     except Exception:
         # Keep the designed UI screenshot even if a third-party map tile host is slow.
         page.wait_for_timeout(5000)
@@ -90,12 +95,12 @@ with sync_playwright() as p:
     page.route("https://archive-api.open-meteo.com/v1/archive**", mock_era5)
     page.locator("#region-run-model").click()
     page.wait_for_function(
-        "() => document.querySelector('#region-model-result').textContent.includes('Ridge + ERA5-Land ssenariysi') "
+        "() => document.querySelector('#region-model-result').textContent.includes('AI YIELD SCENARIO') "
         "|| document.querySelector('#region-model-result').textContent.includes('AI ssenariysi ishga tushmadi')",
         timeout=90000,
     )
     model_text = page.locator("#region-model-result").inner_text()
-    if "Ridge + ERA5-Land ssenariysi" not in model_text:
+    if "AI YIELD SCENARIO" not in model_text:
         raise RuntimeError("ERA5-Land/Ridge forecast smoke test failed: " + model_text)
     if page_errors:
         raise RuntimeError("Browser JavaScript errors: " + " | ".join(page_errors))
