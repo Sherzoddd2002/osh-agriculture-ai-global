@@ -3,7 +3,7 @@ name: Capture public demo preview
 on:
   push:
     branches:
-      - feat/global-3d-globe-dark
+      - main
   workflow_dispatch:
 
 permissions:
@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: feat/global-3d-globe-dark
+          ref: main
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
@@ -40,6 +40,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Preview assets unchanged."
           else
-            git commit -m "Add public demo screenshot and walkthrough GIF"
-            git push origin HEAD:feat/global-3d-globe-dark
+            git commit -m "Refresh public data dashboard screenshot and walkthrough GIF"
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
