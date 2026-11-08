@@ -102,6 +102,7 @@ jobs:
             echo "MAPSPAM public snapshot is unchanged."
           else
             git commit -m "Update verified public MAPSPAM 2020 snapshot"
+            git pull --rebase origin main
             git push origin HEAD:main
           fi
       - name: Check Python build scripts
