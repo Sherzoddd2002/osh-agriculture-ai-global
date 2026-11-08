@@ -8,15 +8,21 @@ const dir=path.join(root,"docs","data","boundaries","global");
 const manifestPath=path.join(dir,"manifest.json");
 assert.ok(fs.existsSync(manifestPath),"global geoBoundaries manifest is missing");
 const manifest=JSON.parse(fs.readFileSync(manifestPath,"utf8"));
-assert.equal(manifest.dataset,"geoBoundaries gbOpen");
-assert.equal(manifest.release_type,"gbOpen");
+assert.equal(manifest.dataset,"geoBoundaries gbOpen + CGAZ fallback");
+assert.equal(manifest.release_type,"gbOpen with CGAZ fallback");
+assert.equal(manifest.global_composite_fallback?.license,"CC BY 4.0");
+assert.ok(manifest.global_composite_fallback?.source_commit,"CGAZ source revision is not pinned");
 assert.ok(manifest.countries&&Object.keys(manifest.countries).length>100,
   "global manifest should include more than 100 countries/territories");
 for(const level of ["ADM1","ADM2"]){
  const summary=manifest.level_summary?.[level];
- assert.ok(summary?.country_count>=100,level+" country coverage is unexpectedly small");
+ assert.ok(summary?.country_count>=190,level+" country coverage is unexpectedly small after CGAZ fallback");
  assert.ok(summary?.feature_count>summary.country_count,level+" polygon count is inconsistent");
 }
+const fallbackSample=Object.entries(manifest.countries).find(([,country])=>
+ country.levels?.ADM2?.is_global_composite_fallback
+);
+assert.ok(fallbackSample,"missing ADM2 packages were not supplemented from CGAZ");
 const sample=Object.entries(manifest.countries).find(([,country])=>
  country.levels?.ADM1?.file&&country.levels?.ADM2?.file
 );
