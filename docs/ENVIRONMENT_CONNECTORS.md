@@ -51,9 +51,9 @@ The public Pages dashboard includes a browser-only **Maydon tahlili** workspace:
 - geoBoundaries ADM1–ADM5 search and custom polygon drawing;
 - Open-Meteo Archive API ERA5-Land daily history and Open-Meteo seven-day forecast at an approximate polygon center;
 - Copernicus Data Space STAC scene discovery for Sentinel-2 L2A with a 12-month window and 30% cloud-cover filter;
-- optional browser-local CSV Ridge baseline with expanding-window OOF and Persistence comparison.
+- optional browser-local CSV Ridge ML with season-aligned ERA5-Land temperature, precipitation, ET₀ and GDD features; expanding-window OOF and Persistence comparison.
 
-This public workspace is deliberately separate from the FastAPI service. It does not persist AOIs, read the maintainer's PostgreSQL records, or run the server-side worker. The browser Ridge baseline uses only the uploaded yield history; it does not claim to use weather/NDVI/SMAP/SoilGrids features. The STAC panel returns catalogue metadata only and does not compute NDVI.
+This public workspace is deliberately separate from the FastAPI service. It does not persist AOIs, read the maintainer's PostgreSQL records, or run the server-side worker. The browser Ridge scenario joins the uploaded yield observations with seasonal ERA5-Land weather features. It does not use Sentinel-2 NDVI, SMAP or SoilGrids features. The STAC panel returns catalogue metadata only and does not compute NDVI.
 
 ## Small fields: administrative boundaries are not field boundaries
 
