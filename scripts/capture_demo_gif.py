@@ -100,6 +100,43 @@ with sync_playwright() as p:
         raise RuntimeError("ERA5-Land/Ridge forecast smoke test failed: " + model_text)
     if page_errors:
         raise RuntimeError("Browser JavaScript errors: " + " | ".join(page_errors))
+
+    # Mobile layout smoke test: public visitors must be able to use the district
+    # search and controls without the page itself scrolling horizontally.
+    mobile = browser.new_page(
+        viewport={"width": 390, "height": 844},
+        device_scale_factor=2,
+        is_mobile=True,
+        has_touch=True,
+    )
+    mobile_errors = []
+    mobile.on("pageerror", lambda error: mobile_errors.append(str(error)))
+    mobile.goto(url, wait_until="domcontentloaded", timeout=60000)
+    mobile.wait_for_selector("#map canvas", timeout=30000)
+    mobile.wait_for_function(
+        "() => document.querySelector('#region-select').options.length >= 200 && "
+        "document.querySelector('#region-status').textContent.includes('199 ta ADM2 polygon yuklandi')",
+        timeout=90000,
+    )
+    mobile_metrics = mobile.evaluate("""() => ({
+        viewport: window.innerWidth,
+        document: document.documentElement.scrollWidth,
+        body: document.body.scrollWidth,
+        sidebar: Math.round(document.querySelector('.sidebar').getBoundingClientRect().width),
+        navLinks: [...document.querySelectorAll('.sidebar .nav-text')].filter(x => getComputedStyle(x).display !== 'none').length
+    })""")
+    if mobile_metrics["document"] > mobile_metrics["viewport"] + 2:
+        raise RuntimeError("Mobile page has horizontal overflow: " + str(mobile_metrics))
+    if mobile_metrics["sidebar"] < 300 or mobile_metrics["navLinks"] < 6:
+        raise RuntimeError("Mobile navigation is not fully visible: " + str(mobile_metrics))
+    mobile.locator("#field-analysis").scroll_into_view_if_needed()
+    search_box = mobile.locator("#region-search").bounding_box()
+    if not search_box or search_box["width"] < 180:
+        raise RuntimeError("Mobile district search is not comfortably usable: " + str(search_box))
+    if mobile_errors:
+        raise RuntimeError("Mobile browser JavaScript errors: " + " | ".join(mobile_errors))
+    print("PASS mobile layout:", mobile_metrics, "district-search-width:", round(search_box["width"]))
+
     browser.close()
 
 server.shutdown()
