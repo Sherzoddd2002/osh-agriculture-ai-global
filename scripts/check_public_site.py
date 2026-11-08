@@ -104,4 +104,6 @@ try:
 finally:
     Path(temp_path).unlink(missing_ok=True)
 
+subprocess.run(["node", str(ROOT / "scripts" / "test_public_model.mjs")], check=True)
+
 print("PASS: dashboard IDs, Pages-only API wiring, 46 crops, static polygons and JavaScript syntax")
