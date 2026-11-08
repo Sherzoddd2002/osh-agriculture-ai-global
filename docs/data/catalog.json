@@ -128,5 +128,45 @@
       "scope": "ISRIC 250 m WCS/WebDAV access route; project AOI raster adapter not connected"
     }
   ],
-  "private_data_note": "The public GitHub Pages site displays this aggregate inventory snapshot. It does not expose the central PostgreSQL records or authenticated user uploads. Full country/item series and MAPSPAM rows need the protected FastAPI/PostgreSQL service."
+  "private_data_note": "The public GitHub Pages site displays this aggregate inventory snapshot. It does not expose the central PostgreSQL records or authenticated user uploads. Full country/item series and MAPSPAM rows need the protected FastAPI/PostgreSQL service.",
+  "public_static_subsets": [
+    {
+      "id": "UZB_MAPSPAM_2020_ADM1_ADM2",
+      "name": "Uzbekistan MAPSPAM 2020 v2r2 public district/province reference",
+      "status": "PUBLISHED_VIA_GITHUB_PAGES",
+      "file": "mapspam/UZB_MAPSPAM_2020_ADM1_ADM2.json",
+      "records": 9798,
+      "admin_areas": {
+        "ADM1": 14,
+        "ADM2": 199
+      },
+      "crops": 46,
+      "source_year": 2020,
+      "resolution_arc_minutes": 5,
+      "approx_km_at_equator": 9.3,
+      "variables": [
+        "physical_area_ha",
+        "harvested_area_ha",
+        "production_t",
+        "yield_t_ha",
+        "valid_cells",
+        "spatial_status"
+      ],
+      "boundary_vintages": {
+        "ADM1": 2017,
+        "ADM2": 2020
+      },
+      "join_key": "geoBoundaries shapeID",
+      "source": "IFPRI MAPSPAM 2020 v2r2",
+      "source_url": "https://doi.org/10.7910/DVN/SWPENT",
+      "license": "CC BY-SA 4.0",
+      "caveats": [
+        "This is a 2020 gridded estimate, not a current-year observation, field measurement or future forecast.",
+        "The 5 arc-minute grid is approximately 9.3 km at the equator and is not field-scale data.",
+        "NO_RASTER_CELLS rows retain NULL yield; NULL is not zero.",
+        "The ADM1 and ADM2 summaries use different boundary vintages and must not be summed as if their rows were disjoint.",
+        "The public subset is separate from the central PostgreSQL inventory count above."
+      ]
+    }
+  ]
 }
