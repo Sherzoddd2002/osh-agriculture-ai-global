@@ -2,7 +2,7 @@
 <html lang="uz">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="OSH Agriculture AI Global — hududiy ma’lumotlar, iqlim va hosildorlik prognozi">
+  <meta name="description" content="OSH Agriculture AI Global — 3D global agrar xarita, iqlim va hosildorlik prognozi">
   <title>OSH Agriculture AI — Global</title>
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.css">
   <link rel="stylesheet" href="/styles.css">
@@ -12,8 +12,8 @@
   <aside class="sidebar">
     <a class="brand" href="#overview"><span class="brand-mark">🌱</span><span><b>OSH</b><small>Agriculture AI</small><em>GLOBAL</em></span></a>
     <nav id="main-nav">
-      <button class="nav-item active" data-view="overview"><span>⌂</span>Bosh sahifa</button>
-      <button class="nav-item" data-view="regions"><span>◎</span>Hududiy tahlil</button>
+      <button class="nav-item" data-view="overview"><span>⌂</span>Bosh sahifa</button>
+      <button class="nav-item active" data-view="regions"><span>◎</span>Global xarita</button>
       <button class="nav-item" data-view="forecast"><span>↗</span>Hosildorlik prognozi</button>
       <button class="nav-item" data-view="models"><span>⌘</span>Model laboratoriyasi</button>
       <button class="nav-item" data-view="environment"><span>☁</span>Iqlim va tuproq</button>
@@ -24,9 +24,9 @@
   </aside>
 
   <main class="main-content">
-    <header class="topbar"><div><span class="eyebrow">GLOBAL AGRICULTURAL INTELLIGENCE</span><h1 id="page-title">Bosh sahifa</h1></div><div class="top-actions"><span id="user-label">Mehmon rejimi</span><select id="language-select" data-i18n-skip aria-label="Select language"><option value="uz">O‘zbekcha</option><option value="en">English</option><option value="ru">Русский</option></select></div></header>
+    <header class="topbar"><div><span class="eyebrow">GLOBAL AGRICULTURAL INTELLIGENCE</span><h1 id="page-title">Global xarita</h1></div><div class="top-actions"><span id="user-label">Mehmon rejimi</span><select id="language-select" data-i18n-skip aria-label="Select language"><option value="uz">O‘zbekcha</option><option value="en">English</option><option value="ru">Русский</option></select></div></header>
 
-    <section class="view active" id="view-overview">
+    <section class="view" id="view-overview">
       <div class="hero"><div class="hero-copy"><span class="hero-kicker">OSH · GLOBAL EDITION</span><h2>Yer ma’lumotlari.<br>Hosildorlik aql bilan.</h2><p>Dunyo bo‘yicha hududni tanlang, tarixiy ma’lumotlaringizni yuklang va iqlim bilan birlashtirib tahlil qiling.</p><button class="primary-button" data-goto="regions">Hudud tanlash <b>→</b></button></div><div class="hero-meta"><span>GLOBAL DATA WORKSPACE</span><b>OBSERVE · ENRICH · ANALYZE</b></div></div>
       <div class="kpi-grid">
         <article class="kpi-card"><small>Environmental manbalar</small><strong>4</strong><span>Weather · NDVI · SMAP · Soil</span></article>
@@ -44,8 +44,8 @@
       <div class="notice"><b>Ilmiy aniqlik:</b> hozirgi MVP ob-havoni tanlangan poligonning vakillik nuqtasidan oladi. Bu butun dala yoki poligon bo‘yicha zonal o‘rtacha emas. NDVI, SMAP va SoilGrids ulanishi keyingi connector bosqichida yoqiladi.</div>
     </section>
 
-    <section class="view" id="view-regions">
-      <div class="page-intro"><span class="eyebrow">GLOBAL MAP EXPLORER</span><h2>Hududiy tahlil</h2><p>Mamlakat va ma’muriy darajani tanlang. Chegaralar geoBoundaries manbasidan olinadi; xarita kattalashtiriladi va suriladi.</p></div>
+    <section class="view active" id="view-regions">
+      <div class="page-intro"><span class="eyebrow">OSH · GLOBAL AGRICULTURE INTELLIGENCE</span><h2>Butun Yer sharidan hududingizni tanlang</h2><p>Globusni aylantiring, mamlakat va ma’muriy darajani tanlang. Keyin hududni saqlab, iqlim hamda mavjud hosildorlik ma’lumotlarini tahlil qiling.</p></div>
       <div class="toolbar panel">
         <label>Mamlakat ISO-3<input id="country-iso3" maxlength="3" value="UZB" placeholder="UZB, KAZ, DEU"></label>
         <label>Ma’muriy daraja<select id="admin-level"><option>ADM0</option><option selected>ADM1</option><option>ADM2</option><option>ADM3</option><option>ADM4</option></select></label>
@@ -53,7 +53,22 @@
         <span id="boundary-status" class="muted">Mamlakatni kiriting</span>
       </div>
       <div class="map-layout">
-        <article class="panel map-panel"><div class="panel-title"><div><h3>Dunyo xaritasi</h3><small id="map-caption">Hudud tanlanmagan</small></div><span class="source-pill">geoBoundaries</span></div><div id="global-map"></div><div class="map-attribution">Xarita: CARTO / OpenStreetMap. Ma’muriy chegara: geoBoundaries gbOpen. Har bir boundary metadata va litsenziyasi bo‘yicha tekshirilishi kerak.</div></article>
+        <article class="panel map-panel">
+          <div class="panel-title">
+            <div>
+              <span class="eyebrow">LIVE GLOBAL MAP</span>
+              <h3>Yer shari · 3D</h3>
+              <small id="map-caption">Hudud tanlanmagan</small>
+            </div>
+            <span class="source-pill">GLOBE VIEW</span>
+          </div>
+          <div class="globe-viewport">
+            <div id="global-map"></div>
+            <div class="globe-hud globe-hud-top"><span class="globe-live-dot"></span><span>GLOBAL TERRAIN VIEW</span><b id="globe-status">GLOBUS YUKLANMOQDA</b></div>
+            <div class="globe-hud globe-hud-bottom"><span>DRAG · AYLANtirish</span><span>SCROLL · YAQINLASHTIRISH</span></div>
+          </div>
+          <div class="map-attribution">Globus va bazaviy xarita: CARTO / OpenStreetMap · Hudud chegaralari: geoBoundaries gbOpen. Chegaralar yuklanganda tanlangan ma’muriy hudud yorqin rang bilan belgilanadi.</div>
+        </article>
         <aside class="panel selection-panel"><span class="eyebrow">TANLANGAN HUDUD</span><h3 id="selected-area-name">Hududni tanlang</h3><p id="selected-area-help">Xaritadagi chegarani bosing.</p><div class="selection-metrics"><div><small>Mamlakat</small><b id="selected-country">—</b></div><div><small>Daraja</small><b id="selected-level">—</b></div><div><small>Markaz koordinatasi</small><b id="selected-center">—</b></div></div><label class="climate-year-label">Tarixiy ma’lumot boshlanish yili<input id="climate-start-year" type="number" min="1981" max="2200" value="2010"></label><button class="primary-button full" id="save-location" disabled>Hududni saqlash va tahlil qilish</button><div class="notice compact">Hosildorlik CSV bo‘lmasa ham iqlim tarixi va ob-havo prognozi olinadi. Model faqat haqiqiy hosildorlik ma’lumoti bo‘lganda ishlaydi.</div><div id="saved-location-status" class="muted"></div></aside>
       </div>
 
