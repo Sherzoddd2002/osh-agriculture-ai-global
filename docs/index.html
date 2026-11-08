@@ -115,6 +115,14 @@
           <div class="facts-grid"><div class="fact"><b>153</b><small>countries</small></div><div class="fact"><b>46</b><small>crop layers</small></div><div class="fact"><b>5′</b><small>grid resolution</small></div></div>
           <div class="dataset-footer"><a href="https://cgiar-climate-data-hub.github.io/catalog/spam2020/" target="_blank" rel="noopener">MAPSPAM data hub ↗</a><span>Reference year · 2020 only</span></div>
         </article>
+        <article class="panel dataset-card">
+          <div class="dataset-top"><small>CROPGRIDS v1.08</small><span class="data-type">CATALOGED · NOT IMPORTED</span></div>
+          <h3>Global crop area maps</h3>
+          <p>Project source catalogue: 2020-yil uchun ekin fizik maydoni va yig‘ib olingan maydon qatlamlari. Bu ma’lumot markaziy bazaga import qilingan satrlar soniga kiritilmagan.</p>
+          <div class="dataset-number">173 <span>crop layers in source</span></div>
+          <div class="facts-grid"><div class="fact"><b>2020</b><small>reference year</small></div><div class="fact"><b>5.6 km</b><small>at equator</small></div><div class="fact"><b>2</b><small>area variables</small></div></div>
+          <div class="dataset-footer"><a href="https://doi.org/10.6084/m9.figshare.22491997.v9" target="_blank" rel="noopener">CROPGRIDS source ↗</a><span>Not included in DB row totals</span></div>
+        </article>
       </div>
       <div class="info-note"><b>Talqin qilish:</b> FAOSTAT QCL — milliy tarixiy statistika; u tuman ma’lumoti emas. MAPSPAM — 2020-yilga tegishli taxminiy gridded qatlam; joriy yil yoki dala o‘lchovi emas. Ikki dataset bir-birining o‘rnini bosmaydi, ular turli miqyosdagi manbalarni birlashtirish uchun ishlatiladi.</div>
     </section>
@@ -223,7 +231,7 @@ document.querySelectorAll(".crop-chip[data-code='whea']").forEach(x=>x.classList
 let catalog=null;
 fetch("./data/catalog.json").then(r=>{if(!r.ok)throw new Error("manifest "+r.status);return r.json();}).then(function(data){
  catalog=data;
- $("combined-records").textContent=comma(data.combined_record_count)+" ";
+ $("combined-records").innerHTML=comma(data.combined_record_count)+' <em>rows</em>';
  const faostat=data.datasets.find(x=>x.id==="FAOSTAT_QCL");
  const spam=data.datasets.find(x=>x.id==="mapspam-2020-v2r2");
  $("faostat-count").textContent=comma(faostat.records);
