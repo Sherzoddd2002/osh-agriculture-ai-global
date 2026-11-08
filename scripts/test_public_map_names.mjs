@@ -222,7 +222,7 @@ const officialLoaderSource=[
  'let selectedAOI=null;let selectedCrop="whea";function $(id){return {value:selectedCrop};}',
  'const fetch=async url=>({ok:true,json:async()=>url.includes("_WHEA_")?wheatPayload:cropPayload});',
  extractFunction("canUseOfficialProvinceCrop"),
- extractFunction("loadOfficialProvinceCropSeries"),
+ "async "+extractFunction("loadOfficialProvinceCropSeries"),
  'return {load:loadOfficialProvinceCropSeries,setArea:value=>{selectedAOI=value;},setCrop:value=>{selectedCrop=value;}};'
 ].join("\n");
 const officialLoader=await new AsyncFunction("wheatPayload","cropPayload",officialLoaderSource)(officialYield,officialCropYield);
