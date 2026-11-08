@@ -17,7 +17,7 @@ html = HTML_PATH.read_text(encoding="utf-8")
 required_ids = {
     "map", "region-iso3", "region-level", "region-load", "region-search",
     "region-select", "region-analyze", "region-yield-file", "region-run-model",
-    "region-model-result", "crop-select", "crop-chips",
+    "region-model-result", "region-crop-select", "crop-select", "crop-chips",
 }
 found_ids = set(re.findall(r'\bid=["\']([^"\']+)["\']', html))
 missing = sorted(required_ids - found_ids)
@@ -34,6 +34,11 @@ if html.count('$("region-run-model").addEventListener("click"') != 1:
     raise SystemExit("FAIL: AI prediction button must have exactly one click handler")
 if html.count('$("region-yield-file").addEventListener("change"') != 1:
     raise SystemExit("FAIL: CSV upload control must have exactly one change handler")
+
+if 'region-crop-select' not in html or '$("region-crop-select").addEventListener("change"' not in html:
+    raise SystemExit("FAIL: AI crop selector is not available and synchronized with MAPSPAM")
+if 'id="region-crop-select"' not in html[:html.index('id="region-run-model"')]:
+    raise SystemExit("FAIL: choose the AI crop before opening model analysis")
 
 if not all(label in html for label in ("ADM1 · Viloyatlar", "ADM2 · Tumanlar")):
     raise SystemExit("FAIL: public district selector must expose ADM1 and ADM2 only")
