@@ -212,6 +212,40 @@ gate.setCrop("pota");
 gate.setArea({properties:{shapeName:"Custom field"}});
 assert.equal(gate.check(),false,"custom AOIs must require user-provided yield data");
 
+// Exercise the actual async browser loader against the published static JSON payloads.
+const officialLoaderSource=[
+ nameObject[0],
+ extractFunction("normalizeRegionSearch"),
+ extractFunction("regionFeatureName"),
+ officialNamesMatch[0],
+ officialCropsMatch[0],
+ 'let selectedAOI=null;let selectedCrop="whea";function $(id){return {value:selectedCrop};}',
+ 'const fetch=async url=>({ok:true,json:async()=>url.includes("_WHEA_")?wheatPayload:cropPayload});',
+ extractFunction("canUseOfficialProvinceCrop"),
+ extractFunction("loadOfficialProvinceCropSeries"),
+ 'return {load:loadOfficialProvinceCropSeries,setArea:value=>{selectedAOI=value;},setCrop:value=>{selectedCrop=value;}};'
+].join("\\n");
+const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
+const officialLoader=await new AsyncFunction("wheatPayload","cropPayload",officialLoaderSource)(officialYield,officialCropYield);
+const andijanFeature={type:"Feature",properties:{shapeName:"Andijan Region",shapeType:"ADM1"}};
+officialLoader.setArea(andijanFeature);
+for(const cropCode of ["whea","pota","cott"]){
+ officialLoader.setCrop(cropCode);
+ const loaded=await officialLoader.load();
+ assert.equal(loaded.cropCode,cropCode);
+ assert.equal(loaded.region.name_uz,"Andijon viloyati");
+ assert.equal(loaded.series.length,15,cropCode+" official SIAT loader should return 2010–2024");
+ assert.ok(loaded.series.every(row=>row.yield>0&&Number.isFinite(row.yield)));
+}
+officialLoader.setArea({type:"Feature",properties:{shapeName:"Chilanzor",shapeType:"ADM2"}});
+officialLoader.setCrop("pota");
+await assert.rejects(()=>officialLoader.load(),/mos viloyat va ekin/,
+ "districts must never load their parent province SIAT series");
+officialLoader.setArea({type:"Feature",properties:{shapeName:"Tashkent",shapeType:"ADM1"}});
+officialLoader.setCrop("cott");
+await assert.rejects(()=>officialLoader.load(),/mos viloyat va ekin/,
+ "Tashkent city must not inherit a province-only SIAT series");
+console.log("PASS SIAT browser loader: wheat, potato and raw cotton load by ADM1; ADM2/Tashkent blocked");
 
 const andijan=regionFeatureName({properties:{shapeName:"Andijan Region",shapeType:"ADM1"}});
 const chilanzar=regionFeatureName({properties:{shapeName:"Chilanzar",shapeType:"ADM2"}});
