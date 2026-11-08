@@ -60,4 +60,24 @@ assert.equal(tashkentCity,"Toshkent shahri");
 assert.ok(normalizeRegionSearch(chilanzar).includes(normalizeRegionSearch("Chilonzor")));
 assert.ok(normalizeRegionSearch("Qoraqalpog‘iston").includes(normalizeRegionSearch("Qoraqalpogiston")));
 
+const centerSource=[
+ extractFunction("regionGeometryPositions"),
+ extractFunction("regionRingCentroid"),
+ extractFunction("regionPolygonCentroid"),
+ extractFunction("regionCenter"),
+ "\\nreturn {regionCenter};",
+].join("\\n");
+const {regionCenter}=new Function(centerSource)();
+const rectangle={type:"Feature",properties:{},geometry:{type:"Polygon",coordinates:[[[0,0],[4,0],[4,2],[0,2],[0,0]]]}};
+const rectangleCenter=regionCenter(rectangle);
+assert.ok(Math.abs(rectangleCenter.lon-2)<1e-10);
+assert.ok(Math.abs(rectangleCenter.lat-1)<1e-10);
+const multi={type:"Feature",properties:{},geometry:{type:"MultiPolygon",coordinates:[
+ [[[0,0],[2,0],[2,2],[0,2],[0,0]]],
+ [[[8,0],[10,0],[10,2],[8,2],[8,0]]],
+]}};
+const multiCenter=regionCenter(multi);
+assert.ok(Math.abs(multiCenter.lon-5)<1e-10);
+assert.ok(Math.abs(multiCenter.lat-1)<1e-10);
+
 console.log("PASS: "+checked+" ADM names are localized and Uzbek search aliases resolve.");
