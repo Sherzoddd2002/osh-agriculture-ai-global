@@ -12,6 +12,8 @@
 
 ---
 
+> **GitHub Pages’ni bir marta yoqish:** repository egasi GitHub’da **Settings → Pages → Build and deployment → Source: GitHub Actions** ni tanlaydi. Keyin **Actions → Deploy public demo to GitHub Pages → Run workflow** orqali saytni chiqaradi. Kutilayotgan manzil: https://sherzoddd2002.github.io/osh-agriculture-ai-global/ .
+
 ## Project overview
 
 **A location-first agricultural data and yield-forecasting platform.** Users select a country and administrative area, upload historical crop observations, enrich the selected area with environmental datasets, run quality checks, and receive a clearly labelled yield estimate.
