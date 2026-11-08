@@ -47,6 +47,7 @@ for(const [level,count] of Object.entries(expected)){
   if(!display||display===raw)unmapped.push(raw);
   checked+=1;
  }
+ if(unmapped.length)console.error("UNMAPPED "+level+":",unmapped.join(" | "));
  assert.deepEqual(unmapped,[],level+" contains non-localized names: "+unmapped.join(", "));
  console.log("PASS UZB "+level+": "+count+" Uzbek-localized names");
 }
