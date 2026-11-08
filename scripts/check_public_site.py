@@ -107,4 +107,4 @@ finally:
 subprocess.run(["node", str(ROOT / "scripts" / "test_public_model.mjs")], check=True)
 subprocess.run(["node", str(ROOT / "scripts" / "test_public_map_names.mjs")], check=True)
 
-print("PASS: dashboard IDs, Pages-only API wiring, 46 crops, localized district names, static polygons and JavaScript syntax")
+print("PASS: dashboard IDs, Pages-only API wiring, 46 crops, localized ADM names, polygon centroids and JavaScript syntax")
