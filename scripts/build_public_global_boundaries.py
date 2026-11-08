@@ -7,10 +7,8 @@ The existing UZB files are preserved because MAPSPAM joins them by shapeID.
 from __future__ import annotations
 
 import asyncio
-import gc
 import json
 import re
-from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -22,9 +20,10 @@ from shapely.ops import unary_union
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "data" / "boundaries" / "global"
-CGAZ_DIR = ROOT / ".geoboundaries" / "releaseData" / "CGAZ"
-CGAZ_COMMIT = "8ce2700661a28ee944350e2b329bbabb58d2ff83"
-CGAZ_VERSION = "geoBoundaries CGAZ v6.0.0"
+WB_ARCGIS_BASE = "https://services.arcgis.com/iQ1dY19aHwbSDYIF/arcgis/rest/services/World_Bank_Global_Administrative_Divisions/FeatureServer"
+WB_LAYER_IDS = {"ADM1": 2, "ADM2": 3}
+WB_CATALOG_URL = "https://datacatalog.worldbank.org/search/dataset/0038272/world-bank-official-boundaries"
+WB_UPDATED = "2026-10-21"
 API_BASE = "https://geoboundaries-dev.org/api/current/gbOpen/ALL"
 LEVELS = ("ADM1", "ADM2")
 MIN_COUNTRIES_PER_LEVEL = 100
@@ -167,12 +166,12 @@ def validate_and_prepare(record: dict, level: str, source: dict) -> dict:
     return {"type": "FeatureCollection", "features": prepared, "metadata": metadata}
 
 
-async def get_json(client: httpx.AsyncClient, url: str, semaphore: asyncio.Semaphore) -> Any:
+async def get_json(client: httpx.AsyncClient, url: str, semaphore: asyncio.Semaphore, params: dict | None = None) -> Any:
     last_error: Exception | None = None
     async with semaphore:
         for attempt in range(1, 4):
             try:
-                response = await client.get(url, headers={"Accept": "application/json, application/geo+json"})
+                response = await client.get(url, params=params, headers={"Accept": "application/json, application/geo+json"})
                 response.raise_for_status()
                 return response.json()
             except Exception as exc:
@@ -318,78 +317,135 @@ async def build_level(
     return results, failures
 
 
-def add_cgaz_fallback(level: str, packages: dict[str, dict]) -> dict[str, int]:
-    """Fill country/level gaps from the pinned global CGAZ composite."""
-    source_path = CGAZ_DIR / f"geoBoundariesCGAZ_{level}.geojson"
-    if not source_path.is_file() or source_path.stat().st_size < 1_000_000:
-        raise FileNotFoundError(
-            f"Missing downloaded CGAZ {level} GeoJSON or Git LFS pointer was not hydrated: {source_path}"
-        )
+async def add_world_bank_fallback(
+    client: httpx.AsyncClient,
+    level: str,
+    packages: dict[str, dict],
+    semaphore: asyncio.Semaphore,
+) -> dict[str, int]:
+    """Fill missing country/level packages from the World Bank global boundary service."""
+    layer_id = WB_LAYER_IDS[level]
+    query_url = f"{WB_ARCGIS_BASE}/{layer_id}/query"
 
-    print(f"INFO CGAZ {level}: reading pinned global composite ({source_path.stat().st_size:,} bytes)")
-    with source_path.open("r", encoding="utf-8") as stream:
-        payload = json.load(stream)
-    if payload.get("type") != "FeatureCollection" or not isinstance(payload.get("features"), list):
-        raise ValueError(f"CGAZ {level}: source is not a GeoJSON FeatureCollection")
-
-    missing_by_country: dict[str, list[dict]] = {}
-    cgaz_codes: set[str] = set()
-    level_counts: Counter[str] = Counter()
-    missing_iso_count = 0
-    example_properties = None
-    for feature in payload["features"]:
-        properties = feature.get("properties") or {}
-        if example_properties is None:
-            example_properties = {key: properties.get(key) for key in list(properties)[:12]}
-        feature_level = str(properties.get("shapeType") or level).upper()
-        level_counts[feature_level] += 1
-        iso = str(
-            properties.get("shapeGroup")
-            or properties.get("shapeISO")
-            or properties.get("countryISO3")
-            or ""
-        ).strip().upper()
-        if not re.fullmatch(r"[A-Z]{3}", iso):
-            missing_iso_count += 1
-            continue
-        cgaz_codes.add(iso)
-        if iso == "UZB" or iso in packages or feature_level != level:
-            continue
-        missing_by_country.setdefault(iso, []).append(feature)
-
-    absent_from_open = sorted(cgaz_codes - set(packages) - {"UZB"})
-    print(
-        f"INFO CGAZ {level}: {len(payload['features']):,} features; "
-        f"{len(cgaz_codes)} distinct ISO3 groups; level values={dict(level_counts)}; "
-        f"codes absent from gbOpen={len(absent_from_open)}; "
-        f"missing ISO fields={missing_iso_count}; sample properties={example_properties}"
+    # Ask for the list of ISO3 country codes that actually exist at this level.
+    distinct = await get_json(
+        client,
+        query_url,
+        semaphore,
+        params={
+            "where": "1=1",
+            "outFields": "ISO_A3",
+            "returnGeometry": "false",
+            "returnDistinctValues": "true",
+            "orderByFields": "ISO_A3",
+            "f": "json",
+        },
     )
-    if absent_from_open:
-        print(f"INFO CGAZ {level}: sample fallback ISO3 codes={absent_from_open[:30]}")
+    if not isinstance(distinct, dict) or distinct.get("error") or not isinstance(distinct.get("features"), list):
+        raise RuntimeError(f"World Bank {level}: distinct-country query returned an invalid response: {distinct}")
+    wb_codes = sorted({
+        str((feature.get("attributes") or {}).get("ISO_A3") or "").strip().upper()
+        for feature in distinct["features"]
+        if re.fullmatch(r"[A-Z]{3}", str((feature.get("attributes") or {}).get("ISO_A3") or "").strip().upper())
+    })
+    missing_codes = [iso for iso in wb_codes if iso != "UZB" and iso not in packages]
+    if not missing_codes:
+        print(f"PASS WORLD BANK FALLBACK {level}: no missing gbOpen country packages found in WB-GAD")
+        return {"country_count": 0, "feature_count": 0}
 
-    del payload
-    gc.collect()
+    print(
+        f"INFO WORLD BANK {level}: {len(wb_codes)} ISO3 groups in WB-GAD; "
+        f"{len(missing_codes)} missing from gbOpen: {missing_codes}"
+    )
 
+    # Only request missing countries. This avoids downloading the full 40k+ polygon layer.
+    fields = (
+        "FID,ISO_A3,ISO_A2,WB_A3,WB_STATUS,NAM_0,NAM_1,ADM1CD_c,ADM1CD,ADM1CD_t"
+        if level == "ADM1"
+        else "FID,ISO_A3,ISO_A2,WB_A3,WB_STATUS,NAM_0,NAM_1,NAM_2,ADM1CD_c,ADM2CD_c,ADM1CD,ADM2CD"
+    )
+    raw_features: list[dict] = []
+    for start in range(0, len(missing_codes), 35):
+        batch = missing_codes[start:start + 35]
+        where = "ISO_A3 IN (" + ",".join("'" + iso + "'" for iso in batch) + ")"
+        offset = 0
+        while True:
+            payload = await get_json(
+                client,
+                query_url,
+                semaphore,
+                params={
+                    "where": where,
+                    "outFields": fields,
+                    "returnGeometry": "true",
+                    "outSR": "4326",
+                    "f": "geojson",
+                    "orderByFields": "ISO_A3",
+                    "resultOffset": offset,
+                    "resultRecordCount": 1800,
+                },
+            )
+            if (
+                not isinstance(payload, dict)
+                or payload.get("error")
+                or payload.get("type") != "FeatureCollection"
+                or not isinstance(payload.get("features"), list)
+            ):
+                raise RuntimeError(f"World Bank {level}: feature query failed: {payload}")
+            page = payload["features"]
+            raw_features.extend(page)
+            exceeded = bool(payload.get("exceededTransferLimit"))
+            del payload
+            if not exceeded or not page:
+                break
+            offset += len(page)
+
+    grouped: dict[str, list[dict]] = {}
+    for feature in raw_features:
+        properties = dict(feature.get("properties") or {})
+        iso = str(properties.get("ISO_A3") or "").strip().upper()
+        if iso not in missing_codes:
+            continue
+        source_name = (
+            properties.get("NAM_1") if level == "ADM1" else properties.get("NAM_2")
+        )
+        source_name = str(source_name or "").strip()
+        if not source_name:
+            source_name = f"Unnamed {level} area {properties.get('FID') or len(grouped.get(iso, [])) + 1}"
+        source_id = (
+            properties.get("ADM1CD_c") or properties.get("ADM1CD") or properties.get("FID")
+            if level == "ADM1"
+            else properties.get("ADM2CD_c") or properties.get("ADM2CD") or properties.get("FID")
+        )
+        properties["shapeName"] = source_name
+        properties["shapeID"] = f"{iso}-{level}-{source_id or len(grouped.get(iso, [])) + 1}"
+        properties["countryISO3"] = iso
+        properties["shapeType"] = level
+        feature["properties"] = properties
+        if feature.get("geometry"):
+            grouped.setdefault(iso, []).append(feature)
+
+    del raw_features
     added_countries = 0
     added_features = 0
-    for iso, features in sorted(missing_by_country.items()):
+    for iso, features in sorted(grouped.items()):
+        if not features:
+            continue
+        first_props = features[0].get("properties") or {}
         record = {
             "boundaryISO": iso,
-            "boundaryName": iso,
-            "boundaryYearRepresented": "2023-09-13",
-            "boundaryID": f"CGAZ-v6.0.0-{iso}-{level}",
-            "boundarySource": "geoBoundaries CGAZ global composite",
-            "boundarySourceURL": "https://www.geoboundaries.org/globalDownloads.html",
+            "boundaryName": str(first_props.get("NAM_0") or iso),
+            "boundaryYearRepresented": WB_UPDATED,
+            "boundaryID": f"WB-GAD-{WB_UPDATED}-{iso}-{level}",
+            "boundarySource": "World Bank Official Boundaries (WB-GAD)",
+            "boundarySourceURL": WB_CATALOG_URL,
             "boundaryLicense": "CC BY 4.0",
-            "licenseDetail": (
-                "CGAZ global composite; attribution required. Disputed areas are resolved "
-                "using United States Department of State definitions."
-            ),
-            "licenseSource": "https://www.geoboundaries.org/globalDownloads.html",
+            "licenseDetail": "World Bank Official Boundaries dataset, Creative Commons Attribution 4.0; attribution required.",
+            "licenseSource": WB_CATALOG_URL,
             "Continent": "Unknown",
-            "source_version": f"{CGAZ_VERSION} at {CGAZ_COMMIT}",
-            "boundary_product": "CGAZ global composite fallback",
-            "geometry_detail": "CGAZ simplified global composite",
+            "source_version": f"World Bank Official Boundaries; catalog updated {WB_UPDATED}",
+            "boundary_product": "World Bank Official Boundaries fallback",
+            "geometry_detail": "World Bank ArcGIS FeatureServer query, EPSG:4326",
             "is_global_composite_fallback": True,
         }
         source = {"type": "FeatureCollection", "features": features}
@@ -419,11 +475,9 @@ def add_cgaz_fallback(level: str, packages: dict[str, dict]) -> dict[str, int]:
         }
         added_countries += 1
         added_features += metadata["feature_count"]
-        del source, prepared, features
 
-    gc.collect()
     print(
-        f"PASS CGAZ FALLBACK {level}: added {added_countries} countries / "
+        f"PASS WORLD BANK FALLBACK {level}: added {added_countries} countries / "
         f"{added_features:,} polygons"
     )
     return {"country_count": added_countries, "feature_count": added_features}
@@ -434,7 +488,7 @@ async def main() -> None:
     old_manifest = read_json(OUTPUT / "manifest.json")
     semaphore = asyncio.Semaphore(MAX_CONCURRENCY)
     async with httpx.AsyncClient(
-        timeout=httpx.Timeout(100.0, connect=30.0),
+        timeout=httpx.Timeout(180.0, connect=30.0),
         follow_redirects=True,
         limits=httpx.Limits(max_connections=MAX_CONCURRENCY * 2),
     ) as client:
@@ -445,10 +499,15 @@ async def main() -> None:
             level_results[level] = packages
             failures.extend(level_failures)
 
-    cgaz_fallback_summary = {
-        level: add_cgaz_fallback(level, level_results[level])
-        for level in LEVELS
-    }
+        world_bank_fallback_summary = {}
+        for level in LEVELS:
+            try:
+                world_bank_fallback_summary[level] = await add_world_bank_fallback(
+                    client, level, level_results[level], semaphore
+                )
+            except Exception as exc:
+                print(f"WARN WORLD BANK FALLBACK {level}: service query unavailable; retaining validated gbOpen packages: {exc}")
+                world_bank_fallback_summary[level] = {"country_count": 0, "feature_count": 0, "error": str(exc)}
 
     countries: dict[str, dict] = {}
     for level, packages in level_results.items():
@@ -470,27 +529,27 @@ async def main() -> None:
             f"configured safety ceiling is {MAX_TOTAL_BYTES / 1024 / 1024:.0f} MB"
         )
     manifest = {
-        "dataset": "geoBoundaries gbOpen + CGAZ fallback",
+        "dataset": "geoBoundaries gbOpen + World Bank fallback",
         "api": API_BASE,
         "source_url": "https://www.geoboundaries.org/",
         "api_documentation": "https://geoboundaries-dev.org/api",
-        "release_type": "gbOpen with CGAZ fallback",
-        "global_composite_fallback": {
-            "name": CGAZ_VERSION,
-            "source_url": "https://www.geoboundaries.org/globalDownloads.html",
-            "source_commit": CGAZ_COMMIT,
+        "release_type": "gbOpen with World Bank fallback",
+        "world_bank_fallback": {
+            "name": "World Bank Official Boundaries (WB-GAD)",
+            "source_url": WB_CATALOG_URL,
+            "service_url": WB_ARCGIS_BASE,
             "license": "CC BY 4.0",
-            "disputed_area_policy": "Disputed areas follow United States Department of State definitions.",
-            "added_by_level": cgaz_fallback_summary,
+            "catalog_updated": WB_UPDATED,
+            "added_by_level": world_bank_fallback_summary,
         },
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "delivery": "GitHub Pages static per-country GeoJSON; browser downloads only the selected country and level",
         "uzb_policy": "UZB retains the separately validated ADM1/ADM2 snapshot used by the public MAPSPAM shapeID join",
         "coverage_note": (
             "Country-specific gbOpen boundaries are preferred. Missing country/level packages "
-            "are supplemented from the pinned CGAZ global composite. CGAZ uses United States "
-            "Department of State definitions for disputed areas. Boundary vintage and license "
-            "are retained per country; a level is unavailable only if neither source provides it."
+            "are supplemented from the World Bank Official Boundaries (WB-GAD) service. Boundary "
+            "vintage and license are retained per country; a level is unavailable only if neither "
+            "source provides it."
         ),
         "attribution": (
             "geoBoundaries, William & Mary geoLab and upstream contributors. "
