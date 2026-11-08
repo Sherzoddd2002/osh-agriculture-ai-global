@@ -264,7 +264,8 @@ function selectFeature(f){
   $('selected-level').textContent=$('admin-level').value;
   const center=coordsCenter(f.geometry);
   $('selected-center').textContent=center? `${center.lat.toFixed(4)}, ${center.lon.toFixed(4)}` : '—';
-  $('save-location').disabled=!token;
+  $('save-location').disabled=!selectedFeature;
+  $('save-location').textContent=token?'Hududni saqlash va tahlil qilish':'Kirish va hududni saqlash';
 
   const selectedIndex=boundaryFeatures.indexOf(f);
   const collection={
