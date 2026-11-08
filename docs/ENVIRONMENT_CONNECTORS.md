@@ -51,6 +51,8 @@ The public GitHub Pages dashboard includes a browser-only **Maydon tahlili** wor
 - static geoBoundaries **UZB ADM1 (14 viloyat) and ADM2 (199 tuman)** polygons, localized Uzbek search, map click selection and custom polygon drawing; this public bundle does not provide worldwide ADM1–ADM5 data;
 - Open-Meteo Archive API ERA5-Land daily history and Open-Meteo seven-day forecast at an approximate polygon center;
 - Copernicus Data Space STAC scene discovery for Sentinel-2 L2A with a 12-month window and 30% cloud-cover filter;
+- public **IFPRI MAPSPAM 2020 v2r2** reference values for all **14 ADM1 provinces × 46 crops** and **199 ADM2 districts × 46 crops**, joined to the static geoBoundaries features by exact `shapeID`; the public package contains 9,798 area/crop records;
+- MAPSPAM variables include physical area, harvested area, production, harvested-area-weighted yield, valid raster-cell count and spatial status. Rows with `NO_RASTER_CELLS` preserve NULL yield and are never converted to zero;
 - optional browser-local CSV Ridge ML with season-aligned ERA5-Land temperature, precipitation, ET₀ and GDD features; expanding-window OOF and Persistence comparison;
 - official SIAT wheat yield history for 13 agricultural ADM1 regions (2010–2024); district or custom-field predictions require authentic yield history for that exact area and crop.
 
@@ -65,7 +67,7 @@ The geoBoundaries ADM0–ADM5 levels are administrative units. They do not repre
 3. Click at least three vertices around the field, in order; press **Tugatish**.
 4. Sign in and save the selected AOI.
 
-A custom polygon is saved as `CUSTOM`; it is not assigned a fabricated ADM2/ADM3 ID. MAPSPAM summaries only appear for precomputed administrative IDs that were imported and reconciled. A custom AOI must instead be sampled against a suitable raster source.
+A custom polygon is saved as `CUSTOM`; it is not assigned a fabricated ADM2/ADM3 ID. The public Pages snapshot includes Uzbekistan MAPSPAM 2020 ADM1/ADM2 summaries for all 46 crops, keyed by the published GeoBoundaries `shapeID`. The ADM1 boundary vintage is 2017 and the ADM2 vintage is 2020; each level is linked to its corresponding source vintage. A custom AOI has no fabricated district ID and does not receive an administrative MAPSPAM value; it must instead be sampled against a suitable raster source.
 
 For small parcels, Sentinel-2 at 10 m is the most relevant of these three sources for vegetation-condition analysis. MAPSPAM is approximately 9.3 km at the equator, SMAP is approximately 9 km, and SoilGrids is 250 m. Those coarser grids cannot provide field-scale values just because a user draws a smaller polygon.
 
