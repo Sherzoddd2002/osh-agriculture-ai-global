@@ -77,6 +77,7 @@ SIAT_OFFICIAL_CROP_DATASETS = {
         "production_url": "https://api.siat.stat.uz/media/uploads/sdmx/sdmx_data_323.json",
         "production_page": "https://siat.stat.uz/data/323/?lang=en",
         "area_code": "1.03.03.0070",
+        "area_unit": "hectares",
         "area_url": "https://api.siat.stat.uz/media/uploads/sdmx/sdmx_data_2040.json",
         "area_page": "https://siat.stat.uz/data/2040/?lang=en",
         "max_yield": 200.0,
@@ -87,6 +88,7 @@ SIAT_OFFICIAL_CROP_DATASETS = {
         "production_url": "https://api.siat.stat.uz/media/uploads/sdmx/sdmx_data_2389.json",
         "production_page": "https://siat.stat.uz/data/2389/?lang=en",
         "area_code": "1.03.03.0069",
+        "area_unit": "hectares",
         "area_url": "https://api.siat.stat.uz/media/uploads/sdmx/sdmx_data_2039.json",
         "area_page": "https://siat.stat.uz/data/2039/?lang=en",
         "max_yield": 20.0,
@@ -352,7 +354,7 @@ async def build_official_crop_yield(
     area_doc = _siat_document(
         area_response.json(),
         definition["area_code"],
-        "hectare",
+        definition["area_unit"],
     )
     production = {
         str(row.get("Code")): row
@@ -440,7 +442,7 @@ async def build_official_crop_yield(
             {
                 "indicator_code": definition["area_code"],
                 "name": "Official crop sown area in all categories of farms",
-                "unit": "hectare",
+                "unit": definition["area_unit"],
                 "url": definition["area_page"],
                 "raw_url": definition["area_url"],
                 "updated": area_doc["metadata"].get("Last modified date"),
