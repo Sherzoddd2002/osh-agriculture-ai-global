@@ -1,14 +1,11 @@
-.git
-.env
-.venv
-__pycache__
-*.pyc
-.pytest_cache
-uploads
-data/private
-models/artifacts
-*.csv
-*.xlsx
-*.parquet
-*.tif
-*.tiff
+# Fly.io Docker build context is deliberately allow-listed.
+# E:\\OSH is also used as a workspace for other projects and large datasets.
+# The runtime image only needs the following files and folders.
+
+**
+!Dockerfile
+!requirements.txt
+!backend/
+!backend/**
+!frontend/
+!frontend/**
