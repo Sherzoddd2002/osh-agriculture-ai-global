@@ -30,6 +30,26 @@ if "fly.dev" in html.lower() or "osh backend" in html.lower():
 if "./data/boundaries/" not in html:
     raise SystemExit("FAIL: static GitHub Pages GeoJSON path is not wired into the UI")
 
+# Static Uzbekistan ADM must boot before the optional external world-country layer.
+adm_source_position = html.find('map.addSource("admin-areas"')
+world_fetch_position = html.find(
+    'fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"'
+)
+map_load_position = html.find('map.on("load",async function(){')
+auto_adm_position = html.find("loadRegionBoundaries();", map_load_position)
+if min(adm_source_position, world_fetch_position, map_load_position, auto_adm_position) < 0:
+    raise SystemExit("FAIL: map bootstrap is missing its static ADM or country GeoJSON wiring")
+if not (map_load_position < adm_source_position < auto_adm_position < world_fetch_position):
+    raise SystemExit("FAIL: UZB ADM layers must initialize and load before the optional world-country GeoJSON")
+if "World-country outlines are optional" not in html:
+    raise SystemExit("FAIL: world-country network failure is not isolated from the static ADM layer")
+if "features.includes(f)" not in html:
+    raise SystemExit("FAIL: country feature-state updates must ignore the local UZB fallback feature")
+if "clearYieldInputOnContextChange" not in html:
+    raise SystemExit("FAIL: stale yield CSV invalidation is missing")
+if "html{scroll-padding-top:132px}" not in html or "aria-label=\"Maydon tahlili\"" not in html:
+    raise SystemExit("FAIL: mobile navigation offset or accessible section labels are missing")
+
 if html.count('$("region-run-model").addEventListener("click"') != 1:
     raise SystemExit("FAIL: AI prediction button must have exactly one click handler")
 if html.count('$("region-yield-file").addEventListener("change"') != 1:
