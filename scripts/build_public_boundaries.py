@@ -74,6 +74,80 @@ OFFICIAL_YIELD_OUTPUT = ROOT / "docs" / "data" / "official-yield"
 YEARS = tuple(range(2010, 2025))
 
 
+def load_cached_boundary(level: str) -> dict | None:
+    """Reuse a previously validated Pages GeoJSON snapshot when source APIs are offline."""
+    path = OUTPUT / f"UZB_{level}.geojson"
+    if not path.is_file():
+        return None
+    expected_year = {"ADM1": "2017", "ADM2": "2020"}[level]
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        metadata = payload.get("metadata") or {}
+        features = payload.get("features")
+        if (
+            payload.get("type") != "FeatureCollection"
+            or metadata.get("country_iso3") != "UZB"
+            or metadata.get("admin_level") != level
+            or str(metadata.get("boundary_year")) != expected_year
+            or not metadata.get("source")
+            or not metadata.get("license")
+            or not isinstance(features, list)
+            or len(features) != EXPECTED_FEATURES[level]
+        ):
+            return None
+        identifiers: set[str] = set()
+        for feature in features:
+            geometry_data = feature.get("geometry") if isinstance(feature, dict) else None
+            props = feature.get("properties") or {}
+            shape_id = str(props.get("shapeID") or "").strip()
+            shape_name = str(props.get("shapeName") or "").strip()
+            if not geometry_data or not shape_id or not shape_name or shape_id in identifiers:
+                return None
+            geometry = shape(geometry_data)
+            if geometry.is_empty or not geometry.is_valid or geometry.geom_type not in {"Polygon", "MultiPolygon"}:
+                return None
+            identifiers.add(shape_id)
+        if len(identifiers) != EXPECTED_FEATURES[level]:
+            return None
+        return payload
+    except Exception as exc:
+        print(f"WARN: cached UZB {level} boundary is unusable: {exc}")
+        return None
+
+
+def load_cached_official_wheat(path: Path) -> dict | None:
+    """Validate the last published SIAT ADM1 wheat series before using it offline."""
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if (
+            payload.get("country_iso3") != "UZB"
+            or payload.get("admin_level") != "ADM1"
+            or payload.get("crop_code") != "whea"
+            or payload.get("license") != "CC BY 4.0"
+            or payload.get("district_yield_available") is not False
+        ):
+            return None
+        regions = payload.get("regions")
+        if not isinstance(regions, list) or len(regions) != 13:
+            return None
+        expected_years = list(YEARS)
+        for region in regions:
+            records = region.get("records") or []
+            years = [row.get("year") for row in records]
+            if years != expected_years:
+                return None
+            for row in records:
+                value = row.get("yield")
+                if not isinstance(value, (int, float)) or not 0 < value < 30:
+                    return None
+        return payload
+    except Exception as exc:
+        print(f"WARN: cached SIAT wheat series is unusable: {exc}")
+        return None
+
+
 def _siat_document(payload: object, expected_code: str, expected_unit: str) -> dict:
     if isinstance(payload, list) and len(payload) == 1:
         payload = payload[0]
@@ -232,14 +306,25 @@ async def build_official_wheat_yield(client: httpx.AsyncClient) -> dict:
 
 async def main() -> None:
     OUTPUT.mkdir(parents=True, exist_ok=True)
-    async with httpx.AsyncClient(timeout=45.0, follow_redirects=True) as client:
-        official_wheat = await build_official_wheat_yield(client)
-    OFFICIAL_YIELD_OUTPUT.mkdir(parents=True, exist_ok=True)
     official_target = OFFICIAL_YIELD_OUTPUT / "UZB_ADM1_WHEA_2010_2024.json"
-    official_target.write_text(
-        json.dumps(official_wheat, ensure_ascii=False, separators=(",", ":")),
-        encoding="utf-8",
-    )
+    try:
+        async with httpx.AsyncClient(timeout=45.0, follow_redirects=True) as client:
+            official_wheat = await build_official_wheat_yield(client)
+        official_target.parent.mkdir(parents=True, exist_ok=True)
+        official_target.write_text(
+            json.dumps(official_wheat, ensure_ascii=False, separators=(",", ":")),
+            encoding="utf-8",
+        )
+        print("PASS: official SIAT wheat series refreshed from the live SIAT source")
+    except Exception as exc:
+        official_wheat = load_cached_official_wheat(official_target)
+        if official_wheat is None:
+            raise RuntimeError(
+                "SIAT source is unavailable and no previously validated public "
+                f"SIAT snapshot exists: {exc}"
+            ) from exc
+        print(f"WARN: SIAT source unavailable; using validated Pages snapshot: {exc}")
+    OFFICIAL_YIELD_OUTPUT.mkdir(parents=True, exist_ok=True)
     print(
         "PASS SIAT ADM1 wheat yield: "
         f"{len(official_wheat['regions'])} regions, "
@@ -262,7 +347,14 @@ async def main() -> None:
     }
 
     for level in ("ADM1", "ADM2"):
-        payload = await fetch_level(level)
+        payload = load_cached_boundary(level)
+        if payload is None:
+            payload = await fetch_level(level)
+        else:
+            print(
+                f"PASS CACHED UZB {level}: {len(payload['features'])} validated polygons "
+                f"| {payload['metadata'].get('source')} | vintage {payload['metadata'].get('boundary_year')}"
+            )
         metadata = payload.get("metadata") or {}
         target = OUTPUT / f"UZB_{level}.geojson"
         public_payload = {
