@@ -118,6 +118,16 @@ class LocationClimateJob(Base):
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
+class WorkerHeartbeat(Base):
+    """A lightweight heartbeat used to distinguish a queued job from a stopped worker."""
+    __tablename__ = "worker_heartbeats"
+    worker_name: Mapped[str] = mapped_column(String(64), primary_key=True)
+    status: Mapped[str] = mapped_column(String(24), default="STARTING")
+    current_job_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    current_job_type: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    last_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
 class LocationWeatherSnapshot(Base):
     """Latest current/short-range forecast snapshot for a saved location."""
     __tablename__ = "location_weather_snapshots"
