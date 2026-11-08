@@ -62,6 +62,32 @@ with sync_playwright() as p:
         "mimeType": "text/csv",
         "buffer": fixture_csv.encode("utf-8"),
     })
+
+    # Mock only the external archive response so CI verifies the complete
+    # feature/ML path deterministically without depending on API latency.
+    from datetime import date, timedelta
+    def mock_era5(route):
+        from urllib.parse import urlparse, parse_qs
+        params = parse_qs(urlparse(route.request.url).query)
+        cursor = date.fromisoformat(params["start_date"][0])
+        finish = date.fromisoformat(params["end_date"][0])
+        days = []
+        while cursor <= finish:
+            days.append(cursor.isoformat())
+            cursor += timedelta(days=1)
+        count = len(days)
+        route.fulfill(status=200, content_type="application/json", body=__import__("json").dumps({
+            "latitude": 41.3, "longitude": 69.2, "timezone": "GMT",
+            "daily": {
+                "time": days,
+                "temperature_2m_mean": [15.0 + (i % 30) / 10 for i in range(count)],
+                "temperature_2m_max": [22.0 + (i % 20) / 10 for i in range(count)],
+                "temperature_2m_min": [8.0 + (i % 15) / 10 for i in range(count)],
+                "precipitation_sum": [1.2 + (i % 7) / 10 for i in range(count)],
+                "et0_fao_evapotranspiration": [2.1 + (i % 10) / 10 for i in range(count)],
+            },
+        }))
+    page.route("https://archive-api.open-meteo.com/v1/archive**", mock_era5)
     page.locator("#region-run-model").click()
     page.wait_for_function(
         "() => document.querySelector('#region-model-result').textContent.includes('Ridge + ERA5-Land ssenariysi') "
