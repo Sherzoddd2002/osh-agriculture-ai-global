@@ -190,7 +190,7 @@
         </div>
 
         <article class="panel region-result-card region-yield-card">
-          <div class="region-result-head"><div><span class="eyebrow">RESEARCH MODEL / CSV INPUT</span><h3>Hosildorlik uchun Ridge baseline ssenariysi</h3><small>O‘zingizdagi haqiqiy yillik yield CSV faylini yuklang. Hisob brauzerda bajariladi.</small></div><span class="tag">LOCAL · NO UPLOAD</span></div>
+          <div class="region-result-head"><div><span class="eyebrow">RESEARCH MODEL / CSV INPUT</span><h3>Hosildorlik uchun Ridge baseline ssenariysi</h3><small>O‘zingizdagi haqiqiy yillik yield CSV faylini yuklang. Hisob brauzerda bajariladi.</small></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><a class="btn-secondary" href="./data/templates/yield-template.csv" download>CSV shablon ↓</a><span class="tag">LOCAL · NO UPLOAD</span></div></div>
           <div class="region-yield-controls">
             <label>CSV fayl<input type="file" id="region-yield-file" accept=".csv,text/csv"></label>
             <label>Yil ustuni<input id="region-year-column" value="year"></label>
@@ -543,6 +543,7 @@ async function loadRegionBoundaries(){
   adminFeatures.forEach((feature,index)=>{feature.properties=feature.properties||{};feature.properties.__admin_idx=index;feature.properties.__selected=0;});
   if(!map||!map.getSource("admin-areas"))throw new Error("Globus xaritasi hali tayyor emas");
   map.getSource("admin-areas").setData({type:"FeatureCollection",features:adminFeatures});
+  if(map.getSource("region-selected"))map.getSource("region-selected").setData({type:"FeatureCollection",features:[]});
   $("region-select").disabled=false;$("region-search").value="";renderRegionOptions("");
   selectedAOI=null;$("region-name").textContent="Hudud tanlanmagan";$("region-center").textContent="—";
   $("region-analyze").disabled=true;$("region-results").hidden=true;
