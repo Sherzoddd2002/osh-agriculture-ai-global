@@ -384,7 +384,7 @@ if(window.maplibregl){
  map=new maplibregl.Map({
   container:"map",
   style:"https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
-  center:[64,35],zoom:1.28,minZoom:.85,maxZoom:8,renderWorldCopies:false,attributionControl:true
+  center:[64,35],zoom:1.28,minZoom:.85,maxZoom:19,renderWorldCopies:false,attributionControl:true
  });
  map.addControl(new maplibregl.NavigationControl({showCompass:true,showZoom:true}),"top-right");
  map.on("style.load",function(){try{map.setProjection({type:"globe"});map.setSky({"atmosphere-blend":["interpolate",["linear"],["zoom"],0,.95,3,.82,6,.2,7,0]});}catch(e){console.warn(e);}});
@@ -485,7 +485,7 @@ function selectRegionFeature(feature,sourceLabel){
  }
  if(map){
   const bounds=regionBounds(feature);
-  if(bounds)map.fitBounds(bounds,{padding:70,maxZoom:16,duration:850});
+  if(bounds)map.fitBounds(bounds,{padding:70,maxZoom:18,duration:850});
  }
 }
 function updateRegionDraft(){
@@ -551,7 +551,7 @@ $("region-draw-start").addEventListener("click",()=>{
  $("region-analyze").disabled=true;
  $("region-draw-start").disabled=true;$("region-draw-finish").disabled=false;$("region-draw-cancel").disabled=false;
  map.getCanvas().style.cursor="crosshair";
- $("region-status").textContent="Dala chegarasi bo‘ylab xaritada ketma-ket 3 yoki undan ko‘p burchakni bosing.";
+ $("region-status").textContent="Mayda dala uchun xaritani avval 2 barmoq/g‘ildirak bilan yaqinlashtiring. So‘ng chegara bo‘ylab kamida 3 burchakni bosing.";
 });
 $("region-draw-cancel").addEventListener("click",()=>{
  regionDrawing=false;regionDraftPoints=[];updateRegionDraft();
