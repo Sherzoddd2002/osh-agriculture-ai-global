@@ -262,14 +262,14 @@
         </article>
 
         <article class="panel region-result-card region-yield-card">
-          <div class="region-result-head"><div><span class="eyebrow">RESEARCH MODEL / CSV INPUT</span><h3>Hosildorlik uchun Ridge baseline ssenariysi</h3><small>O‘zingizdagi haqiqiy yillik yield CSV faylini yuklang. Hisob brauzerda bajariladi.</small></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><a class="btn-secondary" href="./data/templates/yield-template.csv" download>CSV shablon ↓</a><span class="tag">LOCAL · NO UPLOAD</span></div></div>
+          <div class="region-result-head"><div><span class="eyebrow">RESEARCH MODEL / CSV INPUT</span><h3>Hosildorlik uchun Ridge baseline ssenariysi</h3><small>Viloyat bug‘doy/kartoshka/paxta uchun SIAT qatori avtomatik; boshqa holatlarda aynan hudud/ekin CSV. Hisob brauzerda bajariladi.</small></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><a class="btn-secondary" href="./data/templates/yield-template.csv" download>CSV shablon ↓</a><span class="tag">LOCAL · NO UPLOAD</span></div></div>
           <details class="info-note region-csv-help">
             <summary>CSV faylni qanday tayyorlash kerak?</summary>
             <p>Faylning birinchi qatorida <code>year,yield_t_ha</code> ustunlari bo‘lsin. Har yil uchun bitta qator, hosildorlik esa <b>tonna/gektar (t/ha)</b> birlikda yoziladi. Takroriy yil bo‘lmasin; kamida 8 ta haqiqiy kuzatuv kiriting. Ma’lumot UTF-8 CSV bo‘lishi kerak.</p>
             <p><b>Hudud qoidasi:</b> ADM2 tuman tanlangan bo‘lsa, CSV ham aynan shu tuman va shu ekin bo‘yicha bo‘lishi kerak. Viloyat ma’lumotini tuman ma’lumoti sifatida kiritmang. Rasmiy tuman qatori bo‘lmasa, sun’iy raqam qo‘shmang — model noto‘g‘ri hududni bashorat qilmasligi kerak.</p>
             <p><b>Mavsum:</b> bug‘doy kabi kuzgi ekinlar uchun odatda 10-01 dan 06-30 gacha; boshqa ekinlarda o‘zingizning haqiqiy ekish/yig‘im mavsumingizni belgilang. Kelajak ob-havosi modelda so‘nggi 5 mos mavsum normasi bilan ifodalanadi.</p>
           </details>
-          <div class="region-model-source-note" id="region-model-source-help" role="status">Viloyat (ADM1) + bug‘doy: SIAT rasmiy 2010–2024 qatori avtomatik yuklanadi. Tuman (ADM2), qo‘lda chizilgan maydon yoki boshqa ekinlar uchun aynan shu hudud/ekin bo‘yicha haqiqiy CSV talab qilinadi.</div>
+          <div class="region-model-source-note" id="region-model-source-help" role="status">Viloyat (ADM1) + bug‘doy, kartoshka yoki xom paxta: SIAT rasmiy 2010–2024 qatori avtomatik yuklanadi. Tuman (ADM2), qo‘lda chizilgan maydon yoki boshqa ekinlar uchun aynan shu hudud/ekin bo‘yicha haqiqiy CSV talab qilinadi.</div>
           <div class="region-yield-controls">
             <label>CSV fayl<input type="file" id="region-yield-file" accept=".csv,text/csv"></label>
             <label>Yil ustuni<input id="region-year-column" value="year"></label>
