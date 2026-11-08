@@ -43,7 +43,7 @@ const resetElements={
  "region-yield-file":{files:[{name:"old-district.csv"}],value:"old-district.csv"},
  "region-model-result":{textContent:""}
 };
-const resetHelper=new Function("$",resetHelperSource+"\\nreturn clearYieldInputOnContextChange;")(
+const resetHelper=new Function("$",resetHelperSource+"\nreturn clearYieldInputOnContextChange;")(
  id=>resetElements[id]
 );
 resetHelper("Hudud tanlovi o‘zgardi.");
