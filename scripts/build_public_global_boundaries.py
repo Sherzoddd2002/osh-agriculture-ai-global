@@ -10,6 +10,7 @@ import asyncio
 import gc
 import json
 import re
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -332,20 +333,39 @@ def add_cgaz_fallback(level: str, packages: dict[str, dict]) -> dict[str, int]:
         raise ValueError(f"CGAZ {level}: source is not a GeoJSON FeatureCollection")
 
     missing_by_country: dict[str, list[dict]] = {}
+    cgaz_codes: set[str] = set()
+    level_counts: Counter[str] = Counter()
+    missing_iso_count = 0
+    example_properties = None
     for feature in payload["features"]:
         properties = feature.get("properties") or {}
+        if example_properties is None:
+            example_properties = {key: properties.get(key) for key in list(properties)[:12]}
+        feature_level = str(properties.get("shapeType") or level).upper()
+        level_counts[feature_level] += 1
         iso = str(
             properties.get("shapeGroup")
             or properties.get("shapeISO")
             or properties.get("countryISO3")
             or ""
         ).strip().upper()
-        if not re.fullmatch(r"[A-Z]{3}", iso) or iso == "UZB" or iso in packages:
+        if not re.fullmatch(r"[A-Z]{3}", iso):
+            missing_iso_count += 1
             continue
-        feature_level = str(properties.get("shapeType") or level).upper()
-        if feature_level != level:
+        cgaz_codes.add(iso)
+        if iso == "UZB" or iso in packages or feature_level != level:
             continue
         missing_by_country.setdefault(iso, []).append(feature)
+
+    absent_from_open = sorted(cgaz_codes - set(packages) - {"UZB"})
+    print(
+        f"INFO CGAZ {level}: {len(payload['features']):,} features; "
+        f"{len(cgaz_codes)} distinct ISO3 groups; level values={dict(level_counts)}; "
+        f"codes absent from gbOpen={len(absent_from_open)}; "
+        f"missing ISO fields={missing_iso_count}; sample properties={example_properties}"
+    )
+    if absent_from_open:
+        print(f"INFO CGAZ {level}: sample fallback ISO3 codes={absent_from_open[:30]}")
 
     del payload
     gc.collect()
