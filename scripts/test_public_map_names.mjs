@@ -44,6 +44,14 @@ for(const region of officialYield.regions){
   "SIAT province does not match any localized ADM1 boundary: "+region.name_uz
  );
 }
+const adm1Payload=JSON.parse(fs.readFileSync(path.join(docs,"data","boundaries","UZB_ADM1.geojson"),"utf8"));
+const officialYield=JSON.parse(fs.readFileSync(path.join(docs,"data","official-yield","UZB_ADM1_WHEA_2010_2024.json"),"utf8"));
+assert.equal(officialYield.regions.length,13,"SIAT wheat source should cover 13 agricultural provinces");
+const geoNames=new Set(adm1Payload.features.map(feature=>normalizeRegionSearch(regionFeatureName(feature))));
+for(const region of officialYield.regions){
+ assert.ok(geoNames.has(normalizeRegionSearch(region.name_uz)),
+  "SIAT province does not match any localized ADM1 boundary: "+region.name_uz);
+}
 const expected={ADM1:14,ADM2:199};
 let checked=0;
 for(const [level,count] of Object.entries(expected)){
