@@ -48,9 +48,12 @@
       <div class="page-intro"><span class="eyebrow">OSH · GLOBAL AGRICULTURE INTELLIGENCE</span><h2>Butun Yer sharidan hududingizni tanlang</h2><p>Globusni aylantiring, mamlakat va ma’muriy darajani tanlang. Keyin hududni saqlab, iqlim hamda mavjud hosildorlik ma’lumotlarini tahlil qiling.</p></div>
       <div class="toolbar panel">
         <label>Mamlakat ISO-3<input id="country-iso3" maxlength="3" value="UZB" placeholder="UZB, KAZ, DEU"></label>
-        <label>Ma’muriy daraja<select id="admin-level"><option>ADM0</option><option selected>ADM1</option><option>ADM2</option><option>ADM3</option><option>ADM4</option></select></label>
+        <label>Ma’muriy daraja<select id="admin-level"><option>ADM0</option><option selected>ADM1</option><option>ADM2</option><option>ADM3</option><option>ADM4</option><option>ADM5</option></select></label>
         <button class="primary-button" id="load-boundaries">Chegaralarni yuklash</button>
-        <span id="boundary-status" class="muted">Mamlakatni kiriting</span>
+        <button class="secondary-button" id="draw-aoi-start" type="button">＋ Maydon chizish</button>
+        <button class="secondary-button" id="draw-aoi-finish" type="button" disabled>Tugatish</button>
+        <button class="secondary-button" id="draw-aoi-cancel" type="button" disabled>Bekor qilish</button>
+        <span id="boundary-status" class="muted">ADM daraja yoki xaritada o‘zingiz maydon chizing</span>
       </div>
       <div class="map-layout">
         <article class="panel map-panel">
@@ -69,7 +72,7 @@
           </div>
           <div class="map-attribution">Globus va bazaviy xarita: CARTO / OpenStreetMap · Hudud chegaralari: geoBoundaries gbOpen. Chegaralar yuklanganda tanlangan ma’muriy hudud yorqin rang bilan belgilanadi.</div>
         </article>
-        <aside class="panel selection-panel"><span class="eyebrow">TANLANGAN HUDUD</span><h3 id="selected-area-name">Hududni tanlang</h3><p id="selected-area-help">Xaritadagi chegarani bosing.</p><div class="selection-metrics"><div><small>Mamlakat</small><b id="selected-country">—</b></div><div><small>Daraja</small><b id="selected-level">—</b></div><div><small>Markaz koordinatasi</small><b id="selected-center">—</b></div></div><label class="climate-year-label">Tarixiy ma’lumot boshlanish yili<input id="climate-start-year" type="number" min="1981" max="2200" value="2010"></label><button class="primary-button full" id="save-location" disabled>Hududni saqlash va tahlil qilish</button><div class="notice compact">Hosildorlik CSV bo‘lmasa ham iqlim tarixi va ob-havo prognozi olinadi. Model faqat haqiqiy hosildorlik ma’lumoti bo‘lganda ishlaydi.</div><div id="saved-location-status" class="muted"></div></aside>
+        <aside class="panel selection-panel"><span class="eyebrow">TANLANGAN HUDUD</span><h3 id="selected-area-name">Hududni tanlang</h3><p id="selected-area-help">ADM hududini tanlang yoki “Maydon chizish” orqali dalangiz konturini belgilang. 3 yoki undan ko‘p nuqta kerak.</p><div class="selection-metrics"><div><small>Mamlakat</small><b id="selected-country">—</b></div><div><small>Daraja</small><b id="selected-level">—</b></div><div><small>Markaz koordinatasi</small><b id="selected-center">—</b></div></div><label class="climate-year-label">Tarixiy ma’lumot boshlanish yili<input id="climate-start-year" type="number" min="1981" max="2200" value="2010"></label><button class="primary-button full" id="save-location" disabled>Kirish va hududni saqlash</button><div class="notice compact">Kichik dala yoki bog‘ chegarasini qo‘lda chizishingiz mumkin. Saqlash va tahlil uchun hisobga kirish kerak. NASA POWER nuqtaviy iqlim beradi; kichik dala uchun Sentinel-2 kabi 10 m qatlam kerak bo‘ladi.</div><div id="saved-location-status" class="muted"></div></aside>
       </div>
 
       <section class="panel mapspam-results-panel" id="mapspam-results-panel" aria-live="polite">
