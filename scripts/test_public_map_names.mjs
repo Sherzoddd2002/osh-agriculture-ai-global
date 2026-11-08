@@ -66,8 +66,8 @@ const centerSource=[
  extractFunction("regionRingCentroid"),
  extractFunction("regionPolygonCentroid"),
  extractFunction("regionCenter"),
- "\\nreturn {regionCenter};",
-].join("\\n");
+ "\nreturn {regionCenter};",
+].join("\n");
 const {regionCenter}=new Function(centerSource)();
 const rectangle={type:"Feature",properties:{},geometry:{type:"Polygon",coordinates:[[[0,0],[4,0],[4,2],[0,2],[0,0]]]}};
 const rectangleCenter=regionCenter(rectangle);
