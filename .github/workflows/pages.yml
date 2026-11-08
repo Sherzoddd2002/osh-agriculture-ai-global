@@ -96,12 +96,12 @@ jobs:
           test -f .previous-pages/site/data/boundaries/UZB_ADM2.geojson
           test -f .previous-pages/site/data/official-yield/UZB_ADM1_WHEA_2010_2024.json
           cp -f .previous-pages/site/data/boundaries/*.geojson docs/data/boundaries/
-          cp -f .previous-pages/site/data/official-yield/*.json docs/data/official-yield/
+          cp -f .previous-pages/site/data/official-yield/*.json docs/data/official-yield/\n          if [ -d .previous-pages/site/data/boundaries/global ]; then\n            mkdir -p docs/data/boundaries/global\n            cp -a .previous-pages/site/data/boundaries/global/. docs/data/boundaries/global/\n          fi
       - name: Install boundary validation dependencies
         run: python -m pip install "fastapi>=0.115,<1" "httpx>=0.27,<1" "shapely>=2.0,<3"
       - name: Build and validate Uzbekistan ADM1/ADM2 GeoJSON
         run: python scripts/build_public_boundaries.py
-      - name: Locate latest successful UZB MAPSPAM artifact
+      - name: Build and validate global ADM1/ADM2 country packages\n        run: python scripts/build_public_global_boundaries.py\n      - name: Locate latest successful UZB MAPSPAM artifact
         id: mapspam
         uses: actions/github-script@v7
         with:
@@ -168,7 +168,7 @@ jobs:
             git push origin HEAD:main
           fi
       - name: Check Python build scripts
-        run: python -m py_compile scripts/build_public_boundaries.py scripts/build_public_mapspam.py scripts/check_public_site.py
+        run: python -m py_compile scripts/build_public_boundaries.py scripts/build_public_global_boundaries.py scripts/build_public_mapspam.py scripts/check_public_site.py
       - name: Check public dashboard and JavaScript
         run: python scripts/check_public_site.py
       - name: Upload static demo
