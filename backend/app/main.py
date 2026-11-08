@@ -18,6 +18,7 @@ from .db import SessionLocal, init_db
 from .models import User, Location, Dataset, YieldObservation, EnvironmentFeature, AnalysisJob, LocationClimateJob, LocationWeatherSnapshot, GlobalRasterSummary, WorkerHeartbeat
 from .security import hash_password, verify_password, create_access_token, current_user, get_db
 from .services.boundaries import get_boundary_geojson
+from .services.sentinel2 import search_sentinel2_scenes
 from .services.nasa_power import fetch_daily_weather, aggregate_calendar_year_weather
 from .services.open_meteo import fetch_weather_forecast
 from .services.connectors import SOURCE_REGISTRY
@@ -226,6 +227,37 @@ def location_climate_job_status(job_id: int, user: User = Depends(current_user),
         raise HTTPException(404, "Iqlim job topilmadi")
     return {"id": job.id, "status": job.status, "progress": job.progress,
             "message": job.message, "result": job.result, "error": job.error}
+
+
+@app.get("/api/v1/locations/{location_id}/sentinel2-scenes")
+async def location_sentinel2_scenes(
+    location_id: int,
+    start_date: date = date(2024, 1, 1),
+    end_date: Optional[date] = None,
+    max_cloud_percent: float = 30.0,
+    limit: int = 50,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+):
+    """Search CDSE STAC for Sentinel-2 L2A scenes intersecting a saved AOI."""
+    location = db.scalar(
+        select(Location).where(Location.id == location_id, Location.owner_id == user.id)
+    )
+    if not location:
+        raise HTTPException(404, "Hudud topilmadi")
+    geometry = location.geojson.get("geometry", location.geojson)
+    try:
+        return await search_sentinel2_scenes(
+            geometry=geometry,
+            start_date=start_date,
+            end_date=end_date or date.today(),
+            max_cloud_percent=max_cloud_percent,
+            limit=limit,
+        )
+    except ValueError as exc:
+        raise HTTPException(422, str(exc))
+    except Exception as exc:
+        raise HTTPException(502, f"Copernicus STAC qidiruvi bajarilmadi: {exc}")
 
 
 @app.get("/api/v1/locations/{location_id}/climate")
