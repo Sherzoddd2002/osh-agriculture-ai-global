@@ -26,17 +26,171 @@ document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',(
 document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>openView(b.dataset.goto)));
 
 function initMap(){
-  if(!window.maplibregl){$('global-map').innerHTML='<div class="empty-state">Xarita kutubxonasi yuklanmadi. Internetni tekshiring.</div>';return;}
-  map=new maplibregl.Map({container:'global-map',style:'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',center:[20,20],zoom:1.45,attributionControl:true});
-  map.addControl(new maplibregl.NavigationControl(),'top-right');map.addControl(new maplibregl.ScaleControl({unit:'metric'}),'bottom-left');
-  map.on('load',()=>{map.addSource('admin-boundaries',{type:'geojson',data:{type:'FeatureCollection',features:[]}});map.addLayer({id:'admin-fill',type:'fill',source:'admin-boundaries',paint:{'fill-color':'#2f9b5f','fill-opacity':0.22}});map.addLayer({id:'admin-line',type:'line',source:'admin-boundaries',paint:{'line-color':'#147144','line-width':1.5}});map.addLayer({id:'admin-selected',type:'line',source:'admin-boundaries',filter:['==',['get','__selected'],1],paint:{'line-color':'#f0a52d','line-width':3}});});
-  map.on('click','admin-fill',(e)=>{const f=e.features?.[0];if(!f)return;const idx=Number(f.properties.__idx);selectFeature(boundaryFeatures[idx]);});
-  map.on('mouseenter','admin-fill',()=>map.getCanvas().style.cursor='pointer');map.on('mouseleave','admin-fill',()=>map.getCanvas().style.cursor='');
+  const container = $('global-map');
+  if(!window.maplibregl){
+    container.innerHTML='<div class="empty-state">Xarita kutubxonasi yuklanmadi. Internetni tekshiring.</div>';
+    return;
+  }
+
+  map = new maplibregl.Map({
+    container: 'global-map',
+    style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    center: [18, 18],
+    zoom: 1.12,
+    minZoom: 0.85,
+    maxZoom: 14,
+    renderWorldCopies: false,
+    attributionControl: false,
+    maxPitch: 55
+  });
+
+  map.addControl(
+    new maplibregl.NavigationControl({showCompass:true, showZoom:true, visualizePitch:true}),
+    'top-right'
+  );
+  map.addControl(new maplibregl.ScaleControl({unit:'metric'}), 'bottom-left');
+  map.addControl(new maplibregl.AttributionControl({compact:true}), 'bottom-right');
+
+  // MapLibre applies projection and sky as style properties. Re-apply them
+  // after style.load so they are not lost when the basemap style is refreshed.
+  map.on('style.load', () => {
+    try {
+      map.setProjection({type:'globe'});
+      map.setSky({
+        'atmosphere-blend': [
+          'interpolate', ['linear'], ['zoom'],
+          0, 0.96,
+          3, 0.82,
+          6, 0.24,
+          7, 0
+        ]
+      });
+      const globeStatus = $('globe-status');
+      if(globeStatus) globeStatus.textContent = '3D GLOBUS · READY';
+    } catch(error) {
+      console.warn('Globe projection could not be enabled:', error);
+      const globeStatus = $('globe-status');
+      if(globeStatus) globeStatus.textContent = 'MAP VIEW · FALLBACK';
+    }
+  });
+
+  map.on('load', () => {
+    map.addSource('admin-boundaries', {
+      type:'geojson',
+      data:{type:'FeatureCollection',features:[]}
+    });
+
+    map.addLayer({
+      id:'admin-fill',
+      type:'fill',
+      source:'admin-boundaries',
+      paint:{
+        'fill-color':'#22c995',
+        'fill-opacity':0.13,
+        'fill-outline-color':'#45d9ad'
+      }
+    });
+
+    map.addLayer({
+      id:'admin-line',
+      type:'line',
+      source:'admin-boundaries',
+      paint:{
+        'line-color':'#55e2b8',
+        'line-width':['interpolate',['linear'],['zoom'],1,0.55,6,1.15,10,1.8],
+        'line-opacity':0.78
+      }
+    });
+
+    map.addLayer({
+      id:'admin-selected-fill',
+      type:'fill',
+      source:'admin-boundaries',
+      filter:['==',['get','__selected'],1],
+      paint:{
+        'fill-color':'#f2c879',
+        'fill-opacity':0.2
+      }
+    });
+
+    map.addLayer({
+      id:'admin-selected',
+      type:'line',
+      source:'admin-boundaries',
+      filter:['==',['get','__selected'],1],
+      paint:{
+        'line-color':'#ffd88a',
+        'line-width':['interpolate',['linear'],['zoom'],1,1.5,6,2.6,10,3.4],
+        'line-opacity':1
+      }
+    });
+  });
+
+  map.on('click','admin-fill',(event) => {
+    const feature = event.features?.[0];
+    if(!feature) return;
+    const index = Number(feature.properties.__idx);
+    if(Number.isInteger(index) && boundaryFeatures[index]) {
+      selectFeature(boundaryFeatures[index]);
+    }
+  });
+
+  map.on('mouseenter','admin-fill',() => {
+    map.getCanvas().style.cursor='pointer';
+  });
+  map.on('mouseleave','admin-fill',() => {
+    map.getCanvas().style.cursor='';
+  });
+
+  map.on('error', event => {
+    if(event?.error) console.warn('MapLibre map error:', event.error);
+  });
 }
 function featureName(f){const p=f?.properties||{};return p.shapeName||p.shape_name||p.shapeNameEn||p.NAME_1||p.NAME_2||p.name||p.NAME||p.admin||'Tanlangan hudud';}
 function coordsCenter(geom){let x=0,y=0,n=0;const walk=v=>{if(Array.isArray(v)&&typeof v[0]==='number'&&typeof v[1]==='number'){x+=v[0];y+=v[1];n++;}else if(Array.isArray(v))v.forEach(walk);};walk(geom.coordinates);return n?{lat:y/n,lon:x/n}:null;}
 function featureBounds(features){let minX=180,minY=90,maxX=-180,maxY=-90;const walk=v=>{if(Array.isArray(v)&&typeof v[0]==='number'&&typeof v[1]==='number'){minX=Math.min(minX,v[0]);maxX=Math.max(maxX,v[0]);minY=Math.min(minY,v[1]);maxY=Math.max(maxY,v[1]);}else if(Array.isArray(v))v.forEach(walk);};features.forEach(f=>walk(f.geometry?.coordinates));return minX<=maxX?[[minX,minY],[maxX,maxY]]:null;}
-function selectFeature(f){selectedFeature=f;$('selected-area-name').textContent=featureName(f);$('selected-area-help').textContent='Tanlangan chegara geoBoundaries GeoJSON polygonidan olindi.';$('selected-country').textContent=$('country-iso3').value.toUpperCase();$('selected-level').textContent=$('admin-level').value;const c=coordsCenter(f.geometry);$('selected-center').textContent=c?`${c.lat.toFixed(4)}, ${c.lon.toFixed(4)}`:'—';$('save-location').disabled=!token;const selectedIndex=boundaryFeatures.indexOf(f);const collection={type:'FeatureCollection',features:boundaryFeatures.map((x,i)=>({...x,properties:{...(x.properties||{}),__idx:i,__selected:i===selectedIndex?1:0}}))};if(map?.getSource('admin-boundaries'))map.getSource('admin-boundaries').setData(collection);$('map-caption').textContent=featureName(f);loadMapspamSummaries();}
+function selectFeature(f){
+  if(!f) return;
+  selectedFeature=f;
+  $('selected-area-name').textContent=featureName(f);
+  $('selected-area-help').textContent='Tanlangan chegara geoBoundaries GeoJSON polygonidan olindi.';
+  $('selected-country').textContent=$('country-iso3').value.toUpperCase();
+  $('selected-level').textContent=$('admin-level').value;
+  const center=coordsCenter(f.geometry);
+  $('selected-center').textContent=center? `${center.lat.toFixed(4)}, ${center.lon.toFixed(4)}` : '—';
+  $('save-location').disabled=!token;
+
+  const selectedIndex=boundaryFeatures.indexOf(f);
+  const collection={
+    type:'FeatureCollection',
+    features:boundaryFeatures.map((feature,index)=>({
+      ...feature,
+      properties:{
+        ...(feature.properties||{}),
+        __idx:index,
+        __selected:index===selectedIndex?1:0
+      }
+    }))
+  };
+
+  if(map?.getSource('admin-boundaries')) {
+    map.getSource('admin-boundaries').setData(collection);
+  }
+
+  $('map-caption').textContent=featureName(f);
+  const bounds=featureBounds([f]);
+  if(bounds && map) {
+    const level=$('admin-level').value;
+    const maxZoom=level==='ADM0'?4:level==='ADM1'?6.5:level==='ADM2'?8:9.5;
+    map.fitBounds(bounds,{
+      padding:{top:76,bottom:76,left:76,right:76},
+      maxZoom,
+      duration:850
+    });
+  }
+  loadMapspamSummaries();
+}
+
 async function loadBoundaries(){const code=$('country-iso3').value.trim().toUpperCase(),level=$('admin-level').value;const status=$('boundary-status');if(!/^[A-Z]{3}$/.test(code)){toast(status,'ISO-3 kodini kiriting (masalan UZB, KAZ, DEU).');return;}toast(status,'Chegaralar olinmoqda…');try{const data=await api(`/boundaries/${code}/${level}`);boundaryFeatures=data.features||[];selectedFeature=null;loadMapspamSummaries();$('selected-area-name').textContent='Hududni tanlang';$('selected-country').textContent=code;$('selected-level').textContent=level;$('selected-center').textContent='—';$('save-location').disabled=true;if(map?.getSource('admin-boundaries'))map.getSource('admin-boundaries').setData({type:'FeatureCollection',features:boundaryFeatures.map((f,i)=>({...f,properties:{...(f.properties||{}),__idx:i}}))});if(boundaryFeatures.length&&map){const bounds=featureBounds(boundaryFeatures);if(bounds)map.fitBounds(bounds,{padding:42,maxZoom:level==='ADM0'?4:7,duration:900});}toast(status,`${boundaryFeatures.length} ta chegara yuklandi · ${data.metadata?.source||'geoBoundaries'}`);}catch(e){toast(status,e.message);}}
 $('load-boundaries').addEventListener('click',loadBoundaries);
 
