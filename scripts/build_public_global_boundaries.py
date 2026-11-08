@@ -7,6 +7,7 @@ The existing UZB files are preserved because MAPSPAM joins them by shapeID.
 from __future__ import annotations
 
 import asyncio
+import gc
 import json
 import re
 from datetime import datetime, timezone
@@ -20,6 +21,9 @@ from shapely.ops import unary_union
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "data" / "boundaries" / "global"
+CGAZ_DIR = ROOT / ".geoboundaries" / "releaseData" / "CGAZ"
+CGAZ_COMMIT = "8ce2700661a28ee944350e2b329bbabb58d2ff83"
+CGAZ_VERSION = "geoBoundaries CGAZ v6.0.0"
 API_BASE = "https://geoboundaries-dev.org/api/current/gbOpen/ALL"
 LEVELS = ("ADM1", "ADM2")
 MIN_COUNTRIES_PER_LEVEL = 100
@@ -313,6 +317,98 @@ async def build_level(
     return results, failures
 
 
+def add_cgaz_fallback(level: str, packages: dict[str, dict]) -> dict[str, int]:
+    """Fill country/level gaps from the pinned global CGAZ composite."""
+    source_path = CGAZ_DIR / f"geoBoundariesCGAZ_{level}.geojson"
+    if not source_path.is_file() or source_path.stat().st_size < 1_000_000:
+        raise FileNotFoundError(
+            f"Missing downloaded CGAZ {level} GeoJSON or Git LFS pointer was not hydrated: {source_path}"
+        )
+
+    print(f"INFO CGAZ {level}: reading pinned global composite ({source_path.stat().st_size:,} bytes)")
+    with source_path.open("r", encoding="utf-8") as stream:
+        payload = json.load(stream)
+    if payload.get("type") != "FeatureCollection" or not isinstance(payload.get("features"), list):
+        raise ValueError(f"CGAZ {level}: source is not a GeoJSON FeatureCollection")
+
+    missing_by_country: dict[str, list[dict]] = {}
+    for feature in payload["features"]:
+        properties = feature.get("properties") or {}
+        iso = str(
+            properties.get("shapeGroup")
+            or properties.get("shapeISO")
+            or properties.get("countryISO3")
+            or ""
+        ).strip().upper()
+        if not re.fullmatch(r"[A-Z]{3}", iso) or iso == "UZB" or iso in packages:
+            continue
+        feature_level = str(properties.get("shapeType") or level).upper()
+        if feature_level != level:
+            continue
+        missing_by_country.setdefault(iso, []).append(feature)
+
+    del payload
+    gc.collect()
+
+    added_countries = 0
+    added_features = 0
+    for iso, features in sorted(missing_by_country.items()):
+        record = {
+            "boundaryISO": iso,
+            "boundaryName": iso,
+            "boundaryYearRepresented": "2023-09-13",
+            "boundaryID": f"CGAZ-v6.0.0-{iso}-{level}",
+            "boundarySource": "geoBoundaries CGAZ global composite",
+            "boundarySourceURL": "https://www.geoboundaries.org/globalDownloads.html",
+            "boundaryLicense": "CC BY 4.0",
+            "licenseDetail": (
+                "CGAZ global composite; attribution required. Disputed areas are resolved "
+                "using United States Department of State definitions."
+            ),
+            "licenseSource": "https://www.geoboundaries.org/globalDownloads.html",
+            "Continent": "Unknown",
+            "source_version": f"{CGAZ_VERSION} at {CGAZ_COMMIT}",
+            "boundary_product": "CGAZ global composite fallback",
+            "geometry_detail": "CGAZ simplified global composite",
+            "is_global_composite_fallback": True,
+        }
+        source = {"type": "FeatureCollection", "features": features}
+        prepared = validate_and_prepare(record, level, source)
+        path = OUTPUT / f"{iso}_{level}.geojson"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(prepared, ensure_ascii=False, separators=(",", ":")),
+            encoding="utf-8",
+        )
+        metadata = prepared["metadata"]
+        packages[iso] = {
+            "file": f"boundaries/global/{iso}_{level}.geojson",
+            "feature_count": metadata["feature_count"],
+            "boundary_id": metadata["boundary_id"],
+            "boundary_year": metadata["boundary_year"],
+            "country_name": metadata["country_name"],
+            "source": metadata["source"],
+            "source_url": metadata["source_url"],
+            "license": metadata["license"],
+            "license_detail": metadata["license_detail"],
+            "license_source": metadata["license_source"],
+            "continent": metadata["continent"],
+            "geometry_detail": metadata["geometry_detail"],
+            "boundary_product": metadata["boundary_product"],
+            "is_global_composite_fallback": True,
+        }
+        added_countries += 1
+        added_features += metadata["feature_count"]
+        del source, prepared, features
+
+    gc.collect()
+    print(
+        f"PASS CGAZ FALLBACK {level}: added {added_countries} countries / "
+        f"{added_features:,} polygons"
+    )
+    return {"country_count": added_countries, "feature_count": added_features}
+
+
 async def main() -> None:
     OUTPUT.mkdir(parents=True, exist_ok=True)
     old_manifest = read_json(OUTPUT / "manifest.json")
@@ -328,6 +424,11 @@ async def main() -> None:
             packages, level_failures = await build_level(client, level, semaphore, old_manifest)
             level_results[level] = packages
             failures.extend(level_failures)
+
+    cgaz_fallback_summary = {
+        level: add_cgaz_fallback(level, level_results[level])
+        for level in LEVELS
+    }
 
     countries: dict[str, dict] = {}
     for level, packages in level_results.items():
@@ -349,18 +450,27 @@ async def main() -> None:
             f"configured safety ceiling is {MAX_TOTAL_BYTES / 1024 / 1024:.0f} MB"
         )
     manifest = {
-        "dataset": "geoBoundaries gbOpen",
+        "dataset": "geoBoundaries gbOpen + CGAZ fallback",
         "api": API_BASE,
         "source_url": "https://www.geoboundaries.org/",
         "api_documentation": "https://geoboundaries-dev.org/api",
-        "release_type": "gbOpen",
+        "release_type": "gbOpen with CGAZ fallback",
+        "global_composite_fallback": {
+            "name": CGAZ_VERSION,
+            "source_url": "https://www.geoboundaries.org/globalDownloads.html",
+            "source_commit": CGAZ_COMMIT,
+            "license": "CC BY 4.0",
+            "disputed_area_policy": "Disputed areas follow United States Department of State definitions.",
+            "added_by_level": cgaz_fallback_summary,
+        },
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "delivery": "GitHub Pages static per-country GeoJSON; browser downloads only the selected country and level",
         "uzb_policy": "UZB retains the separately validated ADM1/ADM2 snapshot used by the public MAPSPAM shapeID join",
         "coverage_note": (
-            "Coverage varies by country and administrative level. Countries absent from a level "
-            "do not have a public package for that level in this geoBoundaries API snapshot. "
-            "Boundary vintage and license are retained per country."
+            "Country-specific gbOpen boundaries are preferred. Missing country/level packages "
+            "are supplemented from the pinned CGAZ global composite. CGAZ uses United States "
+            "Department of State definitions for disputed areas. Boundary vintage and license "
+            "are retained per country; a level is unavailable only if neither source provides it."
         ),
         "attribution": (
             "geoBoundaries, William & Mary geoLab and upstream contributors. "
