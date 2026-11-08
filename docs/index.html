@@ -58,7 +58,7 @@
 .region-footnote{font-size:9px;color:#7f98a8;line-height:1.65;margin:12px 0 0}
 .region-empty{padding:15px;color:#8ea7b5;font-size:10px}
 .region-yield-card{margin-top:12px}
-.region-yield-controls{display:grid;grid-template-columns:1.2fr .8fr .9fr .7fr auto;gap:9px;align-items:end}
+.region-yield-controls{display:grid;grid-template-columns:minmax(150px,1.2fr) repeat(5,minmax(92px,.75fr)) auto;gap:9px;align-items:end}
 .region-yield-controls input[type=file]{padding:8px;font-size:9px}
 .region-model-result{margin-top:13px;padding:13px;border:1px solid #2a4b5d;border-radius:11px;background:#0a1c2a;color:#a9beca;font-size:10px;line-height:1.7}
 .region-model-result strong{color:var(--mint)}
@@ -194,10 +194,12 @@
             <label>CSV fayl<input type="file" id="region-yield-file" accept=".csv,text/csv"></label>
             <label>Yil ustuni<input id="region-year-column" value="year"></label>
             <label>Hosildorlik ustuni<input id="region-yield-column" value="yield_t_ha"></label>
+            <label>Mavsum boshlanishi<input id="region-season-start" value="10-01" placeholder="MM-DD"></label>
+            <label>Mavsum tugashi<input id="region-season-end" value="06-30" placeholder="MM-DD"></label>
             <label>Maqsadli yil<input type="number" id="region-target-year" value="2027" min="1900" max="2200"></label>
-            <button class="btn-primary" id="region-run-model" disabled>Ridge ssenariysini hisoblash</button>
+            <button class="btn-primary" id="region-run-model" disabled>Ridge + iqlim ML hisoblash</button>
           </div>
-          <div class="region-model-result" id="region-model-result">Kamida 8 ta kuzatilgan yillik hosildorlik qatori kerak. Ushbu baseline faqat siz yuklagan CSV’ga moslanadi; Sentinel-2/SMAP/SoilGrids featurelari yoki universal global model deb talqin qilinmaydi.</div>
+          <div class="region-model-result" id="region-model-result">CSV brauzerda qoladi. Model haqiqiy yillik hosildorlikni ERA5-Land mavsumiy harorat, yog‘in, ET₀ va GDD bilan birlashtiradi. Kamida 8 ta yetarli qamrovli yil kerak; kelajak ob-havosi so‘nggi 5 yillik norma bilan taxmin qilinadi.</div>
         </article>
       </div>
       <div class="info-note"><b>Kichik maydon haqida:</b> geoBoundaries faqat ma’muriy chegaralarni beradi. Fermer dalasini aniqlash uchun yuqoridagi “Maydon chizish”dan foydalaning. Har bir manbaning haqiqiy grid aniqligi natijada alohida ko‘rsatiladi; kichik poligon chizish 9 km SMAP/MAPSPAM ma’lumotini 10 metrli dala ma’lumotiga aylantirmaydi.</div>
@@ -727,33 +729,217 @@ function fitRegionRidge(xRows,yRows,xValid,alpha){
  const validStandardized=xValid.map((v,i)=>(v-xMean[i])/xScale[i]);
  return yMean+validStandardized.reduce((sum,v,i)=>sum+v*beta[i],0);
 }
-function runRegionRidge(series,targetYear){
- if(series.length<8)throw new Error("Kamida 8 ta haqiqiy yillik yield kuzatuvi kerak. Mavjud: "+series.length);
+function parseRegionCsvLine(line,delimiter){
+ const values=[];let value="",quoted=false;
+ for(let i=0;i<line.length;i++){
+  const c=line[i];
+  if(c==='"'&&quoted&&line[i+1]==='"'){value+='"';i++;}
+  else if(c==='"')quoted=!quoted;
+  else if(c===delimiter&&!quoted){values.push(value);value="";}
+  else value+=c;
+ }
+ values.push(value);return values;
+}
+function solveLinearSystem(matrix,vector){
+ const a=matrix.map((row,i)=>row.slice().concat([vector[i]]));
+ const n=vector.length;
+ for(let col=0;col<n;col++){
+  let pivot=col;
+  for(let row=col+1;row<n;row++)if(Math.abs(a[row][col])>Math.abs(a[pivot][col]))pivot=row;
+  if(Math.abs(a[pivot][col])<1e-12)throw new Error("Ridge matrix singular");
+  [a[col],a[pivot]]=[a[pivot],a[col]];
+  const divisor=a[col][col];
+  for(let k=col;k<=n;k++)a[col][k]/=divisor;
+  for(let row=0;row<n;row++){
+   if(row===col)continue;
+   const factor=a[row][col];
+   for(let k=col;k<=n;k++)a[row][k]-=factor*a[col][k];
+  }
+ }
+ return a.map(row=>row[n]);
+}
+function fitRegionRidge(xRows,yRows,xValid,alpha){
+ const p=xValid.length,n=xRows.length;
+ const xMean=Array(p).fill(0),xScale=Array(p).fill(1);
+ for(let i=0;i<p;i++)xMean[i]=xRows.reduce((sum,row)=>sum+row[i],0)/n;
+ for(let i=0;i<p;i++){
+  const variance=xRows.reduce((sum,row)=>sum+Math.pow(row[i]-xMean[i],2),0)/n;
+  xScale[i]=Math.sqrt(variance)||1;
+ }
+ const yMean=yRows.reduce((a,b)=>a+b,0)/n;
+ const standardized=xRows.map(row=>row.map((v,i)=>(v-xMean[i])/xScale[i]));
+ const matrix=Array.from({length:p},()=>Array(p).fill(0));
+ const vector=Array(p).fill(0);
+ for(let r=0;r<n;r++){
+  const centered=standardized[r],y=yRows[r]-yMean;
+  for(let i=0;i<p;i++){vector[i]+=centered[i]*y;for(let j=0;j<p;j++)matrix[i][j]+=centered[i]*centered[j];}
+ }
+ for(let i=0;i<p;i++)matrix[i][i]+=alpha;
+ const beta=solveLinearSystem(matrix,vector);
+ const validStandardized=xValid.map((v,i)=>(v-xMean[i])/xScale[i]);
+ return yMean+validStandardized.reduce((sum,v,i)=>sum+v*beta[i],0);
+}
+function seasonWindow(year,startValue,endValue){
+ const [sm,sd]=startValue.split("-").map(Number);
+ const [em,ed]=endValue.split("-").map(Number);
+ const validDate=(month,day)=>Number.isInteger(month)&&Number.isInteger(day)&&month>=1&&month<=12&&day>=1&&day<=new Date(Date.UTC(2000,month,0)).getUTCDate();
+ if(!validDate(sm,sd)||!validDate(em,ed))throw new Error("Mavsum sanalari MM-DD formatida bo‘lishi kerak.");
+ const crosses=(sm*100+sd)>(em*100+ed);
+ const startYear=crosses?year-1:year;
+ const start=new Date(Date.UTC(startYear,sm-1,sd));
+ const end=new Date(Date.UTC(year,em-1,ed));
+ return {start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10)};
+}
+async function fetchYieldClimateHistory(center,series,seasonStart,seasonEnd){
+ const windows=series.map(row=>({year:row.year,...seasonWindow(row.year,seasonStart,seasonEnd)}));
+ const firstYear=Number(windows[0].start.slice(0,4));
+ const lastYear=Number(windows[windows.length-1].end.slice(0,4));
+ if(firstYear<1950)throw new Error("ERA5-Land tarixiy qatori 1950-yildan boshlanadi. CSV mavsumini 1950-yildan keyingi davrga cheklang.");
+ const latestAllowed=new Date();latestAllowed.setUTCDate(latestAllowed.getUTCDate()-6);
+ const latestAllowedDate=latestAllowed.toISOString().slice(0,10);
+ if(windows[windows.length-1].end>latestAllowedDate)throw new Error("CSV oxirgi mavsumi ERA5-Land arxivida hali to‘liq mavjud emas. Oxirgi to‘liq hosil yilini kiriting.");
+ const dailyByDate=new Map();
+ // Split long requests into at most five calendar years per API call.
+ for(let chunkStart=firstYear;chunkStart<=lastYear;chunkStart+=5){
+  const chunkEnd=Math.min(lastYear,chunkStart+4);
+  const from=chunkStart===firstYear?windows[0].start:chunkStart+"-01-01";
+  const to=chunkEnd===lastYear?windows[windows.length-1].end:chunkEnd+"-12-31";
+  const url=new URL("https://archive-api.open-meteo.com/v1/archive");
+  url.search=new URLSearchParams({
+   latitude:center.lat.toFixed(5),longitude:center.lon.toFixed(5),
+   start_date:from,end_date:to,
+   daily:"temperature_2m_mean,temperature_2m_max,temperature_2m_min,precipitation_sum,et0_fao_evapotranspiration",
+   models:"era5_land",timezone:"UTC"
+  }).toString();
+  const response=await fetch(url);
+  if(!response.ok)throw new Error("ERA5-Land arxiv API HTTP "+response.status+" ("+from+" – "+to+")");
+  const data=await response.json();
+  const daily=data.daily||{},dates=daily.time||[];
+  dates.forEach((date,index)=>{
+   dailyByDate.set(date,{
+    tmean:daily.temperature_2m_mean?.[index]??null,
+    tmax:daily.temperature_2m_max?.[index]??null,
+    tmin:daily.temperature_2m_min?.[index]??null,
+    precipitation:daily.precipitation_sum?.[index]??null,
+    et0:daily.et0_fao_evapotranspiration?.[index]??null
+   });
+  });
+ }
+ const climateByYear={};
+ windows.forEach(window=>{
+  const dayValues=[];
+  const cursor=new Date(window.start+"T00:00:00Z"),finish=new Date(window.end+"T00:00:00Z");
+  while(cursor<=finish){
+   const date=cursor.toISOString().slice(0,10),value=dailyByDate.get(date);
+   if(value)dayValues.push(value);
+   cursor.setUTCDate(cursor.getUTCDate()+1);
+  }
+  const expectedDays=Math.round((finish-new Date(window.start+"T00:00:00Z"))/86400000)+1;
+  const valid=key=>dayValues.map(row=>row[key]).filter(v=>v!==null&&Number.isFinite(Number(v))).map(Number);
+  const temps=valid("tmean"),tmax=valid("tmax"),tmin=valid("tmin"),rain=valid("precipitation"),et0=valid("et0");
+  const coverage=temps.length/expectedDays;
+  if(coverage<0.8||rain.length/expectedDays<0.8||et0.length/expectedDays<0.8){
+   climateByYear[window.year]={coverage:coverage,validDays:temps.length,expectedDays:expectedDays,usable:false};
+   return;
+  }
+  const mean=values=>values.reduce((a,b)=>a+b,0)/values.length;
+  const tempMean=mean(temps);
+  climateByYear[window.year]={
+   coverage:coverage,validDays:temps.length,expectedDays:expectedDays,usable:true,
+   tmean:tempMean,tmax:mean(tmax),tmin:mean(tmin),
+   precipitation:rain.reduce((a,b)=>a+b,0),et0:et0.reduce((a,b)=>a+b,0),
+   gdd:temps.reduce((sum,value)=>sum+Math.max(0,value-5),0)
+  };
+ });
+ return climateByYear;
+}
+function runRegionRidge(series,targetYear,climateByYear){
+ const aligned=series.filter(row=>climateByYear[row.year]?.usable);
+ if(aligned.length<8)throw new Error("ERA5-Land bilan kamida 8 ta mavsum mos kelishi kerak. Mos qator: "+aligned.length+" / "+series.length+". Mavsum sanasi yoki CSV yillarini tekshiring.");
  const x=[],y=[],years=[];
- for(let i=3;i<series.length;i++){
-  const recent=series.slice(i-3,i).map(r=>r.yield);
+ for(let i=3;i<aligned.length;i++){
+  const recent=aligned.slice(i-3,i).map(row=>row.yield);
   const avg=recent.reduce((a,b)=>a+b,0)/recent.length;
   const std=Math.sqrt(recent.reduce((sum,v)=>sum+Math.pow(v-avg,2),0)/recent.length);
-  x.push([series[i].year,series[i-1].yield,avg,std]);
-  y.push(series[i].yield);years.push(series[i].year);
+  const climate=climateByYear[aligned[i].year];
+  x.push([aligned[i].year,aligned[i-1].yield,avg,std,climate.tmean,climate.tmax,climate.tmin,climate.precipitation,climate.et0,climate.gdd]);
+  y.push(aligned[i].yield);years.push(aligned[i].year);
  }
  const errors=[],persistenceErrors=[],oof=[];
  for(let split=3;split<x.length;split++){
-  const pred=Math.max(0,fitRegionRidge(x.slice(0,split),y.slice(0,split),x[split],2));
-  const persistence=y[split-1],actual=y[split];
-  errors.push(Math.abs(actual-pred));persistenceErrors.push(Math.abs(actual-persistence));
-  oof.push({year:years[split],actual:actual,predicted:pred,baseline:persistence});
+  const prediction=Math.max(0,fitRegionRidge(x.slice(0,split),y.slice(0,split),x[split],2));
+  const actual=y[split],persistence=y[split-1];
+  errors.push(Math.abs(actual-prediction));
+  persistenceErrors.push(Math.abs(actual-persistence));
+  oof.push({year:years[split],actual:actual,predicted:prediction,persistence:persistence});
  }
- if(!errors.length)throw new Error("Expanding-window OOF validatsiya uchun qator yetarli emas.");
- const recent=series.slice(-3).map(r=>r.yield);
- const avg=recent.reduce((a,b)=>a+b,0)/recent.length;
- const std=Math.sqrt(recent.reduce((sum,v)=>sum+Math.pow(v-avg,2),0)/recent.length);
- const last=series[series.length-1];
- const future=Math.max(0,fitRegionRidge(x,y,[targetYear,last.yield,avg,std],2));
+ if(!errors.length)throw new Error("Expanding-window OOF uchun kamida 7 ta mos yield+weather qatori kerak.");
+ const recentYield=aligned.slice(-3).map(row=>row.yield);
+ const yieldMean=recentYield.reduce((a,b)=>a+b,0)/recentYield.length;
+ const yieldStd=Math.sqrt(recentYield.reduce((sum,v)=>sum+Math.pow(v-yieldMean,2),0)/recentYield.length);
+ const recentClimate=aligned.slice(-5).map(row=>climateByYear[row.year]);
+ const climateMean=key=>recentClimate.reduce((sum,row)=>sum+row[key],0)/recentClimate.length;
+ const last=aligned[aligned.length-1];
+ const futureX=[
+  targetYear,last.yield,yieldMean,yieldStd,
+  climateMean("tmean"),climateMean("tmax"),climateMean("tmin"),
+  climateMean("precipitation"),climateMean("et0"),climateMean("gdd")
+ ];
+ const forecast=Math.max(0,fitRegionRidge(x,y,futureX,2));
  const mae=errors.reduce((a,b)=>a+b,0)/errors.length;
  const persistenceMae=persistenceErrors.reduce((a,b)=>a+b,0)/persistenceErrors.length;
- return {forecast:future,mae:mae,persistenceMae:persistenceMae,last:last.yield,lastYear:last.year,rows:series.length,oof:oof};
+ const coverageMean=aligned.reduce((sum,row)=>sum+climateByYear[row.year].coverage,0)/aligned.length;
+ return {
+  forecast:forecast,mae:mae,persistenceMae:persistenceMae,
+  beatsPersistence:mae<persistenceMae,last:last.yield,lastYear:last.year,
+  rows:aligned.length,oof:oof,coverageMean:coverageMean,
+  climateNormalYears:recentClimate.map((row,index)=>aligned[aligned.length-recentClimate.length+index].year)
+ };
 }
+$("region-yield-file").addEventListener("change",()=>{
+ $("region-run-model").disabled=!$("region-yield-file").files.length;
+ $("region-model-result").textContent=$("region-yield-file").files.length?"CSV tanlandi. Yil/yield ustunlari va mavsum sanalarini tekshirib, iqlim bilan ML hisoblang.":"CSV tanlanmagan.";
+});
+$("region-run-model").addEventListener("click",async()=>{
+ const file=$("region-yield-file").files[0];
+ if(!file)return;
+ if(!selectedAOI){$("region-model-result").textContent="Avval kichik hududni tanlang yoki maydon poligoni chizing.";return;}
+ const output=$("region-model-result");
+ $("region-run-model").disabled=true;
+ output.textContent="CSV tekshirilmoqda. ERA5-Land tarixiy mavsumiy ob-havo qatori olinmoqda…";
+ try{
+  const csv=await file.text();
+  const lines=csv.replace(/^\uFEFF/,"").split(/\r?\n/).filter(line=>line.trim());
+  if(lines.length<9)throw new Error("Kamida header + 8 ta ma’lumot qatori kerak.");
+  const delimiter=(lines[0].match(/;/g)||[]).length>(lines[0].match(/,/g)||[]).length?";":",";
+  const header=parseRegionCsvLine(lines[0],delimiter).map(v=>v.trim().toLowerCase());
+  const yearIndex=header.indexOf($("region-year-column").value.trim().toLowerCase());
+  const yieldIndex=header.indexOf($("region-yield-column").value.trim().toLowerCase());
+  if(yearIndex<0||yieldIndex<0)throw new Error("CSV ichida ko‘rsatilgan year va yield ustunlari topilmadi.");
+  const series=lines.slice(1).map(line=>{
+   const values=parseRegionCsvLine(line,delimiter);
+   return {year:Number(values[yearIndex]),yield:Number(String(values[yieldIndex]||"").replace(",", "."))};
+  }).filter(row=>Number.isInteger(row.year)&&Number.isFinite(row.yield)&&row.yield>=0&&row.yield<=30).sort((a,b)=>a.year-b.year);
+  if(series.length!==new Set(series.map(row=>row.year)).size)throw new Error("Takroriy hosil yillari bor. Har yil uchun bitta kuzatilgan qator qoldiring.");
+  const target=Number($("region-target-year").value);
+  if(!Number.isInteger(target)||target<=series[series.length-1].year)throw new Error("Maqsadli yil oxirgi kuzatilgan yildan keyin bo‘lishi kerak.");
+  const startSeason=$("region-season-start").value.trim(),endSeason=$("region-season-end").value.trim();
+  if(!/^\d{2}-\d{2}$/.test(startSeason)||!/^\d{2}-\d{2}$/.test(endSeason))throw new Error("Mavsum sanalari MM-DD formatida bo‘lishi kerak.");
+  const center=regionCenter(selectedAOI);
+  if(!center)throw new Error("Tanlangan AOI koordinatalari olinmadi.");
+  const climateByYear=await fetchYieldClimateHistory(center,series,startSeason,endSeason);
+  output.textContent="ERA5-Land iqlim qatori moslandi. Expanding-window Ridge modeli va Persistence benchmark hisoblanmoqda…";
+  const result=runRegionRidge(series,target,climateByYear);
+  output.innerHTML="<strong>"+regionFmt(result.forecast,3)+" t/ha</strong> · "+target+" yil uchun Ridge + ERA5-Land ssenariysi"+
+   "<div class='region-weather-kpis' style='margin-top:12px'>"+
+   [["Oxirgi kuzatuv",regionFmt(result.last,3)+" t/ha"],["Ridge OOF MAE",regionFmt(result.mae,3)+" t/ha"],["Persistence MAE",regionFmt(result.persistenceMae,3)+" t/ha"],["OOF tekshiruv",result.oof.length+" yil"],["Moslangan yield+weather",result.rows+" yil"],["Weather coverage",regionFmt(result.coverageMean*100,1)+"%"]].map(k=>"<div class='region-kpi'><small>"+k[0]+"</small><strong style='font-size:14px'>"+k[1]+"</strong></div>").join("")+
+   "</div><p class='region-footnote'>Persistence bilan solishtirish: "+(result.beatsPersistence?"Ridge OOF MAE kichikroq bo‘ldi.":"Ridge OOF MAE Persistence’dan kichik bo‘lmadi.")+
+   "<br>Kelajak ob-havosi noma’lum bo‘lgani uchun feature’lar oxirgi 5 ta mos mavsumning ERA5-Land o‘rtacha normasi bilan to‘ldirildi ("+result.climateNormalYears.join(", ")+"). Bu tuman/dala uchun mustaqil validatsiyadan o‘tgan universal model emas; bir foydalanuvchi yuklagan tarixiy CSV asosidagi research scenario."+
+   "<br>NDVI/SMAP/SoilGrids hali model featurelariga qo‘shilmagan. CSV serverga yuborilmadi.</p>";
+ }catch(error){output.textContent="AI ssenariysi ishga tushmadi: "+error.message;}
+ finally{$("region-run-model").disabled=false;}
+});
+
 $("region-yield-file").addEventListener("change",()=>{
  $("region-run-model").disabled=!$("region-yield-file").files.length;
  $("region-model-result").textContent=$("region-yield-file").files.length?"CSV tanlandi. Ustun nomlarini tekshirib, Ridge baseline ssenariysini hisoblang.":"CSV tanlanmagan.";
