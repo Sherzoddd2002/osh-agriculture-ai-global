@@ -371,8 +371,14 @@ function comma(n){return Number(n||0).toLocaleString("en-US");}
 $("region-target-year").value=String(new Date().getFullYear()+1);
 $("crop-select").innerHTML=cropList.map(c=>'<option value="'+c[0]+'">'+c[1]+'</option>').join("");
 $("region-crop-select").innerHTML=cropList.map(c=>'<option value="'+c[0]+'">'+c[1]+' · '+c[0].toUpperCase()+'</option>').join("");
+let activeCropCode="whea";
 function syncCropSelection(){
  const code=$("crop-select").value;
+ if(code!==activeCropCode){
+  activeCropCode=code;
+  clearYieldInputOnContextChange("Ekin tanlovi o‘zgardi.");
+  updateYieldModelButton();
+ }
  const crop=cropList.find(item=>item[0]===code);
  if($("region-crop-select")&&$("region-crop-select").value!==code)$("region-crop-select").value=code;
  document.querySelectorAll(".crop-chip[data-code]").forEach(button=>button.classList.toggle("selected",button.dataset.code===code));
@@ -451,6 +457,13 @@ function updateYieldModelButton(){
   $("region-model-source-help").textContent="CSV brauzerda qayta ishlanadi va serverga yuborilmaydi. Fayl tanlangan hudud va ekinga mosligini tekshiring.";
  }else{
   $("region-model-source-help").textContent="Viloyat (ADM1) + bug‘doy: SIAT rasmiy 2010–2024 qatori avtomatik yuklanadi. Tuman (ADM2), qo‘lda chizilgan maydon yoki boshqa ekinlar uchun aynan shu hudud/ekin bo‘yicha haqiqiy CSV talab qilinadi.";
+ }
+}
+function clearYieldInputOnContextChange(reason){
+ const input=$("region-yield-file");
+ if(input&&input.files&&input.files.length){
+  input.value="";
+  $("region-model-result").textContent=(reason||"Tanlov o‘zgardi.")+" Oldingi CSV tanlovi xavfsizlik uchun bekor qilindi. Yangi hudud/ekin uchun mos CSV faylni qayta tanlang.";
  }
 }
 function countryName(f){const p=f&&f.properties||{};return p.ADMIN||p.name||p.NAME||p.NAME_EN||"Tanlangan mamlakat";}
@@ -533,6 +546,7 @@ if(window.maplibregl){
      choose(feature,true);
      $("region-iso3").value=code;
      regionSelectionActive=false;
+     clearYieldInputOnContextChange("Mamlakat tanlovi o‘zgardi.");
      selectedAOI=null;
      adminFeatures=[];
      if(map.getSource("admin-areas"))map.getSource("admin-areas").setData({type:"FeatureCollection",features:[]});
@@ -706,6 +720,7 @@ function regionBounds(feature){
 }
 function selectRegionFeature(feature,sourceLabel){
  if(!feature)return;
+ if(selectedAOI!==feature)clearYieldInputOnContextChange("Hudud tanlovi o‘zgardi.");
  selectedAOI=feature;
  regionSelectionActive=true;
  const center=regionCenter(feature);
@@ -748,6 +763,7 @@ function renderRegionOptions(filter){
 }
 $("region-search").addEventListener("input",event=>renderRegionOptions(event.target.value));
 $("region-level").addEventListener("change",()=>{
+ clearYieldInputOnContextChange("Ma’muriy daraja o‘zgardi.");
  selectedAOI=null;
  adminFeatures=[];
  if(map&&map.getSource("admin-areas"))map.getSource("admin-areas").setData({type:"FeatureCollection",features:[]});
@@ -767,6 +783,13 @@ async function loadRegionBoundaries(){
   $("region-status").textContent="Statik GeoJSON paketi hozircha faqat O‘zbekiston (UZB) ADM1 va ADM2 chegaralarini qamrab oladi.";
   return;
  }
+ clearYieldInputOnContextChange("ADM chegara qatlami qayta yuklanmoqda.");
+ selectedAOI=null;
+ $("region-analyze").disabled=true;
+ $("region-name").textContent="Hudud tanlanmagan";
+ $("region-center").textContent="—";
+ $("region-results").hidden=true;
+ if(map&&map.getSource("region-selected"))map.getSource("region-selected").setData({type:"FeatureCollection",features:[]});
  $("region-load").disabled=true;
  $("region-status").textContent=iso+" · "+level+" statik GeoJSON GitHub Pages’dan yuklanmoqda…";
  try{
@@ -806,7 +829,7 @@ $("region-select").addEventListener("change",event=>{
 });
 $("region-draw-start").addEventListener("click",()=>{
  if(!map||!map.isStyleLoaded()){ $("region-status").textContent="Xarita tayyor emas. Birozdan keyin urinib ko‘ring.";return; }
- regionDrawing=true;regionSelectionActive=true;regionDraftPoints=[];selectedAOI=null;
+ regionDrawing=true;regionSelectionActive=true;regionDraftPoints=[];clearYieldInputOnContextChange("Yangi dala poligoni chizilmoqda.");selectedAOI=null;
  updateRegionDraft();
  $("region-analyze").disabled=true;
  $("region-draw-start").disabled=true;$("region-draw-finish").disabled=false;$("region-draw-cancel").disabled=false;
