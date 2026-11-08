@@ -15,7 +15,7 @@ from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 from .config import settings
 from .db import SessionLocal, init_db
-from .models import User, Location, Dataset, YieldObservation, EnvironmentFeature, AnalysisJob, LocationClimateJob, LocationWeatherSnapshot, GlobalRasterSummary
+from .models import User, Location, Dataset, YieldObservation, EnvironmentFeature, AnalysisJob, LocationClimateJob, LocationWeatherSnapshot, GlobalRasterSummary, WorkerHeartbeat
 from .security import hash_password, verify_password, create_access_token, current_user, get_db
 from .services.boundaries import get_boundary_geojson
 from .services.nasa_power import fetch_daily_weather, aggregate_calendar_year_weather
@@ -68,7 +68,28 @@ def css():
 @app.get("/api/v1/health")
 def health(db: Session = Depends(get_db)):
     db.execute(text("SELECT 1"))
-    return {"ok": True, "service": "OSH Agriculture AI Global", "version": "0.1.0", "database": "connected"}
+    now = datetime.now(timezone.utc)
+    heartbeat = db.get(WorkerHeartbeat, "default")
+    last_seen = heartbeat.last_seen if heartbeat else None
+    if last_seen and last_seen.tzinfo is None:
+        last_seen = last_seen.replace(tzinfo=timezone.utc)
+    age_seconds = max(0, int((now - last_seen).total_seconds())) if last_seen else None
+    freshness_limit = max(45, int(settings.worker_poll_seconds * 10))
+    worker_online = age_seconds is not None and age_seconds <= freshness_limit
+    return {
+        "ok": True,
+        "service": "OSH Agriculture AI Global",
+        "version": "0.1.0",
+        "database": "connected",
+        "background_worker": {
+            "status": "ONLINE" if worker_online else "OFFLINE",
+            "last_seen": last_seen.isoformat() if last_seen else None,
+            "age_seconds": age_seconds,
+            "current_job_id": heartbeat.current_job_id if heartbeat else None,
+            "current_job_type": heartbeat.current_job_type if heartbeat else None,
+            "worker_status": heartbeat.status if heartbeat else "NOT_SEEN",
+        },
+    }
 
 
 @app.get("/api/v1/sources")
@@ -699,7 +720,7 @@ def global_crop_series(
 
 
 @app.post("/api/v1/global-predictions/yield")
-def global_yield(payload: GlobalYieldRequest,user: User=Depends(current_user),db: Session=Depends(get_db)):
+def global_yield(payload: GlobalYieldRequest, db: Session = Depends(get_db)):
     from .services.global_crops import forecast_global_crop_yield
     try:
         return forecast_global_crop_yield(db,payload.country_iso3,payload.crop_code,payload.target_year)
