@@ -64,7 +64,7 @@ manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 if manifest.get("country_iso3") != "UZB":
     raise SystemExit("FAIL: boundary manifest country is not UZB")
 
-for level, minimum in (("ADM1", 10), ("ADM2", 100)):
+for level, expected_count in (("ADM1", 14), ("ADM2", 199)):
     details = (manifest.get("levels") or {}).get(level) or {}
     filename = details.get("file")
     if not filename:
@@ -75,8 +75,11 @@ for level, minimum in (("ADM1", 10), ("ADM2", 100)):
     payload = json.loads(path.read_text(encoding="utf-8"))
     if payload.get("type") != "FeatureCollection":
         raise SystemExit(f"FAIL: UZB {level} is not a FeatureCollection")
-    if len(payload.get("features", [])) < minimum:
-        raise SystemExit(f"FAIL: UZB {level} has too few features: {len(payload.get('features', []))}")
+    if len(payload.get("features", [])) != expected_count:
+        raise SystemExit(
+            f"FAIL: UZB {level} expected {expected_count} features, "
+            f"received {len(payload.get('features', []))}"
+        )
     metadata = payload.get("metadata") or {}
     if metadata.get("country_iso3") != "UZB" or metadata.get("admin_level") != level:
         raise SystemExit(f"FAIL: UZB {level} metadata identity mismatch")
