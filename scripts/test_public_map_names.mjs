@@ -225,7 +225,6 @@ const officialLoaderSource=[
  extractFunction("loadOfficialProvinceCropSeries"),
  'return {load:loadOfficialProvinceCropSeries,setArea:value=>{selectedAOI=value;},setCrop:value=>{selectedCrop=value;}};'
 ].join("\\n");
-const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
 const officialLoader=await new AsyncFunction("wheatPayload","cropPayload",officialLoaderSource)(officialYield,officialCropYield);
 const andijanFeature={type:"Feature",properties:{shapeName:"Andijan Region",shapeType:"ADM1"}};
 officialLoader.setArea(andijanFeature);
