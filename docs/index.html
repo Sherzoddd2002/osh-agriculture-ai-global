@@ -47,6 +47,7 @@ function choose(f,animate=true){
  $('map-status').textContent='Tanlandi: '+countryName(f);
  $('result').hidden=true;
  if(map&&map.getSource('countries')){
+  if(selected&&selected.id!==f.id)map.setFeatureState({source:'countries',id:selected.id},{selected:false});
   map.setFeatureState({source:'countries',id:f.id},{selected:true});
   const b=new maplibregl.LngLatBounds();
   const walk=c=>{if(typeof c[0]==='number'){b.extend(c);return;}c.forEach(walk);};
@@ -74,8 +75,8 @@ map.on('load',async()=>{
   const data=await r.json();features=data.features||[];
   features.forEach((f,i)=>{f.id=i;});
   map.addSource('countries',{type:'geojson',data,generateId:false});
-  map.addLayer({id:'country-fill',type:'fill',source:'countries',paint:{'fill-color':'#1b806f','fill-opacity':.12,'fill-outline-color':'#53dcb2'}});
-  map.addLayer({id:'country-lines',type:'line',source:'countries',paint:{'line-color':'#56dcb5','line-width':['interpolate',['linear'],['zoom'],1,.45,4,1,7,1.5],'line-opacity':.55}});
+  map.addLayer({id:'country-fill',type:'fill',source:'countries',paint:{'fill-color':['case',['boolean',['feature-state','selected'],false],'#f2c879','#1b806f'],'fill-opacity':['case',['boolean',['feature-state','selected'],false],.34,.12],'fill-outline-color':'#53dcb2'}});
+  map.addLayer({id:'country-lines',type:'line',source:'countries',paint:{'line-color':['case',['boolean',['feature-state','selected'],false],'#ffd88a','#56dcb5'],'line-width':['case',['boolean',['feature-state','selected'],false],2.1,['interpolate',['linear'],['zoom'],1,.45,4,1,7,1.5]],'line-opacity':.82}});
   map.addLayer({id:'country-hover',type:'fill',source:'countries',paint:{'fill-color':'#f2c879','fill-opacity':.25},filter:['==',['get','ISO_A3'],'__NONE__']});
   map.on('click','country-fill',e=>{if(e.features&&e.features[0])choose(e.features[0]);});
   map.on('mousemove','country-fill',()=>map.getCanvas().style.cursor='pointer');
