@@ -192,15 +192,34 @@ async def build_level(
             results[iso] = old_meta
             return
 
-        download_url = str(record.get("simplifiedGeometryGeoJSON") or record.get("gjDownloadURL") or "")
-        if not download_url.startswith("https://"):
-            failures.append(f"{iso}/{level}: no download URL")
-            if cached:
-                results[iso] = old_meta or cached["metadata"]
-            return
         try:
+            # The ALL listing may omit single-boundary download links. Resolve
+            # that country's own metadata row before giving up on the package.
+            boundary_record = dict(record)
+            download_url = str(
+                boundary_record.get("simplifiedGeometryGeoJSON")
+                or boundary_record.get("gjDownloadURL")
+                or ""
+            )
+            if not download_url.startswith("https://"):
+                country_api = f"https://geoboundaries-dev.org/api/current/gbOpen/{iso}/{level}/"
+                detail = await get_json(client, country_api, semaphore)
+                if isinstance(detail, list):
+                    if not detail:
+                        raise ValueError("single-country metadata endpoint returned an empty list")
+                    detail = detail[0]
+                if not isinstance(detail, dict):
+                    raise ValueError("single-country metadata endpoint returned an invalid response")
+                boundary_record.update(detail)
+                download_url = str(
+                    boundary_record.get("simplifiedGeometryGeoJSON")
+                    or boundary_record.get("gjDownloadURL")
+                    or ""
+                )
+            if not download_url.startswith("https://"):
+                raise ValueError("no HTTPS GeoJSON download URL in boundary metadata")
             source = await get_json(client, download_url, semaphore)
-            prepared = validate_and_prepare(record, level, source)
+            prepared = validate_and_prepare(boundary_record, level, source)
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(prepared, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
             meta = prepared["metadata"]
