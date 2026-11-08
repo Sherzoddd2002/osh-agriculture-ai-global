@@ -12,7 +12,7 @@
 
 ---
 
-## Loyiha haqida
+## Ochiq demo va loyiha haqida
 
 **Dunyo bo‘yicha hudud tanlash, qishloq xo‘jaligi ma’lumotlarini birlashtirish va hosildorlikni prognozlash platformasi.**
 
