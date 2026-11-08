@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-from shapely.geometry import shape
+from shapely import make_valid\nfrom shapely.geometry import MultiPolygon, Polygon, mapping, shape\nfrom shapely.ops import unary_union
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "data" / "boundaries" / "global"
@@ -57,6 +57,36 @@ def feature_name(properties: dict[str, Any]) -> str:
     return ""
 
 
+def polygon_parts(geometry):
+    """Return polygon components from Polygon/MultiPolygon/GeometryCollection."""
+    if geometry is None or geometry.is_empty:
+        return []
+    if geometry.geom_type == "Polygon":
+        return [geometry] if geometry.area > 0 else []
+    parts = []
+    for child in getattr(geometry, "geoms", []):
+        parts.extend(polygon_parts(child))
+    return parts
+
+
+def repair_polygon_geometry(geometry):
+    """Repair common invalid source polygons without losing polygonal components."""
+    candidate = geometry if geometry.is_valid else make_valid(geometry)
+    parts = polygon_parts(candidate)
+    if not parts:
+        raise ValueError("geometry repair produced no polygonal area")
+    repaired = unary_union(parts)
+    if not repaired.is_valid:
+        repaired = make_valid(repaired)
+        parts = polygon_parts(repaired)
+        if not parts:
+            raise ValueError("geometry remains invalid after make_valid")
+        repaired = unary_union(parts)
+    if repaired.is_empty or not repaired.is_valid or repaired.geom_type not in {"Polygon", "MultiPolygon"}:
+        raise ValueError("geometry is not a valid Polygon/MultiPolygon after repair")
+    return repaired
+
+
 def validate_and_prepare(record: dict, level: str, source: dict) -> dict:
     iso = str(record.get("boundaryISO") or "").upper()
     if not re.fullmatch(r"[A-Z]{3}", iso):
@@ -67,22 +97,31 @@ def validate_and_prepare(record: dict, level: str, source: dict) -> dict:
 
     prepared = []
     identifiers: set[str] = set()
+    repaired_count = 0
+    generated_name_count = 0
     for index, original in enumerate(payload["features"]):
         if not isinstance(original, dict) or not isinstance(original.get("geometry"), dict):
             raise ValueError(f"{iso} {level}: feature {index} has no geometry")
         geometry = shape(original["geometry"])
-        if (
-            geometry.is_empty
-            or not geometry.is_valid
-            or geometry.geom_type not in {"Polygon", "MultiPolygon"}
-        ):
-            raise ValueError(f"{iso} {level}: invalid polygon geometry at feature {index}")
+        if geometry.is_empty or geometry.geom_type not in {"Polygon", "MultiPolygon"}:
+            raise ValueError(f"{iso} {level}: feature {index} is not a non-empty polygon")
+        if not geometry.is_valid:
+            geometry = repair_polygon_geometry(geometry)
+            repaired_count += 1
+        elif geometry.geom_type not in {"Polygon", "MultiPolygon"}:
+            geometry = repair_polygon_geometry(geometry)
+            repaired_count += 1
+
         feature = dict(original)
+        feature["geometry"] = mapping(geometry)
         properties = dict(feature.get("properties") or {})
+        shape_id = str(properties.get("shapeID") or properties.get("shape_id") or "").strip()
         name = feature_name(properties)
         if not name:
-            raise ValueError(f"{iso} {level}: feature {index} has no administrative name")
-        shape_id = str(properties.get("shapeID") or properties.get("shape_id") or "").strip()
+            stable_id = shape_id or str(feature.get("id") or "")
+            name = f"Unnamed administrative area {stable_id or index + 1}"
+            properties["name_quality"] = "generated_from_boundary_id"
+            generated_name_count += 1
         if shape_id and shape_id in identifiers:
             raise ValueError(f"{iso} {level}: duplicate shape ID {shape_id}")
         if shape_id:
@@ -110,7 +149,7 @@ def validate_and_prepare(record: dict, level: str, source: dict) -> dict:
         "continent": str(record.get("Continent") or "Unknown"),
         "source_version": "geoBoundaries current / gbOpen",
         "geometry_detail": "simplifiedGeometryGeoJSON" if record.get("simplifiedGeometryGeoJSON") else "gjDownloadURL",
-        "feature_count": len(prepared),
+        "feature_count": len(prepared),\n        "geometry_repaired_count": repaired_count,\n        "generated_name_count": generated_name_count,
         "attribution": "geoBoundaries; retain the source/license fields for each boundary",
     }
     return {"type": "FeatureCollection", "features": prepared, "metadata": metadata}
