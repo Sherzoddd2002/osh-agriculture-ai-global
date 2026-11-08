@@ -30,31 +30,30 @@
 
 Bu yangi global loyiha. U sizning mavjud `E:\OSH`, `osh` PostgreSQL bazangiz yoki O‘zbekiston uchun tayyorlangan eski CSV fayllaringizni o‘zgartirmaydi.
 
-## Hozirgi relizda nima ishlaydi?
+## Hozirgi public relizda nima ishlaydi?
 
-- Dunyo mamlakatlari uchun geoBoundaries API orqali ADM0–ADM5 ma’muriy chegaralarini qidirish.
-- Xarita ustida Polygon/MultiPolygon hududini tanlash va PostGIS’ga saqlash.
-- Hisob yaratish va kirish; yuklangan dataset foydalanuvchi hisobiga bog‘lanadi.
-- CSV orqali tarixiy hosildorlik qatorlarini yuklash, yil/ustun/ekin mavsumi formatini tekshirish.
-- NASA POWER daily API orqali tanlangan hududning vakillik nuqtasi uchun 2010-yildan boshlab yillik iqlim tarixini olish va SQL’ga yozish.
-- Open-Meteo orqali joriy ob-havo hamda 16 kungacha qisqa muddatli prognozni olish va SQL’da saqlash.
-- Hudud saqlanishi bilan, hosildorlik CSV bo‘lmasa ham, iqlim tahlili avtomatik navbatga tushadi.
-- Ob-havoni foydalanuvchi ko‘rsatgan mavsum va hosil yili bilan birlashtirish.
-- Background worker orqali uzoq davom etadigan ishlarni web so‘rovlaridan ajratish.
-- Hosildorlik CSV yuklanganda ob-havo job’i avtomatik boshlanadi; kamida 8 ta moslangan haqiqiy hosil kuzatuvi va kamida 2 ta usable ob-havo feature bo‘lsa, Linear, Ridge, ElasticNet, Random Forest, Extra Trees va HistGradientBoosting modellarini expanding validation bilan baholaydi va Persistence benchmark bilan solishtiradi.
-- Yetarli hosildorlik ma’lumoti bo‘lmasa, model prognozi yasamaydi; mavjud iqlim tarixi, joriy ob-havo va qisqa muddatli prognozni ko‘rsatadi.
+Public sayt **GitHub Pages + GitHub Actions** asosida ishlaydi. Saytni ochgan odamga Python, PostgreSQL yoki alohida server kerak emas.
 
-## Public demo: kichik hudud va maydon tahlili
+- Global 3D xaritada mamlakatlar ko‘rinadi va tanlanadi.
+- O‘zbekistonning **14 ta ADM1 viloyati** va **199 ta ADM2 tumani** GitHub Pages uchun statik GeoJSON sifatida tayyorlanadi. Har bir poligon xaritada bosiladi yoki hudud nomi bo‘yicha qidiriladi.
+- Maydon chizish vositasi bilan xaritada o‘zingizning Polygon hududingizni chizishingiz mumkin.
+- Tanlangan hudud markazining taxminiy koordinatasi bo‘yicha Open-Meteo ERA5-Land tarixiy ob-havo qatori va 7 kunlik ob-havo ma’lumoti olinadi. Bu poligon bo‘yicha zonal o‘rtacha emas.
+- Copernicus STAC orqali so‘nggi 12 oydagi Sentinel-2 L2A sahnalari (bulutlilik ≤30%) qidiriladi. Bu hozircha scene metadata; NDVI rasteri hisoblanmaydi.
+- MAPSPAM katalogidagi **46 ta ekin** to‘liq tanlanadi va qidiriladi.
+- Haqiqiy `year,yield_t_ha` CSV fayl brauzerda o‘qiladi. Ridge + ERA5-Land modeli expanding-window OOF natijalarini Persistence benchmark bilan taqqoslaydi. CSV serverga yuborilmaydi.
+
+## Public demo: tuman va dala tahlili
 
 [Dashboard’ni oching](https://sherzoddd2002.github.io/osh-agriculture-ai-global/) → **Maydon tahlili** bo‘limiga o‘ting.
 
-- Mamlakat ISO-3 (masalan, UZB) va ADM1–ADM5 darajasini tanlab, geoBoundaries poligonlarini xaritada ko‘rsatish mumkin.
-- **Maydon chizish** tugmasi bilan xaritani 18–19 zoom darajasigacha yaqinlashtirib, dala chegarasida kamida 3 nuqta bosing; **Poligonni tugatish** bilan yakunlang. Kichik maydonlar uchun xarita zoom limiti 19 ga ko‘tarilgan.
-- **Hududni tahlil qilish** Open-Meteo ERA5-Land tarixiy reanalysis qatori va 7 kunlik ob-havo prognozini tanlangan poligon markazidan oladi. Bu butun poligon bo‘yicha zonal o‘rtacha emas.
-- Copernicus STAC orqali oxirgi 12 oydagi Sentinel-2 L2A sahnalari (bulutlilik ≤30%) qidiriladi. Natija scene metadata; NDVI hali hisoblanmaydi.
-- Haqiqiy `year,yield_t_ha` CSV faylni brauzerda tanlab, Ridge ML + expanding-window OOF (validatsiya yilining kelajak ob-havosi ishlatilmaydi) / Persistence benchmark hisoblash mumkin. Har bir yield mavsumi Open-Meteo ERA5-Land harorat, yog‘in, ET₀ va GDD feature’lari bilan moslanadi; kamida 8 ta yetarli qamrovli yil talab qilinadi. Kelajak ob-havosi so‘nggi 5 mavsum normasi bilan taxmin qilinadi. CSV serverga yuklanmaydi. Bu bitta AOI uchun research scenario, global tasdiqlangan model emas.
+1. Ma’muriy darajadan **ADM1 · Viloyatlar** yoki **ADM2 · Tumanlar** ni tanlang.
+2. **Chegaralarni yuklash** tugmasini bosing. 14 ta viloyat yoki 199 ta tuman xaritaga tushadi. Qidiruv maydonida hudud nomini yozing yoki poligonning o‘zini bosing.
+3. **Hududni tahlil qilish** orqali tarixiy ob-havo va 7 kunlik prognozni oling; Sentinel-2 sahnalari alohida ko‘rsatiladi.
+4. Ekinni 46 ta katalogdan tanlang. O‘zingizning tanlangan hudud/ekin bo‘yicha haqiqiy tarixiy hosildorlik CSV faylingizni yuklang va Ridge + iqlim modelini ishga tushiring. Kamida 8 ta mos yield-yil va yetarli ob-havo qamrovi kerak.
 
-**Public demo cheklovi:** GitHub Pages statik sayt. U autentifikatsiyalangan FastAPI, PostgreSQL, shaxsiy datasetlar yoki background worker bilan bog‘lanmagan; sahifadagi maydon chizmasi saqlanmaydi. Doimiy AOI, full ML pipeline va markaziy FAOSTAT/MAPSPAM qatorlari uchun haqiqiy backend + DB + worker HTTPS orqali alohida deploy qilinishi kerak.
+**AI bashorati haqida:** bu oldindan tayyorlab qo‘yilgan, barcha tumanlar uchun bir xil qiymat qaytaradigan model emas. U aynan foydalanuvchi yuklagan hudud/ekin tarixiy hosildorlik qatorini ERA5-Land feature’lari bilan birlashtiradi. Kelajak ob-havosi mavjud bo‘lmagani uchun so‘nggi 5 mos mavsumning normasi ishlatiladi. Natija research scenario; O‘zbekistonning barcha tumanlari bo‘yicha mustaqil tasdiqlangan universal prognoz deb talqin qilinmasin. OOF MAE va Persistence benchmark natijalari bashorat bilan birga ko‘rsatiladi.
+
+**Public Pages cheklovlari:** GitHub Pages statik hosting hisoblanadi. U foydalanuvchi loginini, serverda saqlanadigan AOI/datasetlarni yoki markaziy PostgreSQL yozuvlarini bermaydi. Maydon poligoni faqat joriy brauzer sessiyasida turadi. Public dashboard markaziy bazadagi 838,919 qator inventarizatsiya metama’lumotini ko‘rsatadi, lekin maxfiy xom qatorlarni tarqatmaydi. GeoBoundaries chegaralari GitHub Actions build vaqtida yuklanib, sayt fayllari tarkibiga kiritiladi — tashrif buyuruvchining brauzeri Fly/FastAPI API’siga murojaat qilmaydi.
 
 ## Environmental connectorlar holati
 
@@ -181,8 +180,3 @@ git pull --ff-only origin main
 
 `.env`, foydalanuvchilarning CSV fayllari, maxfiy API keylar, SQLite bazalari va katta rastrlar GitHub’ga joylanmasligi kerak. Ular `.gitignore` bilan chiqarib tashlangan bo‘lsa ham, commit qilishdan oldin tekshiring.
 
-## Fly.io
-
-Fly’da web va worker alohida process group bo‘lib ishlaydi. `fly.toml` web uchun autostop’ni o‘chiradi. Alohida managed PostgreSQL cluster yaratib, PostGIS yoqiladi; `DATABASE_URL` va `JWT_SECRET` secrets sifatida qo‘shiladi. Batafsil qadamlar `docs/FLY_DEPLOY.md` va `README.md` ichida.
-
-**Doimiy ishlash xarajatsiz degani emas.** Fly Machines, Managed Postgres, storage va trafik pullik bo‘lishi mumkin. Avval kichik test muhiti va xarajat ogohlantirishlarini sozlang. Bitta server nol downtime kafolati emas.
