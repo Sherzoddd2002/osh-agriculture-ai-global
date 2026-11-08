@@ -475,8 +475,8 @@ function choose(f,animate){
  $("country-name").textContent=countryName(f);
  $("country-code").textContent=iso3(f);
  $("map-status").textContent="Tanlandi: "+countryName(f)+" · "+iso3(f);
- if(map&&map.getSource("countries")){
-  if(previous&&previous.id!==f.id)map.setFeatureState({source:"countries",id:previous.id},{selected:false});
+ if(map&&map.getSource("countries")&&features.includes(f)){
+  if(previous&&previous.id!==f.id&&features.includes(previous))map.setFeatureState({source:"countries",id:previous.id},{selected:false});
   map.setFeatureState({source:"countries",id:f.id},{selected:true});
   if(animate){
    const bounds=new maplibregl.LngLatBounds();
@@ -503,19 +503,17 @@ if(window.maplibregl){
  map.on("style.load",function(){try{map.setProjection({type:"globe"});map.setSky({"atmosphere-blend":["interpolate",["linear"],["zoom"],0,.95,3,.82,6,.2,7,0]});}catch(e){console.warn(e);}});
  map.on("load",async function(){
   try{
-   const response=await fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson");
-   if(!response.ok)throw new Error("Country GeoJSON HTTP "+response.status);
-   const geo=await response.json();
-   features=geo.features||[];
-   features.forEach((f,i)=>{f.id=i;});
-   map.addSource("countries",{type:"geojson",data:geo,generateId:false});
-   map.addLayer({id:"country-fill",type:"fill",source:"countries",paint:{"fill-color":["case",["boolean",["feature-state","selected"],false],"#eac477","#1d826f"],"fill-opacity":["case",["boolean",["feature-state","selected"],false],.38,.13],"fill-outline-color":"#59dcb8"}});
+   // Initialize country layers with an empty feature collection.
+   map.addSource("countries",{type:"geojson",data:{type:"FeatureCollection",features:[]},generateId:false});
+   map.addLayer({id:"country-fill",type:"fill",source:"countries",paint:{"fill-color":["case",["boolean",["feature-state","selected"],false],"#eac477","#1d826f"],"fill-opacity":["case",["boolean",["feature-state","selected"],false],.38,.13],"fill-outline-color":"#59ddb8"}});
    map.addLayer({id:"country-lines",type:"line",source:"countries",paint:{"line-color":["case",["boolean",["feature-state","selected"],false],"#f5d38c","#48cda8"],"line-width":["case",["boolean",["feature-state","selected"],false],2.1,.55],"line-opacity":.9}});
+
+   // Uzbekistan ADM layers do not depend on the external world-country GeoJSON.
    map.addSource("admin-areas",{type:"geojson",data:{type:"FeatureCollection",features:[]},generateId:true});
    map.addLayer({id:"admin-area-fill",type:"fill",source:"admin-areas",paint:{"fill-color":"#3cddb0","fill-opacity":.12}});
    map.addLayer({id:"admin-area-line",type:"line",source:"admin-areas",paint:{"line-color":"#4de1b7","line-width":["interpolate",["linear"],["zoom"],2,.6,7,1.3,12,2.2],"line-opacity":.85}});
    map.addLayer({id:"admin-area-selected-fill",type:"fill",source:"admin-areas",filter:["==",["get","__selected"],1],paint:{"fill-color":"#eac477","fill-opacity":.25}});
-   map.addLayer({id:"admin-area-selected-line",type:"line",source:"admin-areas",filter:["==",["get","__selected"],1],paint:{"line-color":"#f5d38c","line-width":2.6,"line-opacity":1}});
+   map.addLayer({id:"admin-area-selected-line",type:"line",source:"admin-areas",filter:["==",["get","__selected"],1],paint:{"line-color":"#ffe0a0","line-width":2.6,"line-opacity":1}});
    map.addSource("region-draft",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
    map.addSource("region-draft-points",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
    map.addSource("region-selected",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
@@ -524,55 +522,77 @@ if(window.maplibregl){
    map.addLayer({id:"region-draft-fill",type:"fill",source:"region-draft",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#39ddb0","fill-opacity":.18}});
    map.addLayer({id:"region-draft-line",type:"line",source:"region-draft",paint:{"line-color":"#45edbd","line-width":2.4,"line-dasharray":[1.2,1.2]}});
    map.addLayer({id:"region-draft-points-layer",type:"circle",source:"region-draft-points",paint:{"circle-radius":5,"circle-color":"#f2c879","circle-stroke-color":"#07131f","circle-stroke-width":1.5}});
+
    map.on("click","admin-area-fill",function(event){
-     if(regionDrawing||!regionSelectionActive||!event.features||!event.features.length)return;
-     const index=Number(event.features[0].properties.__admin_idx);
-     const feature=adminFeatures[index];
-     if(feature){$("region-select").value=String(index);selectRegionFeature(feature,"GEOBOUNDARIES "+$("region-level").value);}
+    if(regionDrawing||!regionSelectionActive||!event.features||!event.features.length)return;
+    const index=Number(event.features[0].properties.__admin_idx);
+    const feature=adminFeatures[index];
+    if(feature){$("region-select").value=String(index);selectRegionFeature(feature,"GEOBOUNDARIES "+$("region-level").value);}
    });
    map.on("click",function(event){
-     if(!regionDrawing)return;
-     regionDraftPoints.push([Number(event.lngLat.lng.toFixed(7)),Number(event.lngLat.lat.toFixed(7))]);
-     updateRegionDraft();
-     $("region-status").textContent="Maydon chizilmoqda · "+regionDraftPoints.length+" ta nuqta · kamida 3 ta kerak";
+    if(!regionDrawing)return;
+    regionDraftPoints.push([Number(event.lngLat.lng.toFixed(7)),Number(event.lngLat.lat.toFixed(7))]);
+    updateRegionDraft();
+    $("region-status").textContent="Maydon chizilmoqda · "+regionDraftPoints.length+" ta nuqta · kamida 3 ta kerak";
    });
    map.on("mouseenter","admin-area-fill",()=>{if(!regionDrawing)map.getCanvas().style.cursor="pointer";});
    map.on("mouseleave","admin-area-fill",()=>{if(!regionDrawing)map.getCanvas().style.cursor="";});
 
    map.on("click","country-fill",function(e){
-     if(regionDrawing||!e.features||!e.features[0])return;
-     const feature=e.features[0],code=iso3(feature);
-     if(code==="UZB"&&adminFeatures.length)return;
-     choose(feature,true);
-     $("region-iso3").value=code;
-     regionSelectionActive=false;
-     clearYieldInputOnContextChange("Mamlakat tanlovi o‘zgardi.");
-     selectedAOI=null;
-     adminFeatures=[];
-     if(map.getSource("admin-areas"))map.getSource("admin-areas").setData({type:"FeatureCollection",features:[]});
-     if(map.getSource("region-selected"))map.getSource("region-selected").setData({type:"FeatureCollection",features:[]});
-     $("region-select").disabled=true;
-     $("region-select").innerHTML='<option value="">Avval O‘zbekiston ADM1/ADM2 ni yuklang</option>';
-     $("region-search").value="";
-     $("region-name").textContent="Hudud tanlanmagan";
-     $("region-center").textContent="—";
-     $("region-analyze").disabled=true;
-     $("region-results").hidden=true;
-     $("region-status").textContent=code==="UZB"
-      ?"O‘zbekiston tanlandi. Viloyat yoki tuman chegaralarini yuklang."
-      :code+" mamlakati tanlandi. Public statik ADM1/ADM2 paketi hozircha faqat O‘zbekiston uchun mavjud.";
+    if(regionDrawing||!e.features||!e.features[0])return;
+    const feature=e.features[0],code=iso3(feature);
+    if(code==="UZB"&&adminFeatures.length)return;
+    choose(feature,true);
+    $("region-iso3").value=code;
+    regionSelectionActive=false;
+    clearYieldInputOnContextChange("Mamlakat tanlovi o‘zgardi.");
+    selectedAOI=null;
+    adminFeatures=[];
+    if(map.getSource("admin-areas"))map.getSource("admin-areas").setData({type:"FeatureCollection",features:[]});
+    if(map.getSource("region-selected"))map.getSource("region-selected").setData({type:"FeatureCollection",features:[]});
+    $("region-select").disabled=true;
+    $("region-select").innerHTML='<option value="">Avval O‘zbekiston ADM1/ADM2 ni yuklang</option>';
+    $("region-search").value="";
+    $("region-name").textContent="Hudud tanlanmagan";
+    $("region-center").textContent="—";
+    $("region-analyze").disabled=true;
+    $("region-results").hidden=true;
+    $("region-status").textContent=code==="UZB"
+     ?"O‘zbekiston tanlandi. Viloyat yoki tuman chegaralarini yuklang."
+     :code+" mamlakati tanlandi. Public statik ADM1/ADM2 paketi hozircha faqat O‘zbekiston uchun mavjud.";
    });
    map.on("mousemove","country-fill",()=>map.getCanvas().style.cursor="pointer");
    map.on("mouseleave","country-fill",()=>map.getCanvas().style.cursor="");
-   const uz=features.find(x=>iso3(x)==="UZB")||features.find(x=>countryName(x)==="Uzbekistan");
-   if(uz){
-    choose(uz,false);
-    $("region-iso3").value=iso3(uz);
-    // The default public experience opens the verified ADM2 district layer automatically.
-    loadRegionBoundaries();
-   }else $("map-status").textContent="Mamlakatni tanlash uchun chegarani bosing.";
-  }catch(error){console.error(error);$("map-status").textContent="Chegaralar yuklanmadi. Tashqi GeoJSON xizmati vaqtincha ishlamasligi mumkin.";}
- });
+
+   // Always show Uzbekistan and begin the static ADM2 download immediately.
+   const uzFallback={type:"Feature",id:-1,properties:{ADMIN:"Uzbekistan",ISO_A3:"UZB"},geometry:{type:"Polygon",coordinates:[[[55,37],[74,37],[74,46],[55,46],[55,37]]]}};
+   choose(uzFallback,false);
+   $("region-iso3").value="UZB";
+   loadRegionBoundaries();
+
+   // World-country outlines are optional; a failed request must not break ADM.
+   try{
+    const response=await fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson",{signal:AbortSignal.timeout(20000)});
+    if(!response.ok)throw new Error("Country GeoJSON HTTP "+response.status);
+    const geo=await response.json();
+    features=Array.isArray(geo.features)?geo.features:[];
+    features.forEach((feature,index)=>{feature.id=index;});
+    map.getSource("countries").setData(geo);
+    const uz=features.find(feature=>iso3(feature)==="UZB")||features.find(feature=>countryName(feature)==="Uzbekistan");
+    if(uz){
+     choose(uz,false);
+     $("map-status").textContent="Global mamlakat xaritasi va O‘zbekiston ADM qatlami tayyor.";
+    }
+   }catch(countryError){
+    console.warn("World country GeoJSON unavailable; Uzbekistan ADM remains active.",countryError);
+    $("map-status").textContent="Global mamlakat chegaralari vaqtincha yuklanmadi. O‘zbekistonning ADM1/ADM2 hududlari alohida ishlaydi.";
+   }
+  }catch(error){
+   console.error(error);
+   $("map-status").textContent="Xarita qatlamlari ishga tushmadi: "+(error&&error.message?error.message:String(error));
+   $("region-status").textContent="ADM xarita qatlamlari ishga tushmadi. Sahifani yangilang yoki GitHub Pages build holatini tekshiring.";
+  }
+ });;
 }else{$("map-status").textContent="MapLibre kutubxonasi yuklanmadi.";}
 
 
