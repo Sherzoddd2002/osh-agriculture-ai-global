@@ -227,7 +227,7 @@
           <button class="btn-secondary" type="button" id="region-draw-start">＋ Maydon chizish</button>
           <button class="btn-secondary" type="button" id="region-draw-finish" disabled>Poligonni tugatish</button>
           <button class="btn-secondary" type="button" id="region-draw-cancel" disabled>Bekor qilish</button>
-          <span class="region-status" id="region-status" role="status">GitHub Pages statik paketida O‘zbekiston ADM1 va ADM2 chegaralari mavjud.</span>
+          <span class="region-status" id="region-status" role="status">GitHub Pages statik paketida global mamlakatlarning mavjud ADM1/ADM2 qatlamlari bor; O‘zbekistonning alohida tekshirilgan chegaralari ham saqlangan.</span>
         </div>
         <div class="region-selected">
           <div><small>TANLANGAN AOI</small><strong id="region-name">Hudud tanlanmagan</strong><span id="region-meta">O‘zbekiston ADM1/ADM2 yoki qo‘lda chizilgan dala poligoni</span></div>
@@ -592,7 +592,7 @@ if(window.maplibregl){
     if(map.getSource("admin-areas"))map.getSource("admin-areas").setData({type:"FeatureCollection",features:[]});
     if(map.getSource("region-selected"))map.getSource("region-selected").setData({type:"FeatureCollection",features:[]});
     $("region-select").disabled=true;
-    $("region-select").innerHTML='<option value="">Avval O‘zbekiston ADM1/ADM2 ni yuklang</option>';
+    $("region-select").innerHTML='<option value="">Avval tanlangan mamlakat ADM1/ADM2 qatlamini yuklang</option>';
     $("region-search").value="";
     $("region-name").textContent="Hudud tanlanmagan";
     $("region-center").textContent="—";
@@ -600,7 +600,7 @@ if(window.maplibregl){
     $("region-results").hidden=true;
     $("region-status").textContent=code==="UZB"
      ?"O‘zbekiston tanlandi. Viloyat yoki tuman chegaralarini yuklang."
-     :code+" mamlakati tanlandi. Public statik ADM1/ADM2 paketi hozircha faqat O‘zbekiston uchun mavjud.";
+     :code+" mamlakati tanlandi. Mavjud ADM1/ADM2 statik qatlamini yuklash uchun tugmani bosing.";
    });
    map.on("mousemove","country-fill",()=>map.getCanvas().style.cursor="pointer");
    map.on("mouseleave","country-fill",()=>map.getCanvas().style.cursor="");
@@ -839,11 +839,7 @@ $("region-level").addEventListener("change",()=>{
 });
 async function loadRegionBoundaries(){
  const iso=$("region-iso3").value.trim().toUpperCase(),level=$("region-level").value;
- if(!/^[A-Z]{3}$/.test(iso)){ $("region-status").textContent="ISO-3 kodini kiriting (masalan UZB).";return; }
- if(iso!=="UZB"){
-  $("region-status").textContent="Statik GeoJSON paketi hozircha faqat O‘zbekiston (UZB) ADM1 va ADM2 chegaralarini qamrab oladi.";
-  return;
- }
+ if(!/^[A-Z]{3}$/.test(iso)){ $("region-status").textContent="ISO-3 kodini kiriting (masalan UZB, KAZ yoki DEU).";return; }
  clearYieldInputOnContextChange("ADM chegara qatlami qayta yuklanmoqda.");
  selectedAOI=null;
  $("region-analyze").disabled=true;
@@ -852,33 +848,36 @@ async function loadRegionBoundaries(){
  $("region-results").hidden=true;
  if(map&&map.getSource("region-selected"))map.getSource("region-selected").setData({type:"FeatureCollection",features:[]});
  $("region-load").disabled=true;
- $("region-status").textContent=iso+" · "+level+" statik GeoJSON GitHub Pages’dan yuklanmoqda…";
+ $("region-status").textContent=iso+" · "+level+" statik GeoJSON paketi yuklanmoqda…";
  try{
-  const file="./data/boundaries/"+iso+"_"+level+".geojson";
+  const isUzbekistan=iso==="UZB";
+  const file=isUzbekistan
+   ?"./data/boundaries/"+iso+"_"+level+".geojson"
+   :"./data/boundaries/global/"+iso+"_"+level+".geojson";
   const response=await fetch(file,{method:"GET",mode:"same-origin",cache:"no-cache",headers:{Accept:"application/geo+json, application/json"}});
-  if(!response.ok)throw new Error("GeoJSON fayli HTTP "+response.status+" · "+file);
+  if(!response.ok)throw new Error(iso+" uchun "+level+" chegarasi topilmadi (HTTP "+response.status+"). Bu ma’muriy daraja manbada mavjud bo‘lmasligi mumkin.");
   const payload=await response.json();
   if(payload.type!=="FeatureCollection"||!Array.isArray(payload.features))throw new Error("GeoJSON FeatureCollection formati noto‘g‘ri");
   const metadata=payload.metadata||{};
-  if(metadata.country_iso3!=="UZB"||metadata.admin_level!==level)throw new Error("GeoJSON metadata tanlangan mamlakat/ADM darajasiga mos emas");
+  if(metadata.country_iso3!==iso||metadata.admin_level!==level)throw new Error("GeoJSON metadata tanlangan mamlakat/ADM darajasiga mos emas");
   adminFeatures=(payload.features||[]).filter(f=>f&&f.geometry&&["Polygon","MultiPolygon"].includes(f.geometry.type))
    .sort((a,b)=>regionFeatureName(a).localeCompare(regionFeatureName(b),"uz"));
   if(!adminFeatures.length)throw new Error("Yaroqli Polygon/MultiPolygon topilmadi");
-  adminFeatures.forEach((feature,index)=>{feature.properties=feature.properties||{};feature.properties.__admin_idx=index;feature.properties.__selected=0;});
+  adminFeatures.forEach((feature,index)=>{feature.properties=feature.properties||{};feature.properties.shapeType=feature.properties.shapeType||level;feature.properties.__admin_idx=index;feature.properties.__selected=0;});
   if(!map||!map.getSource("admin-areas"))throw new Error("Globus xaritasi hali tayyor emas");
   map.getSource("admin-areas").setData({type:"FeatureCollection",features:adminFeatures});
   if(map.getSource("region-selected"))map.getSource("region-selected").setData({type:"FeatureCollection",features:[]});
   $("region-select").disabled=false;$("region-search").value="";renderRegionOptions("");
   selectedAOI=null;$("region-name").textContent="Hudud tanlanmagan";$("region-center").textContent="—";
   $("region-analyze").disabled=true;$("region-results").hidden=true;
-  $("region-status").textContent=adminFeatures.length.toLocaleString("en-US")+" ta "+level+" polygon yuklandi · GitHub Pages static bundle · "+(metadata.boundary_year||"boundary year n/a");
-  $("region-meta").textContent=(metadata.source||"geoBoundaries")+" · "+level+" · "+(metadata.boundary_year||"year n/a")+" · "+(metadata.license||"license metadata unavailable");
+  $("region-status").textContent=adminFeatures.length.toLocaleString("en-US")+" ta "+level+" polygon yuklandi · "+(isUzbekistan?"UZB validated static bundle":"global geoBoundaries country bundle")+" · "+(metadata.boundary_year||"boundary year n/a");
+  $("region-meta").textContent=(metadata.source||"geoBoundaries")+" · "+iso+" · "+level+" · "+(metadata.boundary_year||"year n/a")+" · "+(metadata.license||"license metadata unavailable");
   regionSelectionActive=true;
   const allPoints=adminFeatures.flatMap(feature=>regionGeometryPositions(feature.geometry));
   const bounds=regionBounds({geometry:{type:"MultiPoint",coordinates:allPoints}});
   if(bounds)map.fitBounds(bounds,{padding:55,maxZoom:7,duration:700});
  }catch(error){
-  $("region-status").textContent="Statik chegaralar yuklanmadi: "+(error&&error.message?error.message:String(error))+". GitHub Actions → Pages build holatini tekshiring.";
+  $("region-status").textContent="Statik chegaralar yuklanmadi: "+(error&&error.message?error.message:String(error))+". Bu daraja uchun public paket mavjudligini tekshiring.";
  }finally{$("region-load").disabled=false;}
 }
 $("region-load").addEventListener("click",loadRegionBoundaries);
