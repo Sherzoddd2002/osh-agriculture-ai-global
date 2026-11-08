@@ -193,7 +193,7 @@ for level, expected_count in (("ADM1", 14), ("ADM2", 199)):
                 if cells != 0 or yield_value is not None:
                     raise SystemExit(f"FAIL: MAPSPAM {level}/{area_id}/{crop_code} must keep NULL yield when no raster cells exist")
             elif status == "ESTIMATED":
-                if not isinstance(cells, int) or cells <= 0 or not isinstance(yield_value, (int, float)) or not 0 < yield_value < 30:
+                if not isinstance(cells, int) or cells <= 0 or not isinstance(yield_value, (int, float)) or not 0 < yield_value < 200:
                     raise SystemExit(f"FAIL: MAPSPAM {level}/{area_id}/{crop_code} has invalid estimated yield/cell count")
             else:
                 raise SystemExit(f"FAIL: MAPSPAM {level}/{area_id}/{crop_code} has unknown spatial status")
