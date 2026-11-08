@@ -154,7 +154,9 @@ def validate_and_prepare(record: dict, level: str, source: dict) -> dict:
         "continent": str(record.get("Continent") or "Unknown"),
         "source_version": "geoBoundaries current / gbOpen",
         "geometry_detail": "simplifiedGeometryGeoJSON" if record.get("simplifiedGeometryGeoJSON") else "gjDownloadURL",
-        "feature_count": len(prepared),\n        "geometry_repaired_count": repaired_count,\n        "generated_name_count": generated_name_count,
+        "feature_count": len(prepared),
+        "geometry_repaired_count": repaired_count,
+        "generated_name_count": generated_name_count,
         "attribution": "geoBoundaries; retain the source/license fields for each boundary",
     }
     return {"type": "FeatureCollection", "features": prepared, "metadata": metadata}
