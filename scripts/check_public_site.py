@@ -97,6 +97,28 @@ for level, expected_count in (("ADM1", 14), ("ADM2", 199)):
             raise SystemExit(f"FAIL: UZB {level} feature {index} has invalid geometry")
     print(f"PASS: UZB {level}: {len(payload['features'])} valid polygon features")
 
+official_info = manifest.get("official_yield") or {}
+official_path = DOCS / "data" / str(official_info.get("file") or "")
+if not official_path.is_file():
+    raise SystemExit("FAIL: official SIAT wheat province dataset missing")
+official = json.loads(official_path.read_text(encoding="utf-8"))
+if official.get("admin_level") != "ADM1" or official.get("crop_code") != "whea":
+    raise SystemExit("FAIL: official SIAT dataset must be UZB ADM1 wheat")
+if official.get("license") != "CC BY 4.0" or official.get("district_yield_available") is not False:
+    raise SystemExit("FAIL: official SIAT dataset provenance or geographic scope is missing")
+if len(official.get("regions", [])) != 13:
+    raise SystemExit("FAIL: expected 13 agricultural province yield series from SIAT")
+for region in official["regions"]:
+    records = region.get("records", [])
+    years = [row.get("year") for row in records]
+    if len(records) < 12 or years != sorted(set(years)):
+        raise SystemExit(f"FAIL: incomplete or duplicate official SIAT series for {region.get('name_uz')}")
+    for row in records:
+        value = row.get("yield")
+        if not isinstance(value, (int, float)) or not 0 < value < 30:
+            raise SystemExit(f"FAIL: invalid official wheat yield row: {region.get('name_uz')} / {row}")
+print(f"PASS SIAT province wheat yield: {len(official['regions'])} regions, {sum(len(r['records']) for r in official['regions'])} records")
+
 scripts = re.findall(r"<script>([\s\S]*?)</script>", html, flags=re.IGNORECASE)
 if len(scripts) != 1:
     raise SystemExit(f"FAIL: expected one inline dashboard script, found {len(scripts)}")
