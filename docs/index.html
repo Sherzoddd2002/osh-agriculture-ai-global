@@ -192,8 +192,8 @@
       </div>
       <div class="region-steps" aria-label="Tahlil qilish tartibi">
         <article><span>01</span><div><b>Hududni tanlang</b><small>199 tuman avtomatik yuklanadi; ADM1 orqali 14 viloyatga o‘ting yoki nom bilan qidiring.</small></div></article>
-        <article><span>02</span><div><b>Ekin va tarixiy ma’lumot</b><small>46 ekindan birini tanlang, aynan shu hudud/ekin uchun yillik hosildorlik CSV yuklang.</small></div></article>
-        <article><span>03</span><div><b>AI ssenariysini hisoblang</b><small>Mavsum sanalarini tekshiring va Ridge + ERA5-Land modelini ishga tushiring.</small></div></article>
+        <article><span>02</span><div><b>Ekin va hudud tahlili</b><small>46 ekindan birini tanlang, so‘ng “Hududni tahlil qilish”ni bosing. Iqlim va AI oynalari ochiladi.</small></div></article>
+        <article><span>03</span><div><b>CSV yuklang va prognoz qiling</b><small>Shu hudud/ekin uchun haqiqiy yillik CSV faylni yuklang, mavsumni tekshiring va Ridge + ERA5-Land hisobini boshlang.</small></div></article>
       </div>
       <div class="panel region-panel">
         <div class="region-controls">
@@ -366,6 +366,7 @@ const cropList=[
 ["whea","Wheat"],["rice","Rice"],["maiz","Maize"],["barl","Barley"],["mill","Small millet"],["pmil","Pearl millet"],["sorg","Sorghum"],["ocer","Other cereals"],["pota","Potato"],["swpo","Sweet potato"],["yams","Yams"],["cass","Cassava"],["orts","Other roots"],["bean","Bean"],["chic","Chickpea"],["cowp","Cowpea"],["pige","Pigeon pea"],["lent","Lentil"],["opul","Other pulses"],["soyb","Soybean"],["grou","Groundnut"],["cnut","Coconut"],["oilp","Oil palm"],["sunf","Sunflower"],["rape","Rapeseed"],["sesa","Sesame seed"],["ooil","Other oil crops"],["sugc","Sugarcane"],["sugb","Sugarbeet"],["cott","Cotton"],["ofib","Other fibre crops"],["coff","Arabica coffee"],["rcof","Robusta coffee"],["coco","Cocoa"],["teas","Tea"],["toba","Tobacco"],["bana","Banana"],["plnt","Plantain"],["citr","Citrus"],["trof","Other tropical fruit"],["temf","Temperate fruit"],["toma","Tomato"],["onio","Onion"],["vege","Other vegetables"],["rubb","Rubber"],["rest","Rest of crops"]
 ];
 function comma(n){return Number(n||0).toLocaleString("en-US");}
+$("region-target-year").value=String(new Date().getFullYear()+1);
 $("crop-select").innerHTML=cropList.map(c=>'<option value="'+c[0]+'">'+c[1]+'</option>').join("");
 $("region-crop-select").innerHTML=cropList.map(c=>'<option value="'+c[0]+'">'+c[1]+' · '+c[0].toUpperCase()+'</option>').join("");
 function syncCropSelection(){
