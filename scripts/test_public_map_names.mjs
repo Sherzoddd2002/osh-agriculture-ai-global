@@ -87,7 +87,7 @@ const mapspamHarnessSource=[
  extractFunction("regionFmt"),
  extractFunction("renderMapspamReference"),
  "return {render:renderMapspamReference,setArea:value=>{selectedAOI=value;},setCrop:value=>{activeCrop=value;},elements};"
-].join("\\n");
+].join("\n");
 const mapspamHarness=new Function("payload",mapspamHarnessSource)(mapspamReference);
 const estimatedEntry=Object.entries(mapspamReference.levels.ADM2.areas).find(([,area])=>area.crops.whea.spatial_status==="ESTIMATED");
 assert.ok(estimatedEntry,"at least one district should have a wheat raster estimate");
@@ -100,7 +100,7 @@ const estimatedResult=await mapspamHarness.render(estimatedFeature,"whea");
 assert.equal(estimatedResult.status,"ESTIMATED");
 assert.ok(estimatedResult.yield>0);
 assert.equal(estimatedResult.area,regionFeatureName(estimatedFeature));
-assert.match(mapspamHarness.elements["region-mapspam-result"].innerHTML,/t\\/ha/);
+assert.ok(mapspamHarness.elements["region-mapspam-result"].innerHTML.includes("t/ha"));
 assert.match(mapspamHarness.elements["region-mapspam-result"].innerHTML,new RegExp(regionFeatureName(estimatedFeature)));
 
 const missingEntry=Object.entries(mapspamReference.levels.ADM2.areas).find(([,area])=>area.crops.whea.spatial_status==="NO_RASTER_CELLS");
@@ -110,8 +110,8 @@ const missingFeature=adm2ForMapspam.features.find(feature=>feature.properties.sh
 mapspamHarness.setArea(missingFeature);
 const missingResult=await mapspamHarness.render(missingFeature,"whea");
 assert.equal(missingResult.status,"NO_RASTER_CELLS");
-assert.match(mapspamHarness.elements["region-mapspam-result"].innerHTML,/NULL \\/ mavjud emas/);
-assert.doesNotMatch(mapspamHarness.elements["region-mapspam-result"].innerHTML,/0\\.00 t\\/ha/);
+assert.ok(mapspamHarness.elements["region-mapspam-result"].innerHTML.includes("NULL / mavjud emas"));
+assert.ok(!mapspamHarness.elements["region-mapspam-result"].innerHTML.includes("0.00 t/ha"));
 
 const customFeature={type:"Feature",properties:{shapeName:"Custom field"},geometry:{type:"Polygon",coordinates:[[[0,0],[1,0],[1,1],[0,1],[0,0]]]}};
 mapspamHarness.setArea(customFeature);
