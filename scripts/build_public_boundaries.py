@@ -19,7 +19,7 @@ from shapely.geometry import shape
 from backend.app.services.boundaries import get_boundary_geojson
 
 OUTPUT = ROOT / "docs" / "data" / "boundaries"
-MIN_FEATURES = {"ADM1": 10, "ADM2": 100}
+EXPECTED_FEATURES = {"ADM1": 14, "ADM2": 199}
 
 
 async def fetch_level(level: str) -> dict:
@@ -30,10 +30,10 @@ async def fetch_level(level: str) -> dict:
             if result.get("type") != "FeatureCollection":
                 raise ValueError(f"UZB {level}: response is not FeatureCollection")
             features = result.get("features")
-            if not isinstance(features, list) or len(features) < MIN_FEATURES[level]:
+            if not isinstance(features, list) or len(features) != EXPECTED_FEATURES[level]:
                 raise ValueError(
-                    f"UZB {level}: unexpectedly small feature count "
-                    f"({len(features) if isinstance(features, list) else 'not a list'})"
+                    f"UZB {level}: expected exactly {EXPECTED_FEATURES[level]} polygons, "
+                    f"received {len(features) if isinstance(features, list) else 'not a list'}"
                 )
 
             valid = []
