@@ -16,6 +16,13 @@ foreach ($item in @(@{file="web.pid";needle="uvicorn app.main:app";name="WEB"},@
 try {
     $h = Invoke-RestMethod -Uri "http://127.0.0.1:8080/api/v1/health" -TimeoutSec 3
     Write-Host "API: $($h.service) | Database: $($h.database)"
+    if ($h.background_worker) {
+        $worker = $h.background_worker
+        Write-Host "Worker heartbeat: $($worker.status) | State: $($worker.worker_status) | Last seen: $($worker.last_seen)"
+        if ($worker.current_job_id) {
+            Write-Host "Current job: #$($worker.current_job_id) | Type: $($worker.current_job_type)"
+        }
+    }
 } catch {
     Write-Host "API: NOT RESPONDING"
 }
