@@ -69,8 +69,7 @@ if "fetchYieldClimateHistory(center,series" not in html or "Persistence" not in 
 if "./data/templates/yield-template.csv" not in html:
     raise SystemExit("FAIL: local CSV template download is not linked")
 
-crop_match = re.search(r"const cropList=\[(.*?)
-\s*\];", html, flags=re.DOTALL)
+crop_match = re.search(r"const cropList=\[(.*?)\n\s*\];", html, flags=re.DOTALL)
 if not crop_match:
     raise SystemExit("FAIL: MAPSPAM crop catalogue block was not found")
 crop_pairs = re.findall(r'\["([a-z]{4})","([^"]+)"\]', crop_match.group(1))
