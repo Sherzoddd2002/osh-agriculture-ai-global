@@ -45,6 +45,16 @@ Use WCS in this order:
 4. Mask the returned raster by the exact AOI polygon and calculate valid-pixel statistics.
 5. Preserve the 90% prediction interval/uncertainty when available.
 
+## Public GitHub Pages demonstration (static)
+
+The public Pages dashboard includes a browser-only **Maydon tahlili** workspace:
+- geoBoundaries ADM1–ADM5 search and custom polygon drawing;
+- Open-Meteo Archive API ERA5-Land daily history and Open-Meteo seven-day forecast at an approximate polygon center;
+- Copernicus Data Space STAC scene discovery for Sentinel-2 L2A with a 12-month window and 30% cloud-cover filter;
+- optional browser-local CSV Ridge baseline with expanding-window OOF and Persistence comparison.
+
+This public workspace is deliberately separate from the FastAPI service. It does not persist AOIs, read the maintainer's PostgreSQL records, or run the server-side worker. The browser Ridge baseline uses only the uploaded yield history; it does not claim to use weather/NDVI/SMAP/SoilGrids features. The STAC panel returns catalogue metadata only and does not compute NDVI.
+
 ## Small fields: administrative boundaries are not field boundaries
 
 The geoBoundaries ADM0–ADM5 levels are administrative units. They do not represent an individual farm or field. The full app now includes **Maydon chizish** in the map toolbar:
