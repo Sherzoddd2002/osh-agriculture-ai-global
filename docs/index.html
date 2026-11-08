@@ -27,7 +27,7 @@
 
 /* Public small-area analysis workspace */
 .region-panel,.region-result-card{padding:18px}
-.region-controls{display:grid;grid-template-columns:1fr .8fr auto 1fr 1.4fr;gap:10px;align-items:end}
+.region-controls{display:grid;grid-template-columns:1fr .85fr auto 1.15fr 1.25fr 1.1fr;gap:10px;align-items:end}
 .region-controls label,.region-yield-controls label{display:grid;gap:5px;color:#9ab0be;font-size:9px;font-weight:800}
 .region-controls input,.region-controls select,.region-yield-controls input,.region-yield-controls select{min-width:0;width:100%;padding:10px 11px;border-radius:9px;border:1px solid #29485a;background:#091a27;color:#e9f2f6;outline:none;font-size:11px}
 .region-controls input:focus,.region-controls select:focus,.region-yield-controls input:focus{border-color:var(--mint)}
@@ -66,7 +66,12 @@
 .region-steps b{display:block;color:#e5f1f5;font-size:11px;margin:1px 0 4px}
 .region-steps small{display:block;color:#91a9b7;font-size:9px;line-height:1.55}
 .region-crop-label{min-width:0}
-@media(max-width:760px){.region-steps{grid-template-columns:1fr}.region-steps article{padding:10px 12px}}
+@media(max-width:760px){
+ .region-steps{grid-template-columns:1fr}.region-steps article{padding:10px 12px}
+ .region-controls{grid-template-columns:1fr 1fr}
+ .region-controls .region-country-label,.region-controls .region-level-label{grid-column:auto}
+ .region-controls button,.region-controls .region-search-label,.region-controls .region-selection-label,.region-controls .region-crop-label{grid-column:1/-1}
+}
 .region-yield-controls input[type=file]{padding:8px;font-size:9px}
 .region-model-result{margin-top:13px;padding:13px;border:1px solid #2a4b5d;border-radius:11px;background:#0a1c2a;color:#a9beca;font-size:10px;line-height:1.7}
 .region-model-result strong{color:var(--mint)}
@@ -94,8 +99,9 @@
  .content{padding-top:15px}
  .globe{height:340px}
  .region-controls{grid-template-columns:1fr 1fr}
- .region-controls button{width:100%}
- .region-controls label:last-child{grid-column:1/-1}
+ .region-controls button{width:100%;grid-column:1/-1}
+ .region-controls .region-country-label,.region-controls .region-level-label{grid-column:auto}
+ .region-controls .region-search-label,.region-controls .region-selection-label,.region-controls .region-crop-label{grid-column:1/-1}
  .region-selected{grid-template-columns:1fr}
  .region-selected button{grid-column:auto}
  .region-yield-controls{grid-template-columns:1fr 1fr}
@@ -191,11 +197,12 @@
       </div>
       <div class="panel region-panel">
         <div class="region-controls">
-          <label>Country ISO-3<input id="region-iso3" maxlength="3" value="UZB" autocomplete="off"></label>
-          <label>Ma’muriy daraja<select id="region-level"><option value="ADM1">ADM1 · Viloyatlar</option><option value="ADM2" selected>ADM2 · Tumanlar</option></select></label>
+          <label class="region-country-label">Mamlakat ISO-3<input id="region-iso3" maxlength="3" value="UZB" autocomplete="off"></label>
+          <label class="region-level-label">Ma’muriy daraja<select id="region-level"><option value="ADM1">ADM1 · Viloyatlar</option><option value="ADM2" selected>ADM2 · Tumanlar</option></select></label>
           <button class="btn-primary" id="region-load">Chegaralarni yuklash</button>
-          <label>Hudud nomi bo‘yicha qidirish<input id="region-search" type="search" placeholder="Masalan, Chilonzor yoki Samarqand" autocomplete="off"></label>
-          <label>Yuklangan hudud<select id="region-select" disabled><option value="">Avval chegaralarni yuklang</option></select></label>
+          <label class="region-search-label">Hudud nomi bo‘yicha qidirish<input id="region-search" type="search" placeholder="Masalan, Chilonzor yoki Samarqand" autocomplete="off"></label>
+          <label class="region-selection-label">Yuklangan hudud<select id="region-select" disabled><option value="">Avval chegaralarni yuklang</option></select></label>
+          <label class="region-crop-label">AI prognozi uchun ekin<select id="region-crop-select"><option value="whea">Wheat</option></select></label>
         </div>
         <div class="region-draw-row">
           <button class="btn-secondary" type="button" id="region-draw-start">＋ Maydon chizish</button>
@@ -235,7 +242,6 @@
             <p><b>Mavsum:</b> bug‘doy kabi kuzgi ekinlar uchun odatda 10-01 dan 06-30 gacha; boshqa ekinlarda o‘zingizning haqiqiy ekish/yig‘im mavsumingizni belgilang. Kelajak ob-havosi modelda so‘nggi 5 mos mavsum normasi bilan ifodalanadi.</p>
           </details>
           <div class="region-yield-controls">
-            <label>AI uchun ekin<select id="region-crop-select"><option value="whea">Wheat</option></select></label>
             <label>CSV fayl<input type="file" id="region-yield-file" accept=".csv,text/csv"></label>
             <label>Yil ustuni<input id="region-year-column" value="year"></label>
             <label>Hosildorlik ustuni<input id="region-yield-column" value="yield_t_ha"></label>
