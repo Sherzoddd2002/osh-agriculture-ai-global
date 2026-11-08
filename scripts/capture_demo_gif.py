@@ -48,10 +48,31 @@ with sync_playwright() as p:
     )
     page.locator("#region-analyze").click()
     page.wait_for_timeout(8000)
+    frames.append(Image.open(__import__("io").BytesIO(page.screenshot(full_page=True))).convert("RGB"))
+
+    # Forecast smoke test uses an isolated CI-only fixture; it is never saved
+    # into the public screenshot or the user's data.
+    fixture_csv = (
+        "year,yield_t_ha\\n"
+        "2015,3.72\\n2016,3.81\\n2017,3.76\\n2018,3.94\\n"
+        "2019,4.02\\n2020,3.88\\n2021,4.11\\n2022,4.18\\n"
+    )
+    page.locator("#region-yield-file").set_input_files({
+        "name": "ci-yield-smoke.csv",
+        "mimeType": "text/csv",
+        "buffer": fixture_csv.encode("utf-8"),
+    })
+    page.locator("#region-run-model").click()
+    page.wait_for_function(
+        "() => document.querySelector('#region-model-result').textContent.includes('Ridge + ERA5-Land ssenariysi') "
+        "|| document.querySelector('#region-model-result').textContent.includes('AI ssenariysi ishga tushmadi')",
+        timeout=90000,
+    )
+    model_text = page.locator("#region-model-result").inner_text()
+    if "Ridge + ERA5-Land ssenariysi" not in model_text:
+        raise RuntimeError("ERA5-Land/Ridge forecast smoke test failed: " + model_text)
     if page_errors:
         raise RuntimeError("Browser JavaScript errors: " + " | ".join(page_errors))
-
-    frames.append(Image.open(__import__("io").BytesIO(page.screenshot(full_page=True))).convert("RGB"))
     browser.close()
 
 server.shutdown()
