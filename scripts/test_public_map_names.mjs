@@ -63,7 +63,7 @@ assert.equal(mapspamReference.source_year,2020);
 assert.equal(mapspamReference.license,"CC BY-SA 4.0");
 const cropListStart=html.indexOf("const cropList=[");
 assert.notEqual(cropListStart,-1,"website crop list is missing");
-const cropListEnd=html.indexOf("\\n];",cropListStart);
+const cropListEnd=html.indexOf("\n];",cropListStart);
 assert.notEqual(cropListEnd,-1,"website crop list closing bracket is missing");
 const cropListLiteral=html.slice(cropListStart+"const cropList=".length,cropListEnd+2);
 const publicCropList=new Function("return "+cropListLiteral)();
