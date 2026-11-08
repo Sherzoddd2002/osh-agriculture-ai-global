@@ -20,17 +20,13 @@ with sync_playwright() as p:
     page_errors = []
     page.on("pageerror", lambda error: page_errors.append(str(error)))
     page.goto(url, wait_until="domcontentloaded", timeout=60000)
-    try:
-        page.wait_for_selector("#map canvas", timeout=30000)
-        page.wait_for_function(
-            "() => document.querySelector('#region-select').options.length >= 200 && "
-            "document.querySelector('#region-status').textContent.includes('199 ta ADM2 polygon yuklandi')",
-            timeout=90000,
-        )
-        page.wait_for_timeout(1500)
-    except Exception:
-        # Keep the designed UI screenshot even if a third-party map tile host is slow.
-        page.wait_for_timeout(5000)
+    page.wait_for_selector("#map canvas", timeout=30000)
+    page.wait_for_function(
+        "() => document.querySelector('#region-select').options.length >= 200 && "
+        "document.querySelector('#region-status').textContent.includes('199 ta ADM2 polygon yuklandi')",
+        timeout=90000,
+    )
+    page.wait_for_timeout(1500)
 
     frames.append(Image.open(__import__("io").BytesIO(page.screenshot(full_page=True))).convert("RGB"))
     page.evaluate("window.__setDemoState && window.__setDemoState('selected')")
