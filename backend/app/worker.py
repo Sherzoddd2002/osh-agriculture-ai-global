@@ -1,14 +1,51 @@
 from __future__ import annotations
 import time
 from datetime import date, datetime, timezone
+from threading import Event, Lock, Thread
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from .config import settings
 from .db import SessionLocal
-from .models import AnalysisJob, Dataset, Location, YieldObservation, EnvironmentFeature, LocationClimateJob, LocationWeatherSnapshot
+from .models import AnalysisJob, Dataset, Location, YieldObservation, EnvironmentFeature, LocationClimateJob, LocationWeatherSnapshot, WorkerHeartbeat
 from .services.nasa_power import fetch_daily_weather, aggregate_weather, aggregate_calendar_year_weather, crop_year_windows
 from .services.open_meteo import fetch_weather_forecast
 from .ml.forecast import evaluate_and_predict
+
+
+_WORKER_STATE = {"status": "STARTING", "job_id": None, "job_type": None}
+_WORKER_STATE_LOCK = Lock()
+
+
+def set_worker_state(status: str, job_id: int | None = None, job_type: str | None = None) -> None:
+    with _WORKER_STATE_LOCK:
+        _WORKER_STATE.update({
+            "status": status,
+            "job_id": job_id,
+            "job_type": job_type,
+        })
+
+
+def persist_worker_heartbeat() -> None:
+    with _WORKER_STATE_LOCK:
+        state = dict(_WORKER_STATE)
+    with SessionLocal() as db:
+        heartbeat = db.get(WorkerHeartbeat, "default")
+        if heartbeat is None:
+            heartbeat = WorkerHeartbeat(worker_name="default")
+            db.add(heartbeat)
+        heartbeat.status = state["status"]
+        heartbeat.current_job_id = state["job_id"]
+        heartbeat.current_job_type = state["job_type"]
+        heartbeat.last_seen = datetime.now(timezone.utc)
+        db.commit()
+
+
+def heartbeat_loop(stop_event: Event) -> None:
+    while not stop_event.wait(10):
+        try:
+            persist_worker_heartbeat()
+        except Exception as exc:
+            print(f"worker heartbeat failed: {exc}", flush=True)
 
 
 def process_one(db: Session, job: AnalysisJob):
@@ -168,6 +205,10 @@ def process_location_climate(db: Session, job: LocationClimateJob):
 
 def main():
     print("OSH Global worker started", flush=True)
+    stop_event = Event()
+    set_worker_state("IDLE")
+    persist_worker_heartbeat()
+    Thread(target=heartbeat_loop, args=(stop_event,), name="osh-worker-heartbeat", daemon=True).start()
     while True:
         with SessionLocal() as db:
             climate_job = db.scalar(
@@ -177,6 +218,7 @@ def main():
                 .with_for_update(skip_locked=True).limit(1)
             )
             if climate_job:
+                set_worker_state("BUSY", climate_job.id, "LOCATION_CLIMATE")
                 climate_job.status = "RUNNING"
                 climate_job.started_at = datetime.now(timezone.utc)
                 climate_job.progress = 1
@@ -193,11 +235,13 @@ def main():
                         failed.finished_at = datetime.now(timezone.utc)
                         db.commit()
                     print(f"location climate job {climate_job.id} failed: {exc}", flush=True)
+                set_worker_state("IDLE")
                 time.sleep(settings.worker_poll_seconds)
                 continue
 
             job = db.scalar(select(AnalysisJob).where(AnalysisJob.status == "QUEUED").order_by(AnalysisJob.created_at).with_for_update(skip_locked=True).limit(1))
             if job:
+                set_worker_state("BUSY", job.id, job.job_type)
                 job.status = "RUNNING"; job.started_at = datetime.now(timezone.utc); job.progress = 1; db.commit()
                 try:
                     process_one(db, job)
@@ -210,6 +254,7 @@ def main():
                         if ds: ds.status = "PROCESSING_FAILED"
                         db.commit()
                     print(f"job {job.id} failed: {exc}", flush=True)
+                set_worker_state("IDLE")
         time.sleep(settings.worker_poll_seconds)
 
 
