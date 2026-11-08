@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="OSH Agriculture AI Global — dunyo bo‘yicha qishloq xo‘jaligi ma’lumotlari va hosildorlik prognozi uchun interaktiv demo.">
+<title>OSH Agriculture AI Global · Public Demo</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.css">
+<style>
+:root{color-scheme:dark;--bg:#06111d;--panel:#0d1d2c;--panel2:#102638;--line:#1b3548;--text:#e9f3f7;--muted:#91a7b6;--mint:#39d9a6;--gold:#f2c879}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% -15%,#16424a55,transparent 42%),var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+a{color:inherit}.shell{max-width:1500px;margin:auto;padding:24px clamp(14px,3vw,42px) 36px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px}.brand{display:flex;align-items:center;gap:12px;text-decoration:none}.logo{width:44px;height:44px;display:grid;place-items:center;border:1px solid #39d9a655;border-radius:14px;background:#39d9a614;font-size:24px}.brand b{display:block;letter-spacing:1.4px}.brand small{display:block;color:var(--mint);font-size:10px;letter-spacing:2.5px;font-weight:800}.top-link{border:1px solid var(--line);border-radius:999px;padding:10px 16px;text-decoration:none;color:#c6d7df;font-size:13px}
+.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:24px;align-items:end;margin:28px 0 22px}.eyebrow{font-size:10px;letter-spacing:2px;font-weight:850;color:var(--mint)}h1{font-size:clamp(30px,4.2vw,58px);line-height:1.04;letter-spacing:-1.8px;margin:12px 0 14px;max-width:800px}.hero p{max-width:760px;color:#a9bdc9;font-size:16px;margin:0}.hero-note{border:1px solid #39d9a633;background:linear-gradient(145deg,#0c2830,#0c1d2b);border-radius:18px;padding:18px;color:#b9d1d9;font-size:13px}.hero-note b{display:block;color:var(--mint);margin-bottom:5px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}.stat b{display:block;font-size:15px}.stat span{font-size:11px;color:var(--muted)}
+.workspace{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,.7fr);gap:16px;align-items:stretch}.map-card,.side-card{background:linear-gradient(145deg,#102335,#0a1927);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 20px 50px #0004}.map-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px}.map-head h2{font-size:17px;margin:2px 0}.map-head small{color:var(--muted)}.pill{font-size:9px;letter-spacing:1px;color:var(--mint);border:1px solid #39d9a644;background:#39d9a612;border-radius:999px;padding:7px 10px;font-weight:800}
+.globe{height:590px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 48%,#183c50,#071321 70%)}#map{position:absolute;inset:0}.hud{position:absolute;z-index:2;pointer-events:none;top:16px;left:18px;right:18px;display:flex;justify-content:space-between;gap:12px;color:#9db9c7;font-size:9px;font-weight:800;letter-spacing:1.3px;text-shadow:0 1px 8px #000}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 12px var(--mint);margin-right:7px}.map-foot{position:absolute;z-index:2;bottom:15px;left:18px;right:18px;display:flex;justify-content:space-between;color:#8da7b5;font-size:9px;letter-spacing:1px;pointer-events:none;text-shadow:0 1px 8px #000}
+.side-card{padding:22px;display:flex;flex-direction:column;gap:16px}.side-card h3{margin:0;font-size:21px}.muted{color:var(--muted)}.selected{padding:14px;border-radius:14px;border:1px solid #39d9a633;background:#39d9a60b}.selected small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:1.2px}.selected strong{display:block;font-size:20px;margin-top:3px}.field label{display:block;color:#b9cbd5;font-size:12px;margin-bottom:7px}.field select{width:100%;padding:12px;border-radius:10px;border:1px solid #294457;background:#091827;color:var(--text);font:inherit}.btn{border:0;border-radius:11px;padding:13px 16px;background:linear-gradient(120deg,#39d9a6,#1caa91);color:#042019;font-weight:850;cursor:pointer}.btn:hover{filter:brightness(1.08)}.result{border:1px solid #f2c87944;background:#f2c8790d;padding:14px;border-radius:13px;color:#d7c8a6;font-size:12px}.result b{display:block;color:var(--gold);margin-bottom:4px}.result[hidden]{display:none}.side-note{font-size:11px;color:#8299a8;margin-top:auto;line-height:1.55}
+footer{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:20px;margin-top:24px;color:#8197a5;font-size:11px}
+.maplibregl-ctrl-group{background:#0a1b2b!important;border:1px solid #345064!important}.maplibregl-ctrl-group button{background-color:transparent!important}.maplibregl-ctrl-icon{filter:invert(.85)}.maplibregl-ctrl-attrib{background:#06111dcc!important;color:#9db3c0!important}.maplibregl-ctrl-attrib a{color:#65dcb9!important}
+@media(max-width:900px){.hero{grid-template-columns:1fr}.workspace{grid-template-columns:1fr}.globe{height:500px}.side-card{min-height:360px}}
+@media(max-width:560px){.shell{padding:16px 12px 28px}.top-link{font-size:11px;padding:8px 11px}.stats{grid-template-columns:1fr}.globe{height:390px}.map-head{padding:14px}.side-card{padding:17px}.map-foot{font-size:8px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header><a class="brand" href="./"><span class="logo">🌱</span><span><b>OSH AGRICULTURE AI</b><small>GLOBAL INTELLIGENCE</small></span></a><a class="top-link" href="https://github.com/Sherzoddd2002/osh-agriculture-ai-global" target="_blank" rel="noopener">GitHub repository ↗</a></header>
+<section class="hero"><div><span class="eyebrow">OPEN GLOBAL AGRICULTURE DEMO</span><h1>Dunyo hosilini ma’lumotlar bilan <span style="color:var(--mint)">anglaymiz.</span></h1><p>Yer sharidan mamlakatni tanlang. OSH Agriculture AI global hosildorlik, iqlim va ekin ma’lumotlarini bir joyda tahlil qilish uchun yaratilmoqda.</p></div><div class="hero-note"><b>NASA POWER · OPEN-METEO</b>NASA POWER tarixiy ob-havo ma’lumotlari va Open-Meteo prognozi platformaning ekologik ma’lumot qatlamlaridan biridir. NASA ob-havo ma’lumoti — hosil modelining o‘zi emas.</div></section>
+<div class="stats"><div class="stat"><b>Global miqyos</b><span>Mamlakat va ma’muriy hududlar</span></div><div class="stat"><b>Climate intelligence</b><span>NASA POWER va Open-Meteo</span></div><div class="stat"><b>Ilmiy ehtiyotkorlik</b><span>Ma’lumot yetarli bo‘lmasa, prognoz berilmaydi</span></div></div>
+<section class="workspace">
+<article class="map-card"><div class="map-head"><div><span class="eyebrow">INTERACTIVE 3D GLOBE</span><h2>Yer shari · Global xarita</h2><small id="map-status">Dunyo xaritasi yuklanmoqda…</small></div><span class="pill">PUBLIC DEMO</span></div><div class="globe"><div id="map"></div><div class="hud"><span><i class="dot"></i>GLOBAL MAP ONLINE</span><span id="globe-state">GLOBE VIEW</span></div><div class="map-foot"><span>DRAG · AYLANtirish</span><span>CLICK · HUDUD TANLASH</span></div></div></article>
+<aside class="side-card"><div><span class="eyebrow">HUDUD TANLASH</span><h3>Qaysi hududni o‘rganamiz?</h3><p class="muted" style="font-size:12px;margin:5px 0 0">Globusdagi mamlakatni bosing yoki xaritani aylantiring.</p></div><div class="selected"><small>Tanlangan mamlakat</small><strong id="country-name">Hali tanlanmagan</strong><span class="muted" id="country-code" style="font-size:11px">—</span></div><div class="field"><label for="crop">Ekin turi</label><select id="crop"><option value="Wheat">Bug‘doy / Wheat</option><option value="Maize">Makkajo‘xori / Maize</option><option value="Rice">Guruch / Rice</option><option value="Cotton">Paxta / Cotton</option><option value="Soybeans">Soya / Soybeans</option></select></div><button class="btn" id="forecast">Prognoz jarayonini ko‘rish →</button><div class="result" id="result" hidden><b>Public demo — prognoz API ulanmagan</b><span id="result-text">Tanlangan hudud va ekin uchun haqiqiy prognoz hisoblashga backend hamda tekshirilgan hosildorlik tarixi kerak. Bu demo hozircha xarita va hudud tanlashni ko‘rsatadi; raqamli natija uydirmaydi.</span></div><p class="side-note">Bu ochiq demo xarita va hudud tanlash tajribasini namoyish etadi. Haqiqiy hosildorlik prognozi hali ommaviy API orqali ulanmagan. Natijalar tayyor bo‘lmaguncha fermer qarori uchun soxta raqam ko‘rsatilmaydi.</p></aside>
+</section>
+<footer><span>© OSH Agriculture AI Global · Research MVP</span><span>Boundaries: geo-countries / Natural Earth · Basemap: CARTO / OpenStreetMap · MapLibre GL JS</span></footer>
+</div>
+<script src="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+let map, features=[], selected=null;
+function props(f){return f&&f.properties||{}}
+function countryName(f){const p=props(f);return p.ADMIN||p.name||p.NAME||p.NAME_EN||'Tanlangan hudud'}
+function iso(f){const p=props(f);return p.ISO_A3||p['ISO3166-1-Alpha-3']||p.ADM0_A3||p.iso_a3||'—'}
+function choose(f,animate=true){
+ selected=f;
+ $('country-name').textContent=countryName(f);
+ $('country-code').textContent='ISO-3: '+iso(f);
+ $('map-status').textContent='Tanlandi: '+countryName(f);
+ $('result').hidden=true;
+ if(map&&map.getSource('countries')){
+  map.setFeatureState({source:'countries',id:f.id},{selected:true});
+  const b=new maplibregl.LngLatBounds();
+  const walk=c=>{if(typeof c[0]==='number'){b.extend(c);return;}c.forEach(walk);};
+  walk(f.geometry.coordinates);
+  if(animate&&b.isValid())map.fitBounds(b,{padding:90,maxZoom:4.5,duration:900});
+ }
+}
+window.__setDemoState=function(state){
+ const f=features.find(x=>countryName(x)==='Uzbekistan')||features.find(x=>iso(x)==='UZB')||features[0];
+ if(!f)return;
+ choose(f,false);
+ if(state==='result'){
+  $('result').hidden=false;
+  $('result-text').textContent='Tanlangan hudud: '+countryName(f)+'. Ekin: '+$('crop').selectedOptions[0].textContent+'. Haqiqiy hisoblash uchun production backend va mos tarixiy hosildorlik qatori kerak.';
+ }
+};
+if(!window.maplibregl){$('map-status').textContent='MapLibre yuklanmadi. Internet aloqasini tekshiring.';return;}
+map=new maplibregl.Map({container:'map',style:'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',center:[25,18],zoom:1.25,minZoom:.85,maxZoom:8,renderWorldCopies:false,attributionControl:true});
+map.addControl(new maplibregl.NavigationControl({showCompass:true,showZoom:true}),'top-right');
+map.on('style.load',()=>{try{map.setProjection({type:'globe'});map.setSky({'atmosphere-blend':['interpolate',['linear'],['zoom'],0,.95,3,.82,6,.2,7,0]});}catch(e){console.warn(e);}});
+map.on('load',async()=>{
+ try{
+  const r=await fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
+  if(!r.ok)throw new Error('Country boundaries HTTP '+r.status);
+  const data=await r.json();features=data.features||[];
+  features.forEach((f,i)=>{f.id=i;});
+  map.addSource('countries',{type:'geojson',data,generateId:false});
+  map.addLayer({id:'country-fill',type:'fill',source:'countries',paint:{'fill-color':'#1b806f','fill-opacity':.12,'fill-outline-color':'#53dcb2'}});
+  map.addLayer({id:'country-lines',type:'line',source:'countries',paint:{'line-color':'#56dcb5','line-width':['interpolate',['linear'],['zoom'],1,.45,4,1,7,1.5],'line-opacity':.55}});
+  map.addLayer({id:'country-hover',type:'fill',source:'countries',paint:{'fill-color':'#f2c879','fill-opacity':.25},filter:['==',['get','ISO_A3'],'__NONE__']});
+  map.on('click','country-fill',e=>{if(e.features&&e.features[0])choose(e.features[0]);});
+  map.on('mousemove','country-fill',()=>map.getCanvas().style.cursor='pointer');
+  map.on('mouseleave','country-fill',()=>map.getCanvas().style.cursor='');
+  $('map-status').textContent='Mamlakatni tanlash uchun xaritadagi hududni bosing.';
+ }catch(e){console.error(e);$('map-status').textContent='Davlat chegaralari yuklanmadi. Keyinroq qayta urinib ko‘ring.';}
+});
+$('forecast').addEventListener('click',()=>{
+ if(!selected){$('result').hidden=false;$('result-text').textContent='Avval globusdan mamlakat tanlang.';return;}
+ $('result').hidden=false;
+ $('result-text').textContent='Tanlangan hudud: '+countryName(selected)+'. Ekin: '+$('crop').selectedOptions[0].textContent+'. Haqiqiy hisoblash uchun production backend va tekshirilgan tarixiy hosildorlik ma’lumoti kerak. Demo soxta prognoz raqamini ko‘rsatmaydi.';
+});
+})();
+</script>
+</body></html>
