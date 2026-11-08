@@ -18,7 +18,7 @@
 
 **Qo‘shimcha katalog:** CROPGRIDS v1.08 (2020) 173 ekin qatlamiga ega, lekin u markaziy reference bazaga import qilinmagan va yuqoridagi jami qatorlarga kiritilmagan.
 
-> **Ilmiy aniqlik:** FAOSTAT QCL milliy darajadagi yillik statistika; tuman kuzatuvi emas. MAPSPAM 2020 — taxminan 9.3 km gridli bitta reference yil, joriy yil yoki dala o‘lchovi emas. NASA POWER tarixiy ob-havo feature manbasi; hosildorlik modelining o‘zi emas. Public dashboard markaziy PostgreSQL bazasining tekshirilgan inventarizatsiyasini ko‘rsatadi, lekin xom shaxsiy DB qatorlarini ommaga chiqarmaydi. NDVI, SMAP va SoilGrids connectorlari hali rejalashtirilgan.
+> **Ilmiy aniqlik:** FAOSTAT QCL milliy darajadagi yillik statistika; tuman kuzatuvi emas. MAPSPAM 2020 — taxminan 9.3 km gridli bitta reference yil, joriy yil yoki dala o‘lchovi emas. NASA POWER tarixiy ob-havo feature manbasi; hosildorlik modelining o‘zi emas. Public dashboard markaziy PostgreSQL bazasining tekshirilgan inventarizatsiyasini ko‘rsatadi, lekin xom shaxsiy DB qatorlarini ommaga chiqarmaydi. Sentinel-2 STAC sahna qidiruvi ulangan, ammo NDVI raster hisoblanishi hali yo‘q. SMAP SPL3SMP_E v6 mahsuloti mavjud, lekin Earthdata Login va raster adapter kerak. SoilGrids REST API pausada; WCS/WebDAV orqali AOI raster adapteri hali yozilishi kerak.
 
 ---
 
@@ -48,9 +48,13 @@ Bu yangi global loyiha. U sizning mavjud `E:\OSH`, `osh` PostgreSQL bazangiz yok
 
 Sentinel-2 katalog qidiruvi, SMAP va SoilGrids manbalarining real holati, kichik AOI chizish, AI prognoz talablari va server/worker deployment tafsilotlari: [docs/ENVIRONMENT_CONNECTORS.md](docs/ENVIRONMENT_CONNECTORS.md).
 
-## Hozircha ulanmagan manbalar
+## Environmental connectorlar holati
 
-Sentinel-2 NDVI, SMAP va SoilGrids connector statuslari va integratsiya nuqtalari bor, ammo raster qidirish/yuklash, quality mask va poligon bo‘yicha zonal statistikalar hali ulanmagan. Sayt ularni tayyor ma’lumotdek ko‘rsatmaydi.
+- **Sentinel-2:** Copernicus STAC orqali saved AOI kesishadigan L2A sahnalarini sana va bulut chegarasi bilan qidirish ulangan. Hozircha katalog metadatasi qaytadi; B04/B08 raster yuklash, SCL/CLD cloud-shadow mask, NDVI va mavsumiy zonal statistikalar hali hisoblanmaydi.
+- **NASA SMAP:** SPL3SMP_E v6 global daily 9 km mahsuloti mavjud. Yuklab olish uchun bepul NASA Earthdata Login, retrieval quality flag filtri va zonal raster adapter kerak. Bu 9 km signal dala o‘lchovi emas.
+- **SoilGrids:** 250 m tuproq xaritalari mavjud; REST API vaqtincha to‘xtatilgan. WCS GetCoverage yoki WebDAV VRT orqali kerakli AOI subsetini olish mumkin, lekin loyiha ichidagi zonal-statistika adapteri hali yakunlanmagan.
+
+Aniq endpointlar, cheklovlar va keyingi processing bosqichlari: [docs/ENVIRONMENT_CONNECTORS.md](docs/ENVIRONMENT_CONNECTORS.md).
 
 ## Ixtiyoriy: markaziy server — barcha foydalanuvchilar uchun bitta PostgreSQL
 
