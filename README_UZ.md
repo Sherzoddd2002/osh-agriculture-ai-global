@@ -49,10 +49,10 @@ Bu yangi global loyiha. U sizning mavjud `E:\OSH`, `osh` PostgreSQL bazangiz yok
 [Dashboard’ni oching](https://sherzoddd2002.github.io/osh-agriculture-ai-global/) → **Maydon tahlili** bo‘limiga o‘ting.
 
 - Mamlakat ISO-3 (masalan, UZB) va ADM1–ADM5 darajasini tanlab, geoBoundaries poligonlarini xaritada ko‘rsatish mumkin.
-- **Maydon chizish** tugmasi bilan xaritada kamida 3 nuqta bosib custom dala poligoni yarating; **Poligonni tugatish** bilan yakunlang.
+- **Maydon chizish** tugmasi bilan xaritani 18–19 zoom darajasigacha yaqinlashtirib, dala chegarasida kamida 3 nuqta bosing; **Poligonni tugatish** bilan yakunlang. Kichik maydonlar uchun xarita zoom limiti 19 ga ko‘tarilgan.
 - **Hududni tahlil qilish** Open-Meteo ERA5-Land tarixiy reanalysis qatori va 7 kunlik ob-havo prognozini tanlangan poligon markazidan oladi. Bu butun poligon bo‘yicha zonal o‘rtacha emas.
 - Copernicus STAC orqali oxirgi 12 oydagi Sentinel-2 L2A sahnalari (bulutlilik ≤30%) qidiriladi. Natija scene metadata; NDVI hali hisoblanmaydi.
-- Haqiqiy `year,yield_t_ha` CSV faylni brauzerda tanlab, Ridge ML + expanding-window OOF / Persistence benchmark hisoblash mumkin. Har bir yield mavsumi Open-Meteo ERA5-Land harorat, yog‘in, ET₀ va GDD feature’lari bilan moslanadi; kamida 8 ta yetarli qamrovli yil talab qilinadi. Kelajak ob-havosi so‘nggi 5 mavsum normasi bilan taxmin qilinadi. CSV serverga yuklanmaydi. Bu bitta AOI uchun research scenario, global tasdiqlangan model emas.
+- Haqiqiy `year,yield_t_ha` CSV faylni brauzerda tanlab, Ridge ML + expanding-window OOF (validatsiya yilining kelajak ob-havosi ishlatilmaydi) / Persistence benchmark hisoblash mumkin. Har bir yield mavsumi Open-Meteo ERA5-Land harorat, yog‘in, ET₀ va GDD feature’lari bilan moslanadi; kamida 8 ta yetarli qamrovli yil talab qilinadi. Kelajak ob-havosi so‘nggi 5 mavsum normasi bilan taxmin qilinadi. CSV serverga yuklanmaydi. Bu bitta AOI uchun research scenario, global tasdiqlangan model emas.
 
 **Public demo cheklovi:** GitHub Pages statik sayt. U autentifikatsiyalangan FastAPI, PostgreSQL, shaxsiy datasetlar yoki background worker bilan bog‘lanmagan; sahifadagi maydon chizmasi saqlanmaydi. Doimiy AOI, full ML pipeline va markaziy FAOSTAT/MAPSPAM qatorlari uchun haqiqiy backend + DB + worker HTTPS orqali alohida deploy qilinishi kerak.
 
