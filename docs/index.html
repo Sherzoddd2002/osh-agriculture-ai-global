@@ -501,40 +501,42 @@ async function loadRegionBoundaries(){
  const level=$("region-level").value;
  if(!/^[A-Z]{3}$/.test(iso)){ $("region-status").textContent="ISO-3 kodini kiriting (masalan UZB).";return; }
  $("region-load").disabled=true;
- $("region-status").textContent=iso+" · "+level+" chegaralari geoBoundaries’dan olinmoqda…";
+ $("region-status").textContent=iso+" · "+level+" chegaralari OSH backend orqali olinmoqda…";
  try{
-  const metadataUrl="https://www.geoboundaries.org/api/current/gbOpen/"+iso+"/"+level+"/";
-  const metadataResponse=await fetch(metadataUrl);
-  if(!metadataResponse.ok)throw new Error("geoBoundaries metadata HTTP "+metadataResponse.status+" · bu mamlakatda "+level+" mavjud bo‘lmasligi mumkin");
-  const metadata=await metadataResponse.json();
-  const urls=[metadata.simplifiedGeometryGeoJSON,metadata.gjDownloadURL].filter(Boolean);
-  if(!urls.length)throw new Error("GeoJSON download URL topilmadi");
-  let geo=null,lastError=null;
-  for(const url of urls){
-   try{
-    const response=await fetch(url);
-    if(!response.ok)throw new Error("GeoJSON HTTP "+response.status);
-    const payload=await response.json();
-    if(payload.type==="FeatureCollection"&&Array.isArray(payload.features)){geo=payload;break;}
-    throw new Error("GeoJSON FeatureCollection emas");
-   }catch(error){lastError=error;}
-  }
-  if(!geo)throw lastError||new Error("GeoJSON yuklanmadi");
-  adminFeatures=(geo.features||[]).filter(f=>f&&f.geometry&&["Polygon","MultiPolygon"].includes(f.geometry.type));
+  // geoBoundaries blocks or inconsistently serves direct browser requests.
+  // Use the server-side proxy so upstream downloads happen outside the browser.
+  const apiUrl="https://osh-agriculture-ai-global.fly.dev/api/v1/boundaries/"+encodeURIComponent(iso)+"/"+encodeURIComponent(level);
+  const response=await fetch(apiUrl,{
+   method:"GET",
+   mode:"cors",
+   cache:"no-store",
+   headers:{Accept:"application/json"}
+  });
+  const payload=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(payload.detail||("OSH boundary API HTTP "+response.status));
+  if(payload.type!=="FeatureCollection"||!Array.isArray(payload.features))throw new Error("Backend javobi GeoJSON FeatureCollection emas");
+  const metadata=payload.metadata||{};
+  const boundaryYear=metadata.boundary_year||metadata.boundaryYearRepresented||"yil ko‘rsatilmagan";
+  const boundaryLicense=metadata.license||metadata.boundaryLicense||"litsenziya metama’lumoti tekshiriladi";
+  const boundarySource=metadata.source||"geoBoundaries";
+  adminFeatures=(payload.features||[]).filter(f=>f&&f.geometry&&["Polygon","MultiPolygon"].includes(f.geometry.type));
   adminFeatures.forEach((feature,index)=>{feature.properties=feature.properties||{};feature.properties.__admin_idx=index;feature.properties.__selected=0;});
   if(!adminFeatures.length)throw new Error("Yaroqli Polygon/MultiPolygon topilmadi");
   if(!map||!map.getSource("admin-areas"))throw new Error("Globus xaritasi hali tayyor emas");
   map.getSource("admin-areas").setData({type:"FeatureCollection",features:adminFeatures});
   $("region-select").disabled=false;
   $("region-select").innerHTML='<option value="">Ro‘yxatdan hudud tanlang…</option>'+adminFeatures.map((feature,index)=>'<option value="'+index+'">'+regionEscape(regionFeatureName(feature))+'</option>').join("");
-  $("region-status").textContent=adminFeatures.length.toLocaleString("en-US")+" ta "+level+" polygon yuklandi · "+(metadata.boundaryYearRepresented||"boundary year unknown")+" · geoBoundaries "+(metadata.boundaryLicense||"license metadata");
-  $("region-meta").textContent="geoBoundaries gbOpen · "+level+" · "+(metadata.boundaryYearRepresented||"yil ko‘rsatilmagan");
+  $("region-status").textContent=adminFeatures.length.toLocaleString("en-US")+" ta "+level+" polygon yuklandi · "+boundaryYear+" · "+boundarySource;
+  $("region-meta").textContent=boundarySource+" · "+level+" · "+boundaryYear+" · "+boundaryLicense;
   regionSelectionActive=true;
   const allPoints=adminFeatures.flatMap(f=>regionGeometryPositions(f.geometry));
   const bounds=regionBounds({geometry:{type:"MultiPoint",coordinates:allPoints}});
   if(bounds)map.fitBounds(bounds,{padding:55,maxZoom:6,duration:700});
  }catch(error){
-  $("region-status").textContent="Chegaralar yuklanmadi: "+error.message;
+  const detail=error&&error.name==="TypeError"
+   ?"OSH backendga ulanib bo‘lmadi. Fly.io API holati va CORS_ORIGINS sozlamasini tekshiring."
+   :(error&&error.name==="AbortError"?"Backend 90 soniyada javob bermadi.":"Chegaralar yuklanmadi: "+(error.message||String(error)));
+  $("region-status").textContent=detail;
  }finally{$("region-load").disabled=false;}
 }
 $("region-load").addEventListener("click",loadRegionBoundaries);
