@@ -424,6 +424,7 @@ $("crop-chips").addEventListener("click",e=>{
  if(!button)return;
  $("crop-select").value=button.dataset.code;
  syncCropSelection();
+ if(!$("region-results").hidden&&selectedAOI)renderMapspamReference(selectedAOI,$("region-crop-select").value).catch(error=>{$("region-mapspam-result").textContent="MAPSPAM: "+error.message;});
 });
 $("crop-select").addEventListener("change",()=>{
  syncCropSelection();
