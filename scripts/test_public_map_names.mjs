@@ -34,6 +34,24 @@ const source=[
 ].join("\n");
 const {normalizeRegionSearch,regionFeatureName}=new Function(source)();
 
+const resetHelperSource=extractFunction("clearYieldInputOnContextChange");
+assert.match(extractFunction("selectRegionFeature"),/clearYieldInputOnContextChange/,
+ "changing the selected ADM/custom area must invalidate the previous CSV");
+assert.match(extractFunction("syncCropSelection"),/clearYieldInputOnContextChange/,
+ "changing the selected crop must invalidate the previous CSV");
+const resetElements={
+ "region-yield-file":{files:[{name:"old-district.csv"}],value:"old-district.csv"},
+ "region-model-result":{textContent:""}
+};
+const resetHelper=new Function("$",resetHelperSource+"\\nreturn clearYieldInputOnContextChange;")(
+ id=>resetElements[id]
+);
+resetHelper("Hudud tanlovi o‘zgardi.");
+assert.equal(resetElements["region-yield-file"].value,"",
+ "a stale CSV file must be cleared when the selected area/crop changes");
+assert.match(resetElements["region-model-result"].textContent,/qayta tanlang/,
+ "the user must be told to choose a CSV for the new area/crop");
+
 const adm1Payload=JSON.parse(fs.readFileSync(path.join(docs,"data","boundaries","UZB_ADM1.geojson"),"utf8"));
 const officialYield=JSON.parse(fs.readFileSync(path.join(docs,"data","official-yield","UZB_ADM1_WHEA_2010_2024.json"),"utf8"));
 assert.equal(officialYield.regions.length,13,"SIAT wheat source should cover 13 agricultural provinces");
