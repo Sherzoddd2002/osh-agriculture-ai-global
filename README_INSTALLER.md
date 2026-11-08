@@ -2,7 +2,7 @@
 
 The project supports two different modes. Choose the mode that matches the job of the computer.
 
-## 1. Shared central server (project owner's Windows host)
+## Optional: shared central server (project owner's Windows host)
 
 This is the mode for one shared website and one shared PostgreSQL database. Run it only on the Windows computer that already hosts PostgreSQL 17.11 and the database osh_agriculture_global.
 
@@ -29,27 +29,41 @@ The server listens on 127.0.0.1:8080. To give it a public HTTPS address, configu
 
 End users do not run the server installer. They open the owner's published HTTPS URL, register, choose their region, and upload a crop-yield CSV when they have one. Each user's private rows are stored in the same PostgreSQL database and filtered by account ownership.
 
-## 2. Local isolated mode (personal sandbox)
+## Recommended: per-user local mode from GitHub (no npm publication required)
 
-For a standalone offline/local evaluation on a user's own computer:
+Every person can install a private local copy on their own computer. The CLI creates a separate SQLite database and binds the web app to `127.0.0.1:8080`. This is not a shared website; data is not synchronized between computers.
 
-```powershell
-npx osh-agriculture-ai-global install
-```
+Requirements: Git, Node.js 20+, Python 3.11+, and internet access for source download and external APIs. Docker and PostgreSQL are not required.
 
-This creates a private SQLite database on that computer. It is not connected to the owner's central PostgreSQL and is not the shared public website.
-
-Commands:
+Windows PowerShell:
 
 ```powershell
-npx osh-agriculture-ai-global start
-npx osh-agriculture-ai-global status
-npx osh-agriculture-ai-global stop
-npx osh-agriculture-ai-global update
+git clone https://github.com/Sherzoddd2002/osh-agriculture-ai-global.git
+cd osh-agriculture-ai-global
+.\ops\local.ps1 install
 ```
 
-Requirements: Node.js 20+ and Python 3.11+ for source download and the local Python runtime; central Windows host mode also requires Python 3.12+ and access to its PostgreSQL 17.11 instance.
+Direct CLI alternative:
+
+```powershell
+node .\bin\cli.js install
+```
+
+The installer creates its runtime, environment file, worker, and SQLite database under the current user's application-data folder, then opens the local website. Keep the terminal open while the server runs.
+
+Management commands from the cloned repository:
+
+```powershell
+.\ops\local.ps1 start
+.\ops\local.ps1 status
+.\ops\local.ps1 stop
+.\ops\local.ps1 update
+```
+
+On macOS/Linux, use `node ./bin/cli.js install` and the same CLI subcommands.
+
+The local installer does not copy data from the project maintainer's PostgreSQL database. The MAPSPAM reference rows currently imported by the maintainer must be distributed separately as a versioned data bundle before they can appear in every local instance.
 
 ## Publication status
 
-These commands become available through the public npm registry only after the repository owner publishes the package. A GitHub repository or pull request by itself does not create an npm package.
+The GitHub checkout instructions above work without publishing an npm package. The shorter `npx osh-agriculture-ai-global ...` commands become available only after the repository owner publishes the package to the public npm registry.

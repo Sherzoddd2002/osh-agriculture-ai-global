@@ -220,21 +220,44 @@ async function stopServer() {
 }
 async function serve() {
   if (await healthy()) { console.log("Sayt allaqachon ishlayapti: http://127.0.0.1:8080"); openBrowser(); return; }
-  const child = spawn(py, ["-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", String(port)], { cwd: p.runtime, stdio: "inherit", windowsHide: false });
-  if (!child.pid) throw new Error("Web-server process yaratilmadi.");
+  await fsp.mkdir(p.logs, { recursive: true });
+  const webLogPath = path.join(p.logs, "web.log");
+  const webLogFd = fs.openSync(webLogPath, "a");
+  let child;
+  try {
+    child = spawn(py, ["-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", String(port)], {
+      cwd: p.runtime, stdio: ["ignore", webLogFd, webLogFd], windowsHide: true
+    });
+  } finally {
+    fs.closeSync(webLogFd);
+  }
+  if (!child.pid) throw new Error(`Web-server process yaratilmadi. Log: ${webLogPath}`);
   await fsp.writeFile(p.serverPid, JSON.stringify({ pid: child.pid, command: "uvicorn app.main:app" }));
 
   let exited = false;
   let code = 0;
-  const ended = new Promise(resolve => child.once("exit", async c => {
-    exited = true;
-    code = c ?? 1;
-    await fsp.rm(p.serverPid, { force: true });
-    resolve();
-  }));
+  let launchError = null;
+  const ended = new Promise(resolve => {
+    const finish = async () => {
+      await fsp.rm(p.serverPid, { force: true });
+      resolve();
+    };
+    child.once("error", async error => {
+      launchError = error;
+      exited = true;
+      code = 1;
+      await finish();
+    });
+    child.once("exit", async exitCode => {
+      exited = true;
+      code = exitCode ?? 1;
+      await finish();
+    });
+  });
+  let shutdownPromise = Promise.resolve();
   const onSignal = () => {
     if (!child.killed) child.kill();
-    stopWorker().catch(e => console.error("Worker stop:", e.message));
+    shutdownPromise = stopWorker().catch(e => console.error("Worker stop:", e.message));
   };
   process.once("SIGINT", onSignal);
   process.once("SIGTERM", onSignal);
@@ -244,17 +267,22 @@ async function serve() {
   if (exited) {
     process.removeListener("SIGINT", onSignal);
     process.removeListener("SIGTERM", onSignal);
-    throw new Error(`Web-server ishga tushmadi (exit ${code}).`);
+    await shutdownPromise;
+    throw new Error(`Web-server ishga tushmadi (exit ${code})${launchError ? ": " + launchError.message : ""}. Batafsil log: ${webLogPath}`);
   }
   if (!(await healthy())) {
     child.kill();
+    await ended;
     process.removeListener("SIGINT", onSignal);
     process.removeListener("SIGTERM", onSignal);
-    throw new Error("Health-check 90 soniyada javob bermadi.");
+    await shutdownPromise;
+    throw new Error(`Health-check 90 soniyada javob bermadi. Batafsil log: ${webLogPath}`);
   }
   console.log("OSH Agriculture AI Global: http://127.0.0.1:8080");
+  console.log(`Web log: ${webLogPath}`);
   openBrowser();
   await ended;
+  await shutdownPromise;
   process.removeListener("SIGINT", onSignal);
   process.removeListener("SIGTERM", onSignal);
 }
@@ -272,8 +300,9 @@ async function update() {
 async function status() {
   const web = await healthy();
   const pid = await workerPid();
-  const worker = pid && await pidAlive(pid);
-  console.log(`Web: ${web ? "RUNNING" : "STOPPED"}\nWorker: ${worker ? "RUNNING (PID " + pid + ")" : "STOPPED"}\nInstall: ${home}`);
+  const alive = pid && await pidAlive(pid);
+  const worker = alive && (await processCommandLine(pid)).toLowerCase().includes("app.worker");
+  console.log(`Web: ${web ? "RUNNING" : "STOPPED"}\nWorker: ${worker ? "RUNNING (PID " + pid + ")" : "STOPPED"}\nInstall: ${home}\nWeb log: ${path.join(p.logs, "web.log")}\nWorker log: ${path.join(p.logs, "worker.log")}`);
 }
 async function runCentralScript(action) {
   if (process.platform !== "win32") {
@@ -304,7 +333,7 @@ async function runCentralScript(action) {
 async function main() {
   if (Number(process.versions.node.split(".")[0]) < 20) throw new Error("Node.js 20+ kerak.");
   if (args.includes("--help") || command === "help") {
-    console.log("OSH Agriculture AI Global CLI\n\nLocal isolated mode (SQLite):\nnpx osh-agriculture-ai-global install\nnpx osh-agriculture-ai-global start\nnpx osh-agriculture-ai-global status\nnpx osh-agriculture-ai-global stop\nnpx osh-agriculture-ai-global update\n\nShared central server mode (Windows + existing PostgreSQL):\nnpx osh-agriculture-ai-global server-install\nnpx osh-agriculture-ai-global server-start\nnpx osh-agriculture-ai-global server-status\nnpx osh-agriculture-ai-global server-stop\nnpx osh-agriculture-ai-global server-update\n\nOptions: --no-open");
+    console.log("OSH Agriculture AI Global CLI\n\nRecommended local per-user mode (SQLite; no cloud server):\nFrom a GitHub checkout: node ./bin/cli.js install\nManage: node ./bin/cli.js start\n        node ./bin/cli.js status\n        node ./bin/cli.js stop\n        node ./bin/cli.js update\nAfter npm publication: npx osh-agriculture-ai-global install\n\nOptional shared central server mode (Windows + existing PostgreSQL):\nAfter npm publication: npx osh-agriculture-ai-global server-install\nManage with: server-start, server-status, server-stop, server-update\n\nEach local installation has its own database; local users do not share data.\nOptions: --no-open");
     return;
   }
   if (command === "install") await install();

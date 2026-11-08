@@ -80,16 +80,7 @@
         <div id="mapspam-summary-status" class="muted" role="status">Hudud tanlangandan keyin server bazasidan ma’lumot olinadi.</div>
         <div id="mapspam-summary-table" class="table-wrap"></div>
       </section>
-      <section class="climate-dashboard" id="location-climate-results" hidden>
-        <div class="climate-dashboard-head"><div><span class="eyebrow">REGIONAL CLIMATE INTELLIGENCE</span><h2 id="climate-title">Hudud iqlim tahlili</h2><p id="climate-subtitle">Yillik tarixiy ko‘rsatkichlar, joriy ob-havo va qisqa muddatli prognoz.</p></div><span class="source-pill" id="climate-source-status">Ma’lumot kutilmoqda</span></div>
-        <div id="climate-current-kpis" class="climate-current-grid"></div>
-        <div id="climate-model-note" class="climate-model-note">Hosildorlik ma’lumoti bo‘lmasa, model prognozi hisoblanmaydi.</div>
-        <div class="climate-panels">
-          <article class="panel climate-forecast-panel"><div class="panel-title"><div><h3>Yaqin kunlar prognozi</h3><small>Model prognozi · kuzatuv emas</small></div><span class="source-pill">16 kungacha</span></div><div id="climate-forecast-days" class="forecast-days"><div class="empty-state">Prognoz kutilmoqda</div></div></article>
-          <article class="panel annual-panel"><div class="panel-title"><div><h3>Yillik iqlim tarixi</h3><small>NASA POWER · vakillik nuqtasi</small></div><span id="annual-row-count" class="source-pill">0 yil</span></div><div class="table-wrap"><table class="annual-table"><thead><tr><th>Yil</th><th>Temp. o‘rtacha</th><th>Yog‘in</th><th>Issiq kun</th><th>Sovuq kun</th><th>Qamrov</th></tr></thead><tbody id="annual-climate-rows"><tr><td colspan="6" class="empty-state">Ma’lumot kutilmoqda</td></tr></tbody></table></div></article>
-        </div>
-        <div class="notice">Eslatma: NASA POWER tarixiy qiymatlari hudud poligonidagi vakillik nuqtasi bo‘yicha. Bu butun tuman yoki dala uchun zonal o‘rtacha emas. Open-Meteo prognozi esa ob-havo modelining taxmini.</div>
-      </section>
+
       <div class="section-heading"><div><span class="eyebrow">DATASET</span><h2>Hosildorlik ma’lumotingiz bormi?</h2><p>Bo‘lsa, CSV yuklang. Bo‘lmasa, yuqoridagi iqlim panelidan foydalanishingiz mumkin.</p></div></div>
       <div class="section-heading"><div><span class="eyebrow">DATASET</span><h2>Keyingi qadam: hosildorlik ma’lumotini yuklash</h2><p>Avval yuqorida hududni saqlang, so‘ng CSV faylni tanlang.</p></div></div>
       <div class="panel upload-panel">
@@ -122,6 +113,21 @@
     <section class="view" id="view-environment">
       <div class="page-intro"><span class="eyebrow">ENVIRONMENTAL DATA</span><h2>Iqlim va tuproq</h2><p>Har bir manbaning real ulanish holati, qamrovi va cheklovi ko‘rsatiladi.</p></div>
       <div id="source-cards" class="source-grid"><div class="loading">Manbalar tekshirilmoqda…</div></div>
+      <div class="toolbar panel environment-toolbar">
+        <label>Saqlangan hudud<select id="environment-location-select"><option value="">Avval hududni saqlang</option></select></label>
+        <button class="primary-button" id="refresh-climate" type="button">Iqlimni qayta hisoblash</button>
+        <span id="environment-status" class="muted" role="status">Hudud saqlangandan keyin iqlim natijalari shu yerda ko‘rinadi.</span>
+      </div>
+      <section class="climate-dashboard" id="location-climate-results" hidden>
+        <div class="climate-dashboard-head"><div><span class="eyebrow">REGIONAL CLIMATE INTELLIGENCE</span><h2 id="climate-title">Hudud iqlim tahlili</h2><p id="climate-subtitle">Yillik tarixiy ko‘rsatkichlar, joriy ob-havo va qisqa muddatli prognoz.</p></div><span class="source-pill" id="climate-source-status">Ma’lumot kutilmoqda</span></div>
+        <div id="climate-current-kpis" class="climate-current-grid"></div>
+        <div id="climate-model-note" class="climate-model-note">Hosildorlik ma’lumoti bo‘lmasa, model prognozi hisoblanmaydi.</div>
+        <div class="climate-panels">
+          <article class="panel climate-forecast-panel"><div class="panel-title"><div><h3>Yaqin kunlar prognozi</h3><small>Model prognozi · kuzatuv emas</small></div><span class="source-pill">16 kungacha</span></div><div id="climate-forecast-days" class="forecast-days"><div class="empty-state">Prognoz kutilmoqda</div></div></article>
+          <article class="panel annual-panel"><div class="panel-title"><div><h3>Yillik iqlim tarixi</h3><small>NASA POWER · vakillik nuqtasi</small></div><span id="annual-row-count" class="source-pill">0 yil</span></div><div class="table-wrap"><table class="annual-table"><thead><tr><th>Yil</th><th>Temp. o‘rtacha</th><th>Yog‘in</th><th>Issiq kun</th><th>Sovuq kun</th><th>Qamrov</th></tr></thead><tbody id="annual-climate-rows"><tr><td colspan="6" class="empty-state">Ma’lumot kutilmoqda</td></tr></tbody></table></div></article>
+        </div>
+        <div class="notice">Eslatma: NASA POWER tarixiy qiymatlari hudud poligonidagi vakillik nuqtasi bo‘yicha. Bu butun tuman yoki dala uchun zonal o‘rtacha emas. Open-Meteo prognozi esa ob-havo modelining taxmini.</div>
+      </section>
     </section>
 
     <section class="view" id="view-data">
