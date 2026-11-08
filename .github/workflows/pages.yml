@@ -3,7 +3,7 @@ name: Deploy public demo to GitHub Pages
 on:
   push:
     branches:
-      - feat/global-3d-globe-dark
+      - main
   workflow_dispatch:
 
 permissions:
