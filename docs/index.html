@@ -109,6 +109,7 @@
  .source-grid{grid-template-columns:1fr 1fr}
 }
 .region-csv-help{margin:12px 0;border:1px solid #315064;background:#0e2636}.region-csv-help summary{cursor:pointer;color:#c5d8e1;font-size:11px;font-weight:850;list-style-position:inside}.region-csv-help p{margin:10px 0 0;color:#98afbd;font-size:10px;line-height:1.7}.region-csv-help code{color:var(--mint);font-size:10px}
+.region-model-source-note{margin:11px 0 13px;padding:11px 13px;border:1px solid #2b5260;border-radius:11px;background:#102a38;color:#a9c1cc;font-size:10px;line-height:1.65}
 </style>
 </head>
 <body>
@@ -193,7 +194,7 @@
       <div class="region-steps" aria-label="Tahlil qilish tartibi">
         <article><span>01</span><div><b>Hududni tanlang</b><small>199 tuman avtomatik yuklanadi; ADM1 orqali 14 viloyatga o‘ting yoki nom bilan qidiring.</small></div></article>
         <article><span>02</span><div><b>Ekin va hudud tahlili</b><small>46 ekindan birini tanlang, so‘ng “Hududni tahlil qilish”ni bosing. Iqlim va AI oynalari ochiladi.</small></div></article>
-        <article><span>03</span><div><b>CSV yuklang va prognoz qiling</b><small>Shu hudud/ekin uchun haqiqiy yillik CSV faylni yuklang, mavsumni tekshiring va Ridge + ERA5-Land hisobini boshlang.</small></div></article>
+        <article><span>03</span><div><b>AI ssenariysini hisoblang</b><small>Viloyat + bug‘doyda rasmiy SIAT qatori avtomatik keladi; tuman yoki boshqa ekinda shu hudud/ekin uchun CSV yuklang.</small></div></article>
       </div>
       <div class="panel region-panel">
         <div class="region-controls">
@@ -241,6 +242,7 @@
             <p><b>Hudud qoidasi:</b> ADM2 tuman tanlangan bo‘lsa, CSV ham aynan shu tuman va shu ekin bo‘yicha bo‘lishi kerak. Viloyat ma’lumotini tuman ma’lumoti sifatida kiritmang. Rasmiy tuman qatori bo‘lmasa, sun’iy raqam qo‘shmang — model noto‘g‘ri hududni bashorat qilmasligi kerak.</p>
             <p><b>Mavsum:</b> bug‘doy kabi kuzgi ekinlar uchun odatda 10-01 dan 06-30 gacha; boshqa ekinlarda o‘zingizning haqiqiy ekish/yig‘im mavsumingizni belgilang. Kelajak ob-havosi modelda so‘nggi 5 mos mavsum normasi bilan ifodalanadi.</p>
           </details>
+          <div class="region-model-source-note" id="region-model-source-help" role="status">Viloyat (ADM1) + bug‘doy: SIAT rasmiy 2010–2024 qatori avtomatik yuklanadi. Tuman (ADM2), qo‘lda chizilgan maydon yoki boshqa ekinlar uchun aynan shu hudud/ekin bo‘yicha haqiqiy CSV talab qilinadi.</div>
           <div class="region-yield-controls">
             <label>CSV fayl<input type="file" id="region-yield-file" accept=".csv,text/csv"></label>
             <label>Yil ustuni<input id="region-year-column" value="year"></label>
@@ -394,6 +396,7 @@ $("crop-select").addEventListener("change",syncCropSelection);
 $("region-crop-select").addEventListener("change",()=>{
  $("crop-select").value=$("region-crop-select").value;
  syncCropSelection();
+ updateYieldModelButton();
 });
 renderCropList("");
 syncCropSelection();
@@ -420,6 +423,36 @@ fetch("./data/catalog.json").then(r=>{if(!r.ok)throw new Error("manifest "+r.sta
 
 let map=null,features=[],selected=null;
 let regionSelectionActive=false,regionDrawing=false,regionDraftPoints=[],adminFeatures=[],selectedAOI=null;
+const OFFICIAL_WHEAT_ADM1_NAMES=[
+ "Qoraqalpog‘iston Respublikasi","Andijon viloyati","Buxoro viloyati","Jizzax viloyati",
+ "Qashqadaryo viloyati","Navoiy viloyati","Namangan viloyati","Samarqand viloyati",
+ "Surxondaryo viloyati","Sirdaryo viloyati","Toshkent viloyati","Farg‘ona viloyati",
+ "Xorazm viloyati"
+];
+function canUseOfficialProvinceWheat(){
+ if(!selectedAOI)return false;
+ const props=selectedAOI.properties||{};
+ const level=String(props.shapeType||"").toUpperCase();
+ const crop=$("region-crop-select").value;
+ const name=normalizeRegionSearch(regionFeatureName(selectedAOI));
+ return level==="ADM1"&&crop==="whea"&&OFFICIAL_WHEAT_ADM1_NAMES.some(value=>normalizeRegionSearch(value)===name);
+}
+function updateYieldModelButton(){
+ const hasCsv=$("region-yield-file").files.length>0;
+ const hasOfficial=canUseOfficialProvinceWheat();
+ $("region-run-model").disabled=!(selectedAOI&&(hasCsv||hasOfficial));
+ if(hasOfficial&&!hasCsv){
+  $("region-model-source-help").textContent="Rasmiy SIAT bug‘doy qatori topildi: "+regionFeatureName(selectedAOI)+", 2010–2024. CSV yuklamasdan Ridge + ERA5-Land hisoblash mumkin.";
+ }else if(selectedAOI&&String((selectedAOI.properties||{}).shapeType||"").toUpperCase()==="ADM2"&&!hasCsv){
+  $("region-model-source-help").textContent="Tuman tanlandi. SIAT bug‘doy qatori faqat viloyat kesimida; tuman prognozi uchun aynan shu tuman/ekin bo‘yicha haqiqiy CSV yuklang.";
+ }else if(selectedAOI&&!hasCsv){
+  $("region-model-source-help").textContent="Bu maydon/ekin uchun rasmiy ko‘p yillik yield qatori yo‘q. Prognoz uchun mos tarixiy CSV yuklang.";
+ }else if(hasCsv){
+  $("region-model-source-help").textContent="CSV brauzerda qayta ishlanadi va serverga yuborilmaydi. Fayl tanlangan hudud va ekinga mosligini tekshiring.";
+ }else{
+  $("region-model-source-help").textContent="Viloyat (ADM1) + bug‘doy: SIAT rasmiy 2010–2024 qatori avtomatik yuklanadi. Tuman (ADM2), qo‘lda chizilgan maydon yoki boshqa ekinlar uchun aynan shu hudud/ekin bo‘yicha haqiqiy CSV talab qilinadi.";
+ }
+}
 function countryName(f){const p=f&&f.properties||{};return p.ADMIN||p.name||p.NAME||p.NAME_EN||"Tanlangan mamlakat";}
 function iso3(f){const p=f&&f.properties||{};return p.ISO_A3||p["ISO3166-1-Alpha-3"]||p.ADM0_A3||p.iso_a3||"—";}
 function choose(f,animate){
@@ -682,6 +715,7 @@ function selectRegionFeature(feature,sourceLabel){
  $("region-meta").textContent=(sourceLabel||"CUSTOM AOI")+" · "+(feature.geometry.type||"Polygon")+" · "+(feature.properties&&feature.properties.shapeID||"ID not assigned");
  $("region-center").textContent=center?center.lat.toFixed(5)+", "+center.lon.toFixed(5):"—";
  $("region-analyze").disabled=!center;
+ updateYieldModelButton();
  $("region-results").hidden=true;
  if(map&&map.getSource("region-selected")){
   map.getSource("region-selected").setData({type:"FeatureCollection",features:[feature]});
@@ -1088,30 +1122,60 @@ function runRegionRidge(series,targetYear,climateByYear){
  };
 }
 $("region-yield-file").addEventListener("change",()=>{
- $("region-run-model").disabled=!$("region-yield-file").files.length;
- $("region-model-result").textContent=$("region-yield-file").files.length?"CSV tanlandi. Yil/yield ustunlari va mavsum sanalarini tekshirib, iqlim bilan ML hisoblang.":"CSV tanlanmagan.";
+ updateYieldModelButton();
+ $("region-model-result").textContent=$("region-yield-file").files.length
+  ?"CSV tanlandi. Yil/yield ustunlari va mavsum sanalarini tekshirib, iqlim bilan ML hisoblang."
+  :(canUseOfficialProvinceWheat()?"Rasmiy SIAT viloyat bug‘doy qatori tanlandi. CSV majburiy emas.":"CSV tanlanmagan.");
 });
+async function loadOfficialWheatSeries(){
+ const response=await fetch("./data/official-yield/UZB_ADM1_WHEA_2010_2024.json",{cache:"no-cache"});
+ if(!response.ok)throw new Error("Rasmiy SIAT ma’lumot fayli HTTP "+response.status);
+ const payload=await response.json();
+ if(payload.country_iso3!=="UZB"||payload.admin_level!=="ADM1"||payload.crop_code!=="whea")
+  throw new Error("SIAT statik dataset metama’lumoti noto‘g‘ri");
+ const wanted=normalizeRegionSearch(regionFeatureName(selectedAOI));
+ const region=(payload.regions||[]).find(item=>normalizeRegionSearch(item.name_uz)===wanted);
+ if(!region)throw new Error("Tanlangan viloyat uchun SIAT bug‘doy qatori topilmadi. Bu viloyat CSV bilan tahlil qilinishi kerak.");
+ const series=(region.records||[]).map(row=>({year:Number(row.year),yield:Number(row.yield)}))
+  .filter(row=>Number.isInteger(row.year)&&Number.isFinite(row.yield)&&row.yield>0)
+  .sort((a,b)=>a.year-b.year);
+ if(series.length<8)throw new Error("Rasmiy SIAT bug‘doy qatori 8 ta mos yildan kam.");
+ if(series.length!==new Set(series.map(row=>row.year)).size)throw new Error("SIAT qatorida takroriy yil bor.");
+ return {series:series,region:region,metadata:payload};
+}
 $("region-run-model").addEventListener("click",async()=>{
  const file=$("region-yield-file").files[0];
- if(!file)return;
- if(!selectedAOI){$("region-model-result").textContent="Avval kichik hududni tanlang yoki maydon poligoni chizing.";return;}
+ const officialMode=!file&&canUseOfficialProvinceWheat();
+ if(!selectedAOI){$("region-model-result").textContent="Avval viloyat/tuman poligonini tanlang yoki maydon chizing.";return;}
+ if(!file&&!officialMode){$("region-model-result").textContent="Bu hudud va ekin uchun haqiqiy tarixiy CSV yuklang. Rasmiy SIAT avtomatik qatori faqat 13 ta qishloq xo‘jaligi viloyatida bug‘doy uchun mavjud.";return;}
  const output=$("region-model-result");
  $("region-run-model").disabled=true;
- output.textContent="CSV tekshirilmoqda. ERA5-Land tarixiy mavsumiy ob-havo qatori olinmoqda…";
+ output.textContent=officialMode
+  ?"Rasmiy SIAT bug‘doy statistikasi yuklanmoqda. ERA5-Land tarixiy mavsumiy iqlim qatori olinmoqda…"
+  :"CSV tekshirilmoqda. ERA5-Land tarixiy mavsumiy ob-havo qatori olinmoqda…";
  try{
-  const csv=await file.text();
-  const lines=csv.replace(/^\uFEFF/,"").split(/\r?\n/).filter(line=>line.trim());
-  if(lines.length<9)throw new Error("Kamida header + 8 ta ma’lumot qatori kerak.");
-  const delimiter=(lines[0].match(/;/g)||[]).length>(lines[0].match(/,/g)||[]).length?";":",";
-  const header=parseRegionCsvLine(lines[0],delimiter).map(v=>v.trim().toLowerCase());
-  const yearIndex=header.indexOf($("region-year-column").value.trim().toLowerCase());
-  const yieldIndex=header.indexOf($("region-yield-column").value.trim().toLowerCase());
-  if(yearIndex<0||yieldIndex<0)throw new Error("CSV ichida ko‘rsatilgan year va yield ustunlari topilmadi.");
-  const series=lines.slice(1).map(line=>{
-   const values=parseRegionCsvLine(line,delimiter);
-   return {year:Number(values[yearIndex]),yield:Number(String(values[yieldIndex]||"").replace(",", "."))};
-  }).filter(row=>Number.isInteger(row.year)&&Number.isFinite(row.yield)&&row.yield>=0&&row.yield<=1000).sort((a,b)=>a.year-b.year);
-  if(series.length<8)throw new Error("CSV ichida kamida 8 ta to‘g‘ri year/yield kuzatuvi bo‘lishi kerak.");
+  let series=[],datasetSource="",datasetMeta=null;
+  if(officialMode){
+   const official=await loadOfficialWheatSeries();
+   series=official.series;
+   datasetMeta=official.metadata;
+   datasetSource="SIAT rasmiy bug‘doy ishlab chiqarishi / bug‘doy ekilgan maydonidan hisoblangan ADM1 yield";
+  }else{
+   const csv=await file.text();
+   const lines=csv.replace(/^\uFEFF/,"").split(/\r?\n/).filter(line=>line.trim());
+   if(lines.length<9)throw new Error("Kamida header + 8 ta ma’lumot qatori kerak.");
+   const delimiter=(lines[0].match(/;/g)||[]).length>(lines[0].match(/,/g)||[]).length?";":",";
+   const header=parseRegionCsvLine(lines[0],delimiter).map(v=>v.trim().toLowerCase());
+   const yearIndex=header.indexOf($("region-year-column").value.trim().toLowerCase());
+   const yieldIndex=header.indexOf($("region-yield-column").value.trim().toLowerCase());
+   if(yearIndex<0||yieldIndex<0)throw new Error("CSV ichida ko‘rsatilgan year va yield ustunlari topilmadi.");
+   series=lines.slice(1).map(line=>{
+    const values=parseRegionCsvLine(line,delimiter);
+    return {year:Number(values[yearIndex]),yield:Number(String(values[yieldIndex]||"").replace(",", "."))};
+   }).filter(row=>Number.isInteger(row.year)&&Number.isFinite(row.yield)&&row.yield>=0&&row.yield<=1000).sort((a,b)=>a.year-b.year);
+   datasetSource="Foydalanuvchi yuklagan hudud/ekin CSV qatori";
+  }
+  if(series.length<8)throw new Error("Kamida 8 ta to‘g‘ri year/yield kuzatuvi bo‘lishi kerak.");
   if(series.length!==new Set(series.map(row=>row.year)).size)throw new Error("Takroriy hosil yillari bor. Har yil uchun bitta kuzatilgan qator qoldiring.");
   const target=Number($("region-target-year").value);
   if(!Number.isInteger(target)||target<=series[series.length-1].year)throw new Error("Maqsadli yil oxirgi kuzatilgan yildan keyin bo‘lishi kerak.");
@@ -1122,26 +1186,28 @@ $("region-run-model").addEventListener("click",async()=>{
    const date=new Date(Date.UTC(2000,month-1,day));
    return date.getUTCMonth()===month-1&&date.getUTCDate()===day;
   };
-  if(!validSeasonDate(startSeason)||!validSeasonDate(endSeason)||startSeason===endSeason)throw new Error("Mavsum sanalari haqiqiy MM-DD formatida bo‘lishi va boshlanish/tugash kuni farq qilishi kerak.");
+  if(!validSeasonDate(startSeason)||!validSeasonDate(endSeason)||startSeason===endSeason)
+   throw new Error("Mavsum sanalari haqiqiy MM-DD formatida bo‘lishi va boshlanish/tugash kuni farq qilishi kerak.");
   const center=regionCenter(selectedAOI);
   if(!center)throw new Error("Tanlangan AOI koordinatalari olinmadi.");
   const climateByYear=await fetchYieldClimateHistory(center,series,startSeason,endSeason);
   output.textContent="ERA5-Land iqlim qatori moslandi. Expanding-window Ridge modeli va Persistence benchmark hisoblanmoqda…";
   const result=runRegionRidge(series,target,climateByYear);
-  const selectedCropLabel=$("crop-select").selectedOptions[0]?.textContent||"Tanlangan ekin";
+  const selectedCropLabel=$("region-crop-select").selectedOptions[0]?.textContent||"Tanlangan ekin";
   const selectedAreaLabel=$("region-name").textContent||"Tanlangan AOI";
   const rangeLow=Math.max(0,result.forecast-result.mae),rangeHigh=result.forecast+result.mae;
   const validationRows=result.oof.slice(-8).map(row=>"<tr><td>"+row.year+"</td><td>"+regionFmt(row.actual,3)+"</td><td>"+regionFmt(row.predicted,3)+"</td><td>"+regionFmt(row.persistence,3)+"</td><td>"+regionFmt(Math.abs(row.actual-row.predicted),3)+"</td></tr>").join("");
+  const officialSourceHtml=officialMode&&datasetMeta
+   ?"<p class='region-footnote'>Manba: <a href='https://siat.stat.uz/data/1458/?lang=en' target='_blank' rel='noopener'>SIAT bug‘doy ishlab chiqarishi</a> va <a href='https://siat.stat.uz/data/2761/?lang=en' target='_blank' rel='noopener'>bug‘doy ekilgan maydoni</a>. Hisob: ming tonna × 1000 / gektar = t/ha. SIAT qatori 13 ta qishloq xo‘jaligi viloyatini qamrab oladi; Toshkent shahri kiritilmagan. CC BY 4.0.</p>"
+   :"";
   output.innerHTML="<div class='eyebrow'>AI YIELD SCENARIO · RIDGE + ERA5-LAND</div><strong style='font-size:30px'>"+regionFmt(result.forecast,3)+" t/ha</strong> · "+target+" yil · "+regionEscape(selectedCropLabel)+" · "+regionEscape(selectedAreaLabel)+
    "<div class='region-weather-kpis' style='margin-top:12px'>"+
    [["Oxirgi kuzatuv",regionFmt(result.last,3)+" t/ha"],["OOF MAE",regionFmt(result.mae,3)+" t/ha"],["Persistence MAE",regionFmt(result.persistenceMae,3)+" t/ha"],["MAE ssenariy diapazoni",regionFmt(rangeLow,3)+"–"+regionFmt(rangeHigh,3)],["OOF validatsiya",result.oof.length+" yil"],["Yield + weather",result.rows+" yil"],["Weather coverage",regionFmt(result.coverageMean*100,1)+"%"],["Benchmark",result.beatsPersistence?"Ridge yaxshiroq":"Persistence yaxshiroq"]].map(k=>"<div class='region-kpi'><small>"+k[0]+"</small><strong style='font-size:14px'>"+k[1]+"</strong></div>").join("")+
-   "</div><div class='region-table-wrap'><table><thead><tr><th>Validatsiya yili</th><th>Haqiqiy yield</th><th>Ridge</th><th>Persistence</th><th>Ridge |xato|</th></tr></thead><tbody>"+validationRows+"</tbody></table></div><p class='region-footnote'>Model: Ridge regression, expanding-window OOF. Benchmark: oxirgi kuzatilgan yield. Kelajak ob-havosi noma’lum bo‘lgani uchun kelgusi feature’lar oxirgi 5 ta mos mavsumning ERA5-Land normasi bilan to‘ldirildi ("+result.climateNormalYears.join(", ")+"). Diapazon forecast ± OOF MAE — bu 95% confidence interval emas. Ridge benchmarkdan yomon bo‘lsa ham prognoz alohida ko‘rsatiladi; bu xabarni e’tiborga oling."+
-   "<br>CSV tanlangan hudud ("+regionEscape(selectedAreaLabel)+") va ekin ("+regionEscape(selectedCropLabel)+") uchun haqiqiy tarixiy yield bo‘lishi kerak. Kamida 8 ta mos, yetarli ob-havo qamroviga ega kuzatuv zarur. Universal barcha tumanlarga mos tasdiqlangan model emas; NDVI/SMAP/SoilGrids hali model featurelariga qo‘shilmagan. CSV serverga yuborilmadi.</p>";
-
- }catch(error){output.textContent="AI ssenariysi ishga tushmadi: "+error.message;}
- finally{$("region-run-model").disabled=false;}
+   "</div><div class='region-table-wrap'><table><thead><tr><th>Validatsiya yili</th><th>Haqiqiy yield</th><th>Ridge</th><th>Persistence</th><th>Ridge |xato|</th></tr></thead><tbody>"+validationRows+"</tbody></table></div><p class='region-footnote'>Ma’lumot manbasi: "+regionEscape(datasetSource)+". Model: Ridge regression, expanding-window OOF. Benchmark: oxirgi kuzatilgan yield. Kelajak ob-havosi noma’lum bo‘lgani uchun kelgusi feature’lar oxirgi 5 ta mos mavsumning ERA5-Land normasi bilan to‘ldirildi ("+result.climateNormalYears.join(", ")+"). Diapazon forecast ± OOF MAE — bu 95% confidence interval emas. Ridge benchmarkdan yomon bo‘lsa ham prognoz alohida ko‘rsatiladi; buni e’tiborga oling."+
+   "<br>NDVI/SMAP/SoilGrids hali model featurelariga qo‘shilmagan. CSV bo‘lsa, u faqat brauzerda qayta ishlanadi va serverga yuborilmaydi.</p>"+officialSourceHtml;
+ }catch(error){output.textContent="AI ssenariysi ishga tushmadi: "+(error&&error.message?error.message:String(error));}
+ finally{updateYieldModelButton();}
 });
-
 
 
 })();
