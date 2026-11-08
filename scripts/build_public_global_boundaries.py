@@ -359,11 +359,7 @@ async def add_world_bank_fallback(
     )
 
     # Only request missing countries. This avoids downloading the full 40k+ polygon layer.
-    fields = (
-        "FID,ISO_A3,ISO_A2,WB_A3,WB_STATUS,NAM_0,NAM_1,ADM1CD_c,ADM1CD,ADM1CD_t"
-        if level == "ADM1"
-        else "FID,ISO_A3,ISO_A2,WB_A3,WB_STATUS,NAM_0,NAM_1,NAM_2,ADM1CD_c,ADM2CD_c,ADM1CD,ADM2CD"
-    )
+    fields = "*"
     raw_features: list[dict] = []
     for start in range(0, len(missing_codes), 35):
         batch = missing_codes[start:start + 35]
