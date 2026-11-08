@@ -1,0 +1,129 @@
+{
+  "project": "OSH Agriculture AI Global",
+  "snapshot_date": "2026-11-08",
+  "snapshot_scope": "Verified inventory counts from the maintainer's central PostgreSQL reference database; this manifest exposes metadata only, not raw private database rows.",
+  "combined_record_count": 838919,
+  "datasets": [
+    {
+      "id": "FAOSTAT_QCL",
+      "name": "FAOSTAT QCL — Crops and Livestock Products",
+      "status": "IMPORTED_TO_CENTRAL_POSTGRESQL",
+      "records": 610299,
+      "years": {
+        "first": 1961,
+        "last": 2024
+      },
+      "countries_or_areas": 202,
+      "crop_item_codes": 169,
+      "granularity": "Annual national statistical records",
+      "indicators": [
+        "Harvested area (ha)",
+        "Production (t)",
+        "Yield (t/ha)"
+      ],
+      "source": "FAO FAOSTAT",
+      "source_url": "https://www.fao.org/faostat/en/#data/QCL",
+      "caveat": "Coverage varies by country, item and year. This source is national-level history, not district-level observation."
+    },
+    {
+      "id": "mapspam-2020-v2r2",
+      "name": "IFPRI MAPSPAM 2020 v2r2",
+      "status": "IMPORTED_AND_SUMMARIZED_IN_CENTRAL_POSTGRESQL",
+      "records": 228620,
+      "reference_year": 2020,
+      "countries": 153,
+      "crops": 46,
+      "resolution_arc_minutes": 5,
+      "approx_km_at_equator": 9.3,
+      "variables": [
+        "physical_area",
+        "harvested_area",
+        "production",
+        "yield"
+      ],
+      "production_systems": [
+        "all",
+        "irrigated",
+        "rainfed"
+      ],
+      "admin_level_rows": {
+        "ADM0": 6578,
+        "ADM1": 107962,
+        "ADM2": 114080
+      },
+      "source": "IFPRI / Harvard Dataverse",
+      "source_url": "https://doi.org/10.7910/DVN/SWPENT",
+      "catalog_url": "https://cgiar-climate-data-hub.github.io/catalog/spam2020/",
+      "license": "CC BY-SA 4.0",
+      "caveats": [
+        "2020 is a single reference year, not an annual time series or current-year measurement.",
+        "Grid cells are approximately 9.3 km at the equator; this is not field-scale data.",
+        "Yield must be aggregated as a harvested-area-weighted mean, never by summing yield values.",
+        "ADM0, ADM1 and ADM2 are separate hierarchy summaries and must not be added as if they were mutually exclusive areas.",
+        "Boundary-vintage or parent-child reconciliation warnings must be preserved; missing raster coverage is NULL, not zero."
+      ]
+    },
+    {
+      "id": "CROPGRIDS-2020-v1.08",
+      "name": "CROPGRIDS v1.08",
+      "status": "CATALOGED_NOT_IMPORTED_TO_REFERENCE_DATABASE",
+      "reference_year": 2020,
+      "crop_count": 173,
+      "resolution_km_at_equator": 5.6,
+      "variables": [
+        "crop_physical_area",
+        "harvested_area"
+      ],
+      "source_url": "https://doi.org/10.6084/m9.figshare.22491997.v9",
+      "license": "CC BY 4.0",
+      "caveat": "Project catalog entry only; its files are not counted in the 838,919 imported rows."
+    }
+  ],
+  "admin_level_rows": {
+    "ADM0": 6578,
+    "ADM1": 107962,
+    "ADM2": 114080
+  },
+  "models": {
+    "dataset_specific_estimators": [
+      "Linear Regression",
+      "Ridge",
+      "ElasticNet",
+      "Random Forest",
+      "Extra Trees",
+      "HistGradientBoosting"
+    ],
+    "baseline": "Persistence",
+    "global_faostat_baseline": "Ridge with expanding-window validation, compared against Persistence",
+    "requirements": {
+      "minimum_yield_observations": 8,
+      "minimum_usable_weather_features": 2
+    },
+    "status": "Implemented research algorithms; not a validated universal global crop model."
+  },
+  "environmental_sources": [
+    {
+      "id": "NASA_POWER",
+      "status": "ACTIVE",
+      "scope": "Historical daily weather at a representative point of the selected polygon"
+    },
+    {
+      "id": "OPEN_METEO_FORECAST",
+      "status": "ACTIVE",
+      "scope": "Current weather and up to 16-day point forecast"
+    },
+    {
+      "id": "SENTINEL2_NDVI",
+      "status": "PLANNED_CONNECTOR"
+    },
+    {
+      "id": "NASA_SMAP",
+      "status": "PLANNED_CONNECTOR"
+    },
+    {
+      "id": "SOILGRIDS",
+      "status": "PLANNED_CONNECTOR"
+    }
+  ],
+  "private_data_note": "The public GitHub Pages site displays this aggregate inventory snapshot. It does not expose the central PostgreSQL records or authenticated user uploads. Full country/item series and MAPSPAM rows need the protected FastAPI/PostgreSQL service."
+}
