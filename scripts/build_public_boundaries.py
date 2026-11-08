@@ -139,8 +139,8 @@ async def build_official_wheat_yield(client: httpx.AsyncClient) -> dict:
         p_row, a_row = production[code], areas[code]
         if code == "1700":
             continue
-        name = str(p_row.get("Klassifikator") or "").strip()
-        area_name = str(a_row.get("Klassifikator") or "").strip()
+        name = " ".join(str(p_row.get("Klassifikator") or "").split())
+        area_name = " ".join(str(a_row.get("Klassifikator") or "").split())
         if not name or name != area_name:
             raise ValueError(
                 f"SIAT administrative labels differ for code {code}: "
