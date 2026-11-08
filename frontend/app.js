@@ -2,6 +2,7 @@ const API = '/api/v1';
 const $ = (id) => document.getElementById(id);
 let token = localStorage.getItem('osh_global_token') || '';
 let map = null, boundaryFeatures = [], selectedFeature = null, selectedLocationId = null, currentDatasetId = null, currentJobId = null, currentClimateJobId = null;
+let drawingAOI = false, drawingPoints = [];
 const locations = [];
 
 function authHeaders(json=true){const h={};if(json)h['Content-Type']='application/json';if(token)h.Authorization=`Bearer ${token}`;return h;}
@@ -38,7 +39,7 @@ function initMap(){
     center: [18, 18],
     zoom: 1.12,
     minZoom: 0.85,
-    maxZoom: 14,
+    maxZoom: 18,
     renderWorldCopies: false,
     attributionControl: false,
     maxPitch: 55
@@ -78,6 +79,27 @@ function initMap(){
     map.addSource('admin-boundaries', {
       type:'geojson',
       data:{type:'FeatureCollection',features:[]}
+    });
+    map.addSource('aoi-draft', {
+      type:'geojson',
+      data:{type:'FeatureCollection',features:[]}
+    });
+    map.addSource('aoi-draft-points', {
+      type:'geojson',
+      data:{type:'FeatureCollection',features:[]}
+    });
+    map.addLayer({
+      id:'aoi-draft-fill',type:'fill',source:'aoi-draft',
+      filter:['==',['geometry-type'],'Polygon'],
+      paint:{'fill-color':'#f2c879','fill-opacity':0.16}
+    });
+    map.addLayer({
+      id:'aoi-draft-line',type:'line',source:'aoi-draft',
+      paint:{'line-color':'#ffd88a','line-width':3,'line-dasharray':[2,1]}
+    });
+    map.addLayer({
+      id:'aoi-draft-points',type:'circle',source:'aoi-draft-points',
+      paint:{'circle-radius':5,'circle-color':'#ffd88a','circle-stroke-color':'#102335','circle-stroke-width':2}
     });
 
     map.addLayer({
@@ -127,12 +149,20 @@ function initMap(){
   });
 
   map.on('click','admin-fill',(event) => {
+    if(drawingAOI) return;
     const feature = event.features?.[0];
     if(!feature) return;
     const index = Number(feature.properties.__idx);
     if(Number.isInteger(index) && boundaryFeatures[index]) {
       selectFeature(boundaryFeatures[index]);
     }
+  });
+
+  map.on('click',(event) => {
+    if(!drawingAOI) return;
+    drawingPoints.push([Number(event.lngLat.lng.toFixed(7)),Number(event.lngLat.lat.toFixed(7))]);
+    updateAOIDraft();
+    toast($('boundary-status'),`Maydon chizilmoqda · ${drawingPoints.length} ta nuqta · kamida 3 ta kerak`);
   });
 
   map.on('mouseenter','admin-fill',() => {
@@ -146,6 +176,82 @@ function initMap(){
     if(event?.error) console.warn('MapLibre map error:', event.error);
   });
 }
+function updateAOIDraft(){
+  if(!map?.getSource('aoi-draft')) return;
+  const features=[];
+  if(drawingPoints.length>=2){
+    features.push({type:'Feature',properties:{kind:'draft-line'},geometry:{type:'LineString',coordinates:drawingPoints}});
+  }
+  if(drawingPoints.length>=3){
+    const ring=[...drawingPoints,drawingPoints[0]];
+    features.push({type:'Feature',properties:{kind:'draft-polygon'},geometry:{type:'Polygon',coordinates:[ring]}});
+  }
+  map.getSource('aoi-draft').setData({type:'FeatureCollection',features});
+  map.getSource('aoi-draft-points').setData({
+    type:'FeatureCollection',
+    features:drawingPoints.map((point,index)=>({
+      type:'Feature',properties:{index:index+1},
+      geometry:{type:'Point',coordinates:point}
+    }))
+  });
+}
+function setDrawingControls(active){
+  $('draw-aoi-start').disabled=active;
+  $('draw-aoi-finish').disabled=!active;
+  $('draw-aoi-cancel').disabled=!active;
+  if(map?.getCanvas()) map.getCanvas().style.cursor=active?'crosshair':'';
+}
+function startAOIDrawing(){
+  if(!map||!map.isStyleLoaded()){
+    toast($('boundary-status'),'Xarita hali tayyor emas. Bir ozdan keyin qayta urinib ko‘ring.');
+    return;
+  }
+  drawingAOI=true;
+  drawingPoints=[];
+  updateAOIDraft();
+  setDrawingControls(true);
+  toast($('boundary-status'),'Xaritada dala chegarasi bo‘ylab ketma-ket 3+ nuqtani bosing. So‘ng “Tugatish”ni bosing.');
+}
+function cancelAOIDrawing(){
+  drawingAOI=false;
+  drawingPoints=[];
+  updateAOIDraft();
+  setDrawingControls(false);
+  toast($('boundary-status'),'Maydon chizish bekor qilindi.');
+}
+function finishAOIDrawing(){
+  if(!drawingAOI) return;
+  if(drawingPoints.length<3){
+    toast($('boundary-status'),'Poligon uchun kamida 3 ta burchak nuqtasini belgilang.');
+    return;
+  }
+  const ring=[...drawingPoints,drawingPoints[0]];
+  const customFeature={
+    type:'Feature',
+    properties:{
+      shapeName:'Foydalanuvchi chizgan maydon',
+      __custom_aoi:true,
+      boundarySource:'USER_DRAWN',
+      boundaryLevel:'CUSTOM'
+    },
+    geometry:{type:'Polygon',coordinates:[ring]}
+  };
+  boundaryFeatures=boundaryFeatures.filter(feature=>!feature.properties?.__custom_aoi);
+  boundaryFeatures.push(customFeature);
+  drawingAOI=false;
+  drawingPoints=[];
+  updateAOIDraft();
+  setDrawingControls(false);
+  $('admin-level').value='ADM2';
+  selectFeature(customFeature);
+  $('selected-level').textContent='CUSTOM AOI';
+  $('selected-area-help').textContent='Foydalanuvchi chizgan poligon. U ma’muriy chegara emas; rastr ma’lumotlari pixel resolution va qamroviga qarab baholanadi.';
+  toast($('boundary-status'),'Maydon tanlandi. Endi hisobga kirib, “Hududni saqlash va tahlil qilish” tugmasini bosing.');
+}
+$('draw-aoi-start').addEventListener('click',startAOIDrawing);
+$('draw-aoi-finish').addEventListener('click',finishAOIDrawing);
+$('draw-aoi-cancel').addEventListener('click',cancelAOIDrawing);
+
 function featureName(f){const p=f?.properties||{};return p.shapeName||p.shape_name||p.shapeNameEn||p.NAME_1||p.NAME_2||p.name||p.NAME||p.admin||'Tanlangan hudud';}
 function coordsCenter(geom){let x=0,y=0,n=0;const walk=v=>{if(Array.isArray(v)&&typeof v[0]==='number'&&typeof v[1]==='number'){x+=v[0];y+=v[1];n++;}else if(Array.isArray(v))v.forEach(walk);};walk(geom.coordinates);return n?{lat:y/n,lon:x/n}:null;}
 function featureBounds(features){let minX=180,minY=90,maxX=-180,maxY=-90;const walk=v=>{if(Array.isArray(v)&&typeof v[0]==='number'&&typeof v[1]==='number'){minX=Math.min(minX,v[0]);maxX=Math.max(maxX,v[0]);minY=Math.min(minY,v[1]);maxY=Math.max(maxY,v[1]);}else if(Array.isArray(v))v.forEach(walk);};features.forEach(f=>walk(f.geometry?.coordinates));return minX<=maxX?[[minX,minY],[maxX,maxY]]:null;}
@@ -181,10 +287,15 @@ function selectFeature(f){
   const bounds=featureBounds([f]);
   if(bounds && map) {
     const level=$('admin-level').value;
-    const maxZoom=level==='ADM0'?4:level==='ADM1'?6.5:level==='ADM2'?8:9.5;
+    const [[minX,minY],[maxX,maxY]]=bounds;
+    const lonSpan=Math.max(0.00005,Math.abs(maxX-minX));
+    const latSpan=Math.max(0.00005,Math.abs(maxY-minY));
+    const span=Math.max(lonSpan,latSpan);
+    const zoomFromExtent=Math.max(8,Math.min(17,Math.log2(360/span)-0.7));
+    const maxZoom=level==='ADM0'?5.5:Math.max(zoomFromExtent,level==='ADM1'?8:10);
     map.fitBounds(bounds,{
-      padding:{top:76,bottom:76,left:76,right:76},
-      maxZoom,
+      padding:{top:58,bottom:58,left:58,right:58},
+      maxZoom:Math.min(17,maxZoom),
       duration:850
     });
   }
@@ -197,6 +308,7 @@ $('load-boundaries').addEventListener('click',loadBoundaries);
 let mapspamRequestSequence = 0;
 
 function mapspamSelectedAdminId(feature, countryCode, level) {
+  if (feature?.properties?.__custom_aoi) return null;
   if (level === 'ADM0') return countryCode;
   const properties = feature && feature.properties ? feature.properties : {};
   const directId = properties.shapeID || properties.shapeISO;
@@ -227,6 +339,12 @@ async function loadMapspamSummaries() {
 
   const countryCode = $('country-iso3').value.trim().toUpperCase();
   const level = $('admin-level').value;
+  if(selectedFeature.properties?.__custom_aoi){
+    toast(status,'Bu maxsus chizilgan dala poligoni. MAPSPAM faqat bazada oldindan bog‘langan ADM0–ADM2 hududlari uchun mavjud; dala darajasidagi tahlil uchun Sentinel-2 10 m zonal statistikasi kerak.');
+    $('mapspam-context').textContent=countryCode+' · '+featureName(selectedFeature)+' · CUSTOM AOI';
+    table.innerHTML='';
+    return;
+  }
   const adminId = mapspamSelectedAdminId(selectedFeature, countryCode, level);
   if (!adminId) {
     toast(status, 'Tanlangan hududning admin ID raqami aniqlanmadi.');
@@ -304,14 +422,14 @@ $('refresh-mapspam-summary').addEventListener('click', loadMapspamSummaries);
 
 $('country-iso3').addEventListener('keydown',e=>{if(e.key==='Enter')loadBoundaries();});
 
-$('save-location').addEventListener('click',async()=>{if(!token){openAuth();return;}if(!selectedFeature)return;try{const code=$('country-iso3').value.toUpperCase(),level=$('admin-level').value;const payload={country_iso3:code,name:featureName(selectedFeature),admin_level:level,climate_start_year:Number($('climate-start-year').value)||2010,geojson:selectedFeature,source:'geoBoundaries gbOpen'};toast($('saved-location-status'),'Hudud saqlanmoqda va iqlim tahlili navbatga qo‘yilmoqda…');const res=await api('/locations',{method:'POST',headers:authHeaders(),body:JSON.stringify(payload)});selectedLocationId=res.id;toast($('saved-location-status'),`Hudud saqlandi · ${res.name}. Yillik iqlim job #${res.climate_job_id} boshlandi.`);await loadLocations();$('location-select').value=String(res.id);$('environment-location-select').value=String(res.id);pollClimateJob(res.climate_job_id,res.id);}catch(e){toast($('saved-location-status'),e.message);}});
+$('save-location').addEventListener('click',async()=>{if(!selectedFeature)return;if(!token){toast($('saved-location-status'),'Maydon tanlandi. Saqlash va tahlil qilish uchun hisobga kiring yoki ro‘yxatdan o‘ting.');openAuth();return;}try{const code=$('country-iso3').value.toUpperCase(),level=selectedFeature.properties?.__custom_aoi?'CUSTOM':$('admin-level').value;const payload={country_iso3:code,name:featureName(selectedFeature),admin_level:level,climate_start_year:Number($('climate-start-year').value)||2010,geojson:selectedFeature,source:selectedFeature.properties?.__custom_aoi?'User-drawn AOI':'geoBoundaries gbOpen'};toast($('saved-location-status'),'Hudud saqlanmoqda va iqlim tahlili navbatga qo‘yilmoqda…');const res=await api('/locations',{method:'POST',headers:authHeaders(),body:JSON.stringify(payload)});selectedLocationId=res.id;toast($('saved-location-status'),`Hudud saqlandi · ${res.name}. Yillik iqlim job #${res.climate_job_id} boshlandi.`);await loadLocations();$('location-select').value=String(res.id);$('environment-location-select').value=String(res.id);pollClimateJob(res.climate_job_id,res.id);}catch(e){toast($('saved-location-status'),e.message);}});
 
 function openAuth(){$('auth-modal').hidden=false;$('auth-message').textContent='';}
 function closeAuth(){$('auth-modal').hidden=true;}
 $('auth-open').addEventListener('click',()=>token?(logout()):openAuth());$('auth-close').addEventListener('click',closeAuth);
 async function authAction(mode){const email=$('auth-email').value.trim(),password=$('auth-password').value;if(!email||!password){toast($('auth-message'),'Email va parolni kiriting.');return;}try{const res=await api(`/auth/${mode}`,{method:'POST',headers:authHeaders(),body:JSON.stringify({email,password})});token=res.access_token;localStorage.setItem('osh_global_token',token);setAuthUI(res.user);closeAuth();await loadLocations();await loadDatasets();}catch(e){toast($('auth-message'),e.message);}}
 $('register-button').addEventListener('click',()=>authAction('register'));$('login-button').addEventListener('click',()=>authAction('login'));
-function setAuthUI(user){$('user-label').textContent=user?.email||'Mehmon rejimi';$('auth-open').textContent=user?'Chiqish':'Kirish';$('save-location').disabled=!token||!selectedFeature;}
+function setAuthUI(user){$('user-label').textContent=user?.email||'Mehmon rejimi';$('auth-open').textContent=user?'Chiqish':'Kirish';$('save-location').disabled=!selectedFeature;$('save-location').textContent=user?'Hududni saqlash va tahlil qilish':'Kirish va hududni saqlash';}
 function logout(reason='Hisobdan chiqildi.'){token='';selectedLocationId=null;currentDatasetId=null;currentJobId=null;currentClimateJobId=null;localStorage.removeItem('osh_global_token');setAuthUI(null);locations.length=0;$('dataset-list').textContent='Hisobga kiring va dataset yuklang.';$('forecast-dataset').innerHTML='<option value="">Dataset yuklang</option>';$('process-dataset').disabled=true;$('location-select').innerHTML='<option value="">Avval xaritada hududni saqlang</option>';$('environment-location-select').innerHTML='<option value="">Avval hududni saqlang</option>';$('location-climate-results').hidden=true;toast($('saved-location-status'),reason);toast($('environment-status'),reason);}
 
 async function loadLocations(){if(!token)return;try{const rows=await api('/locations',{headers:authHeaders(false)});locations.splice(0,locations.length,...rows);const options='<option value="">Hududni tanlang</option>'+rows.map(x=>`<option value="${x.id}">${escapeHtml(x.name)} · ${escapeHtml(x.country_iso3)} · ${escapeHtml(x.admin_level)}</option>`).join('');$('location-select').innerHTML=options;$('environment-location-select').innerHTML=options;if(!selectedLocationId&&rows.length)selectedLocationId=rows[0].id;if(selectedLocationId&&rows.some(x=>x.id===selectedLocationId)){$('location-select').value=String(selectedLocationId);$('environment-location-select').value=String(selectedLocationId);loadClimate(selectedLocationId);}else if(!rows.length){selectedLocationId=null;$('environment-status').textContent='Hali saqlangan hudud yo‘q. Avval Hududiy tahlil bo‘limida hudud tanlang.';$('location-climate-results').hidden=true;}}catch(e){console.warn(e);}}
