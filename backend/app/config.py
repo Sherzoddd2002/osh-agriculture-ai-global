@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     enable_postgis: bool = False
     jwt_secret: str = "DEV_ONLY_CHANGE_ME"
     jwt_expire_minutes: int = 10080
-    cors_origins: str = "http://localhost:8080"
+    cors_origins: str = "http://localhost:8080,http://127.0.0.1:8080,https://sherzoddd2002.github.io"
     nasa_power_base_url: str = "https://power.larc.nasa.gov/api/temporal/daily/point"
     geboundaries_base_url: str = "https://www.geoboundaries.org/api/current/gbOpen"
     max_upload_mb: int = 25
