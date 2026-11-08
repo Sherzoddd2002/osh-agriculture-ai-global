@@ -815,7 +815,24 @@ function runRegionRidge(series,targetYear,climateByYear){
  }
  const errors=[],persistenceErrors=[],oof=[];
  for(let split=3;split<x.length;split++){
-  const prediction=Math.max(0,fitRegionRidge(x.slice(0,split),y.slice(0,split),x[split],2));
+  // OOF must not use the validation year's observed weather. At forecast
+  // time that season's weather is unknown, so use only prior-season normals.
+  const alignedIndex=split+3;
+  const validationRow=aligned[alignedIndex];
+  const priorClimate=aligned.slice(Math.max(0,alignedIndex-5),alignedIndex)
+   .map(row=>climateByYear[row.year]);
+  if(!priorClimate.length)continue;
+  const climateMean=key=>priorClimate.reduce((sum,row)=>sum+row[key],0)/priorClimate.length;
+  const previousYield=aligned[alignedIndex-1].yield;
+  const previousThree=aligned.slice(Math.max(0,alignedIndex-3),alignedIndex).map(row=>row.yield);
+  const previousMean=previousThree.reduce((a,b)=>a+b,0)/previousThree.length;
+  const previousStd=Math.sqrt(previousThree.reduce((sum,v)=>sum+Math.pow(v-previousMean,2),0)/previousThree.length);
+  const validationX=[
+   validationRow.year,previousYield,previousMean,previousStd,
+   climateMean("tmean"),climateMean("tmax"),climateMean("tmin"),
+   climateMean("precipitation"),climateMean("et0"),climateMean("gdd")
+  ];
+  const prediction=Math.max(0,fitRegionRidge(x.slice(0,split),y.slice(0,split),validationX,2));
   const actual=y[split],persistence=y[split-1];
   errors.push(Math.abs(actual-prediction));
   persistenceErrors.push(Math.abs(actual-persistence));
