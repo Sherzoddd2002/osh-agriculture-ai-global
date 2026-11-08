@@ -94,6 +94,19 @@ assert.ok(Number.isFinite(result.persistenceMae) && result.persistenceMae >= 0);
 assert.equal(result.climateNormalYears.length, 5);
 assert.ok(Math.abs(result.coverageMean - 0.98) < 1e-12);
 
+// Crop-neutral regression check: root/yield values above 30 t/ha must not
+// be artificially clipped in expanding-window validation or forecasts.
+const highYieldSeries = series.map(row => ({
+  year: row.year,
+  yield: Number((72 + (row.year - 2008) * 0.4 +
+    0.15 * Math.sin((row.year - 2008) * 0.6)).toFixed(4)),
+}));
+const highYieldResult = runRegionRidge(highYieldSeries, 2025, climateByYear);
+assert.ok(highYieldResult.forecast > 30,
+  "Ridge forecast must not have an arbitrary 30 t/ha ceiling");
+assert.ok(highYieldResult.oof.some(row => row.predicted > 30),
+  "OOF validation must preserve crop-appropriate yields above 30 t/ha");
+
 console.log(
   "PASS browser Ridge model smoke test:",
   JSON.stringify({
