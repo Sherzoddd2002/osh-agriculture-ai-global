@@ -156,12 +156,16 @@ def validate_and_prepare(record: dict, level: str, source: dict) -> dict:
         "license_detail": str(record.get("licenseDetail") or ""),
         "license_source": str(record.get("licenseSource") or ""),
         "continent": str(record.get("Continent") or "Unknown"),
-        "source_version": "geoBoundaries current / gbOpen",
-        "geometry_detail": "simplifiedGeometryGeoJSON" if record.get("simplifiedGeometryGeoJSON") else "gjDownloadURL",
+        "source_version": str(record.get("source_version") or "geoBoundaries current / gbOpen"),
+        "boundary_product": str(record.get("boundary_product") or "gbOpen"),
+        "geometry_detail": str(record.get("geometry_detail") or (
+            "simplifiedGeometryGeoJSON" if record.get("simplifiedGeometryGeoJSON") else "gjDownloadURL"
+        )),
+        "is_global_composite_fallback": bool(record.get("is_global_composite_fallback", False)),
         "feature_count": len(prepared),
         "geometry_repaired_count": repaired_count,
         "generated_name_count": generated_name_count,
-        "attribution": "geoBoundaries; retain the source/license fields for each boundary",
+        "attribution": str(record.get("attribution") or "geoBoundaries / World Bank; retain the source and license metadata"),
     }
     return {"type": "FeatureCollection", "features": prepared, "metadata": metadata}
 
