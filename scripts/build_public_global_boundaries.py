@@ -401,7 +401,7 @@ async def add_world_bank_fallback(
             offset += len(page)
 
     grouped: dict[str, list[dict]] = {}
-    for feature in raw_features:
+    for feature_index, feature in enumerate(raw_features):
         properties = dict(feature.get("properties") or {})
         iso = str(properties.get("ISO_A3") or "").strip().upper()
         if iso not in missing_codes:
@@ -411,14 +411,15 @@ async def add_world_bank_fallback(
         )
         source_name = str(source_name or "").strip()
         if not source_name:
-            source_name = f"Unnamed {level} area {properties.get('FID') or len(grouped.get(iso, [])) + 1}"
+            source_name = f"Unnamed {level} area {properties.get('FID') or feature_index + 1}"
         source_id = (
             properties.get("ADM1CD_c") or properties.get("ADM1CD") or properties.get("FID")
             if level == "ADM1"
             else properties.get("ADM2CD_c") or properties.get("ADM2CD") or properties.get("FID")
         )
+        properties["source_admin_code"] = str(source_id or "")
         properties["shapeName"] = source_name
-        properties["shapeID"] = f"{iso}-{level}-{source_id or len(grouped.get(iso, [])) + 1}"
+        properties["shapeID"] = f"{iso}-{level}-{source_id or 'noid'}-{feature_index + 1}"
         properties["countryISO3"] = iso
         properties["shapeType"] = level
         feature["properties"] = properties
