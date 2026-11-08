@@ -46,10 +46,10 @@ Public sayt **GitHub Pages + GitHub Actions** asosida ishlaydi. Saytni ochgan od
 
 [Dashboard’ni oching](https://sherzoddd2002.github.io/osh-agriculture-ai-global/) → **Maydon tahlili** bo‘limiga o‘ting.
 
-1. Ma’muriy darajadan **ADM1 · Viloyatlar** yoki **ADM2 · Tumanlar** ni tanlang.
-2. **Chegaralarni yuklash** tugmasini bosing. 14 ta viloyat yoki 199 ta tuman xaritaga tushadi. Qidiruv maydonida hudud nomini yozing yoki poligonning o‘zini bosing.
-3. **Hududni tahlil qilish** orqali tarixiy ob-havo va 7 kunlik prognozni oling; Sentinel-2 sahnalari alohida ko‘rsatiladi.
-4. Ekinni 46 ta katalogdan tanlang. O‘zingizning tanlangan hudud/ekin bo‘yicha haqiqiy tarixiy hosildorlik CSV faylingizni yuklang va Ridge + iqlim modelini ishga tushiring. Kamida 8 ta mos yield-yil va yetarli ob-havo qamrovi kerak.
+1. Sayt ochilganda **ADM2 · Tumanlar** qatlami avtomatik yuklanadi (199 ta tuman). Xaritada tuman poligonini bosing yoki qidiruvga nomini yozing.
+2. Viloyat kesimiga o‘tish uchun **ADM1 · Viloyatlar** ni tanlang va **Chegaralarni yuklash** tugmasini bosing (14 ta viloyat). Tuman qatlamiga qaytish ham shu usulda bajariladi.
+3. **Hududni tahlil qilish** orqali tarixiy ERA5-Land ob-havo qatori va 7 kunlik prognozni oling; Sentinel-2 sahnalari alohida ko‘rsatiladi.
+4. Ekinni to‘liq 46 ta MAPSPAM katalogidan tanlang. Tanlangan hudud va ekinga tegishli haqiqiy tarixiy hosildorlik CSV faylini yuklang; CSV shablonini sayt ichidagi **CSV shablon** havolasidan olasiz. Kamida 8 ta mos yield-yil va yetarli ob-havo qamrovi talab qilinadi.
 
 **AI bashorati haqida:** bu oldindan tayyorlab qo‘yilgan, barcha tumanlar uchun bir xil qiymat qaytaradigan model emas. U aynan foydalanuvchi yuklagan hudud/ekin tarixiy hosildorlik qatorini ERA5-Land feature’lari bilan birlashtiradi. Kelajak ob-havosi mavjud bo‘lmagani uchun so‘nggi 5 mos mavsumning normasi ishlatiladi. Natija research scenario; O‘zbekistonning barcha tumanlari bo‘yicha mustaqil tasdiqlangan universal prognoz deb talqin qilinmasin. OOF MAE va Persistence benchmark natijalari bashorat bilan birga ko‘rsatiladi.
 
