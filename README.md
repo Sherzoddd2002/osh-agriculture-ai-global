@@ -11,6 +11,9 @@
 > **Muhim:** NASA POWER platformaga tarixiy ob-havo ma’lumotlarini beradi; u hosildorlik modeli emas. Ochiq GitHub Pages demo hozircha 3D xarita va hudud tanlashni namoyish etadi. Haqiqiy hosil prognozi uchun backend API va yetarli, tekshirilgan hosildorlik tarixi kerak. Demo soxta prognoz raqamlarini ko‘rsatmaydi.
 
 ---
+
+## Project overview
+
 **A location-first agricultural data and yield-forecasting platform.** Users select a country and administrative area, upload historical crop observations, enrich the selected area with environmental datasets, run quality checks, and receive a clearly labelled yield estimate.
 
 > **Status: MVP foundation.** The starter includes global administrative-boundary lookup (geoBoundaries), NASA POWER daily weather retrieval, CSV yield-data upload, SQLite for personal local installations, optional PostgreSQL/PostGIS for a shared central deployment, a database-backed background-job queue, a research forecasting endpoint, and a responsive web interface. Sentinel-2 NDVI, SMAP, and SoilGrids are explicit connector slots; they are not presented as available until their raster/data adapters and credentials are configured.
