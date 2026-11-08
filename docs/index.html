@@ -66,6 +66,14 @@
 .region-footnote{font-size:9px;color:#7f98a8;line-height:1.65;margin:12px 0 0}
 .region-empty{padding:15px;color:#8ea7b5;font-size:10px}
 .region-yield-card{margin-top:12px}
+.region-mapspam-card{margin-top:12px}
+.region-mapspam-card .region-scene-summary{min-height:72px}
+.region-mapspam-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.region-mapspam-kpi{border:1px solid #29485a;background:#0a1c2a;border-radius:10px;padding:11px;min-width:0}
+.region-mapspam-kpi small{display:block;color:#8da8b7;font-size:8px;letter-spacing:.6px}
+.region-mapspam-kpi strong{display:block;color:#65dfba;font-size:17px;overflow-wrap:anywhere;margin-top:4px}
+.region-mapspam-status{font-size:10px;color:#b8cbd5;line-height:1.65;margin-top:10px}
+@media(max-width:600px){.region-mapspam-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .region-yield-controls{display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:9px;align-items:end}
 .region-yield-controls button{width:100%;min-height:39px}
 .region-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0 0 13px}
@@ -244,6 +252,15 @@
           </article>
         </div>
 
+        <article class="panel region-result-card region-mapspam-card">
+          <div class="region-result-head">
+            <div><span class="eyebrow">MAPSPAM 2020 · HISTORICAL SPATIAL REFERENCE</span><h3>Tanlangan hudud va ekin bo‘yicha 2020-yil ko‘rsatkichi</h3><small>IFPRI MAPSPAM 2020 v2r2 · 5 arc-minute grid</small></div>
+            <span class="tag">REFERENCE · NOT FORECAST</span>
+          </div>
+          <div id="region-mapspam-result" class="region-scene-summary" aria-live="polite">Hududni tahlil qilish tugmasini bosing — tanlangan tuman/viloyat va ekin uchun MAPSPAM 2020 ma’lumoti shu yerda chiqadi.</div>
+          <p class="region-footnote">Bu 2020-yilga tegishli gridded fazoviy baho; joriy yil kuzatuvi, dala o‘lchovi yoki kelajak AI prognozi emas. Grid aniqligi ekvatorda taxminan 9.3 km. Manba: <a href="https://doi.org/10.7910/DVN/SWPENT" target="_blank" rel="noopener">IFPRI MAPSPAM · CC BY-SA 4.0</a>. Tumanlar va viloyatlar o‘z ma’muriy chegara vintage’i bilan bog‘langan.</p>
+        </article>
+
         <article class="panel region-result-card region-yield-card">
           <div class="region-result-head"><div><span class="eyebrow">RESEARCH MODEL / CSV INPUT</span><h3>Hosildorlik uchun Ridge baseline ssenariysi</h3><small>O‘zingizdagi haqiqiy yillik yield CSV faylini yuklang. Hisob brauzerda bajariladi.</small></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><a class="btn-secondary" href="./data/templates/yield-template.csv" download>CSV shablon ↓</a><span class="tag">LOCAL · NO UPLOAD</span></div></div>
           <details class="info-note region-csv-help">
@@ -408,11 +425,15 @@ $("crop-chips").addEventListener("click",e=>{
  $("crop-select").value=button.dataset.code;
  syncCropSelection();
 });
-$("crop-select").addEventListener("change",syncCropSelection);
+$("crop-select").addEventListener("change",()=>{
+ syncCropSelection();
+ if(!$("region-results").hidden&&selectedAOI)renderMapspamReference(selectedAOI,$("region-crop-select").value).catch(error=>{$("region-mapspam-result").textContent="MAPSPAM: "+error.message;});
+});
 $("region-crop-select").addEventListener("change",()=>{
  $("crop-select").value=$("region-crop-select").value;
  syncCropSelection();
  updateYieldModelButton();
+ if(!$("region-results").hidden&&selectedAOI)renderMapspamReference(selectedAOI,$("region-crop-select").value).catch(error=>{$("region-mapspam-result").textContent="MAPSPAM: "+error.message;});
 });
 renderCropList("");
 syncCropSelection();
@@ -887,6 +908,49 @@ function regionFmt(value,digits){
  if(value===null||value===undefined||!Number.isFinite(Number(value)))return "—";
  return Number(value).toLocaleString("en-US",{minimumFractionDigits:digits||0,maximumFractionDigits:digits||0});
 }
+let mapspamReferenceCache=null;
+async function renderMapspamReference(feature,cropCode){
+ const output=$("region-mapspam-result");
+ if(!output)return {status:"UNAVAILABLE"};
+ if(!feature){output.textContent="Avval O‘zbekiston viloyati yoki tumanini tanlang.";return {status:"NO_AREA"};}
+ const props=feature.properties||{};
+ const level=String(props.shapeType||"").toUpperCase();
+ const adminId=String(props.shapeID||"");
+ const crop=cropList.find(item=>item[0]===cropCode);
+ if(!["ADM1","ADM2"].includes(level)||!adminId){
+  output.textContent="MAPSPAM 2020 reference hozircha faqat O‘zbekistonning ADM1/ADM2 hududlari uchun mavjud. Qo‘lda chizilgan maydon uchun o‘zining tarixiy CSV qatori kerak.";
+  return {status:"CUSTOM_AOI"};
+ }
+ output.innerHTML="<div class='region-empty'>MAPSPAM 2020 tarixiy ma’lumoti yuklanmoqda…</div>";
+ if(!mapspamReferenceCache){
+  const response=await fetch("./data/mapspam/UZB_MAPSPAM_2020_ADM1_ADM2.json",{cache:"force-cache",headers:{Accept:"application/json"}});
+  if(!response.ok)throw new Error("MAPSPAM public JSON HTTP "+response.status);
+  const payload=await response.json();
+  if(payload.country_iso3!=="UZB"||payload.dataset_id!=="mapspam-2020-v2r2"||payload.source_year!==2020||payload.license!=="CC BY-SA 4.0"){
+   throw new Error("MAPSPAM JSON provenance yoki dataset metadata mos emas");
+  }
+  mapspamReferenceCache=payload;
+ }
+ if(selectedAOI!==feature||$("region-crop-select").value!==cropCode)return {status:"STALE_SELECTION"};
+ const levelData=mapspamReferenceCache.levels&&mapspamReferenceCache.levels[level];
+ const area=levelData&&levelData.areas&&levelData.areas[adminId];
+ const record=area&&area.crops&&area.crops[cropCode];
+ if(!record){
+  output.textContent="Tanlangan hudud va ekin uchun MAPSPAM 2020 qatori topilmadi. Hudud identifikatori va crop kodi mos emas.";
+  return {status:"NOT_FOUND"};
+ }
+ const cropName=crop?crop[1]:cropCode.toUpperCase();
+ if(record.spatial_status==="NO_RASTER_CELLS"||record.yield_t_ha===null){
+  output.innerHTML="<b>"+regionEscape(area.name)+" · "+regionEscape(cropName)+"</b><div class='region-mapspam-status'>Ushbu hudud/ekin kombinatsiyasida 2020-yil MAPSPAM rasteridan yaroqli katak topilmadi. Hosildorlik <b>NULL / mavjud emas</b> — bu 0 t/ha degani emas.</div><div class='region-mapspam-kpis'>"+
+   [["Valid raster kataklari","0"],["Hosildorlik","—"],["Ishlab chiqarish","—"],["Yig‘ib olingan maydon","—"],["Fizik maydon","—"],["Manba yili","2020"]].map(k=>"<div class='region-mapspam-kpi'><small>"+k[0]+"</small><strong>"+k[1]+"</strong></div>").join("")+
+   "</div><div class='region-mapspam-status'>Spatial status: NO_RASTER_CELLS. Qiymat yo‘q joyda nol hosildorlik yasalmaydi.</div>";
+  return {status:"NO_RASTER_CELLS",area:area.name,crop:cropName};
+ }
+ output.innerHTML="<b>"+regionEscape(area.name)+" · "+regionEscape(cropName)+"</b><div class='region-mapspam-kpis'>"+
+  [["Hosildorlik",regionFmt(record.yield_t_ha,2)+" t/ha"],["Ishlab chiqarish",regionFmt(record.production_t,1)+" t"],["Yig‘ib olingan maydon",regionFmt(record.harvested_area_ha,1)+" ha"],["Fizik maydon",regionFmt(record.physical_area_ha,1)+" ha"],["Valid raster kataklari",regionFmt(record.valid_cells,0)],["Manba yili","2020"]].map(k=>"<div class='region-mapspam-kpi'><small>"+k[0]+"</small><strong>"+k[1]+"</strong></div>").join("")+
+  "</div><div class='region-mapspam-status'>Spatial status: ESTIMATED · 5 arc-minute grid. Viloyat chegara vintage’i: "+regionEscape(String(mapspamReferenceCache.levels[level].boundary_year))+"; tuman vintage’i: "+regionEscape(String(mapspamReferenceCache.levels.ADM2.boundary_year))+". Bu tarixiy gridded estimate, kelajak bashorati emas.</div>";
+ return {status:"ESTIMATED",area:area.name,crop:cropName,yield:record.yield_t_ha};
+}
 async function fetchRegionWeather(center){
  const today=new Date();
  const archiveEnd=new Date(today.getTime());archiveEnd.setUTCDate(archiveEnd.getUTCDate()-6);
@@ -979,13 +1043,20 @@ $("region-analyze").addEventListener("click",async()=>{
  $("region-weather-table").innerHTML="";
  $("region-scene-summary").textContent="Copernicus STAC catalogue qidirilmoqda…";
  $("region-scene-table").innerHTML="";
- const outcomes=await Promise.allSettled([fetchRegionWeather(center),fetchRegionSentinelScenes(selectedAOI)]);
- const weather=outcomes[0],sentinel=outcomes[1];
+ const selectedFeature=selectedAOI,selectedCrop=$("region-crop-select").value;
+ const outcomes=await Promise.allSettled([
+  fetchRegionWeather(center),
+  fetchRegionSentinelScenes(selectedAOI),
+  renderMapspamReference(selectedFeature,selectedCrop)
+ ]);
+ const weather=outcomes[0],sentinel=outcomes[1],mapspam=outcomes[2];
  const messages=[];
  if(weather.status==="fulfilled")messages.push("ERA5-Land iqlim qatori tayyor");
  else{messages.push("Iqlim xatosi: "+weather.reason.message);$("region-weather-kpis").innerHTML="<div class='region-empty'>"+regionEscape(weather.reason.message)+"</div>";}
  if(sentinel.status==="fulfilled")messages.push("Sentinel-2 scene: "+sentinel.value.count);
  else{messages.push("Sentinel-2 qidiruv xatosi: "+sentinel.reason.message);$("region-scene-summary").textContent=sentinel.reason.message;}
+ if(mapspam.status==="fulfilled")messages.push(mapspam.value.status==="ESTIMATED"?"MAPSPAM 2020 qiymati tayyor":mapspam.value.status==="NO_RASTER_CELLS"?"MAPSPAM: yaroqli katak yo‘q":"MAPSPAM: "+mapspam.value.status);
+ else{$("region-mapspam-result").textContent="MAPSPAM reference yuklanmadi: "+mapspam.reason.message;messages.push("MAPSPAM ma’lumoti hozir ochilmadi");}
  $("region-status").textContent=messages.join(" · ");
  $("region-analyze").disabled=false;
 });
