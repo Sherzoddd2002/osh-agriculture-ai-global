@@ -52,7 +52,7 @@ Bu yangi global loyiha. U sizning mavjud `E:\OSH`, `osh` PostgreSQL bazangiz yok
 - **Maydon chizish** tugmasi bilan xaritada kamida 3 nuqta bosib custom dala poligoni yarating; **Poligonni tugatish** bilan yakunlang.
 - **Hududni tahlil qilish** Open-Meteo ERA5-Land tarixiy reanalysis qatori va 7 kunlik ob-havo prognozini tanlangan poligon markazidan oladi. Bu butun poligon bo‘yicha zonal o‘rtacha emas.
 - Copernicus STAC orqali oxirgi 12 oydagi Sentinel-2 L2A sahnalari (bulutlilik ≤30%) qidiriladi. Natija scene metadata; NDVI hali hisoblanmaydi.
-- Haqiqiy `year,yield_t_ha` CSV faylni brauzerga tanlab, lokal Ridge + expanding-window OOF / Persistence baseline ssenariysini hisoblash mumkin. CSV serverga yuklanmaydi. Kamida 8 ta kuzatilgan yil talab qilinadi. Bu model faqat yield tarixidan foydalanadi; universal global yoki dala bo‘yicha tasdiqlangan AI prognozi emas.
+- Haqiqiy `year,yield_t_ha` CSV faylni brauzerda tanlab, Ridge ML + expanding-window OOF / Persistence benchmark hisoblash mumkin. Har bir yield mavsumi Open-Meteo ERA5-Land harorat, yog‘in, ET₀ va GDD feature’lari bilan moslanadi; kamida 8 ta yetarli qamrovli yil talab qilinadi. Kelajak ob-havosi so‘nggi 5 mavsum normasi bilan taxmin qilinadi. CSV serverga yuklanmaydi. Bu bitta AOI uchun research scenario, global tasdiqlangan model emas.
 
 **Public demo cheklovi:** GitHub Pages statik sayt. U autentifikatsiyalangan FastAPI, PostgreSQL, shaxsiy datasetlar yoki background worker bilan bog‘lanmagan; sahifadagi maydon chizmasi saqlanmaydi. Doimiy AOI, full ML pipeline va markaziy FAOSTAT/MAPSPAM qatorlari uchun haqiqiy backend + DB + worker HTTPS orqali alohida deploy qilinishi kerak.
 
