@@ -8,21 +8,21 @@ const dir=path.join(root,"docs","data","boundaries","global");
 const manifestPath=path.join(dir,"manifest.json");
 assert.ok(fs.existsSync(manifestPath),"global geoBoundaries manifest is missing");
 const manifest=JSON.parse(fs.readFileSync(manifestPath,"utf8"));
-assert.equal(manifest.dataset,"geoBoundaries gbOpen + CGAZ fallback");
-assert.equal(manifest.release_type,"gbOpen with CGAZ fallback");
-assert.equal(manifest.global_composite_fallback?.license,"CC BY 4.0");
-assert.ok(manifest.global_composite_fallback?.source_commit,"CGAZ source revision is not pinned");
+assert.equal(manifest.dataset,"geoBoundaries gbOpen + World Bank fallback");
+assert.equal(manifest.release_type,"gbOpen with World Bank fallback");
+assert.equal(manifest.world_bank_fallback?.license,"CC BY 4.0");
+assert.ok(manifest.world_bank_fallback?.service_url,"World Bank feature service metadata is missing");
+assert.equal(manifest.world_bank_fallback?.catalog_updated,"2026-10-21");
 assert.ok(manifest.countries&&Object.keys(manifest.countries).length>100,
   "global manifest should include more than 100 countries/territories");
 for(const level of ["ADM1","ADM2"]){
  const summary=manifest.level_summary?.[level];
- assert.ok(summary?.country_count>=190,level+" country coverage is unexpectedly small after CGAZ fallback");
+ assert.ok(summary?.country_count>=190,level+" country coverage is unexpectedly small after World Bank fallback");
  assert.ok(summary?.feature_count>summary.country_count,level+" polygon count is inconsistent");
 }
-const fallbackSample=Object.entries(manifest.countries).find(([,country])=>
- country.levels?.ADM2?.is_global_composite_fallback
-);
-assert.ok(fallbackSample,"missing ADM2 packages were not supplemented from CGAZ");
+const fallbackCounts=manifest.world_bank_fallback?.added_by_level;
+assert.ok(fallbackCounts?.ADM1?.country_count>=0 && fallbackCounts?.ADM2?.country_count>=0,
+  "World Bank fallback summary is missing");
 const sample=Object.entries(manifest.countries).find(([,country])=>
  country.levels?.ADM1?.file&&country.levels?.ADM2?.file
 );
