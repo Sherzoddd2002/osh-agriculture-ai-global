@@ -80,7 +80,7 @@ const gateSource=[
  'let selectedAOI=null;let selectedCrop="whea";function $(id){return {value:selectedCrop};}',
  extractFunction("canUseOfficialProvinceWheat"),
  'return {check:()=>canUseOfficialProvinceWheat(),setArea:value=>{selectedAOI=value;},setCrop:value=>{selectedCrop=value;}};'
-].join("\\n");
+].join("\n");
 const gate=new Function(gateSource)();
 gate.setArea({properties:{shapeName:"Andijan Region",shapeType:"ADM1"}});
 assert.equal(gate.check(),true,"Andijan ADM1 wheat should use official SIAT");
