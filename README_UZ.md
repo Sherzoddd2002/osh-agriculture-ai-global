@@ -11,6 +11,9 @@
 > **Muhim:** NASA POWER platformaga tarixiy ob-havo ma’lumotlarini beradi; u hosildorlik modeli emas. Ochiq GitHub Pages demo hozircha 3D xarita va hudud tanlashni namoyish etadi. Haqiqiy hosil prognozi uchun backend API va yetarli, tekshirilgan hosildorlik tarixi kerak. Demo soxta prognoz raqamlarini ko‘rsatmaydi.
 
 ---
+
+## Loyiha haqida
+
 **Dunyo bo‘yicha hudud tanlash, qishloq xo‘jaligi ma’lumotlarini birlashtirish va hosildorlikni prognozlash platformasi.**
 
 Bu yangi global loyiha. U sizning mavjud `E:\OSH`, `osh` PostgreSQL bazangiz yoki O‘zbekiston uchun tayyorlangan eski CSV fayllaringizni o‘zgartirmaydi.
