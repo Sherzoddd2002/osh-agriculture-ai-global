@@ -19,7 +19,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages-public-demo-v2
+  group: pages-public-demo-v3
   cancel-in-progress: false
 
 jobs:
@@ -182,6 +182,20 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Confirm this build still targets the latest main commit
+        id: freshness
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const ref = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "heads/main"
+            });
+            const current = ref.data.object.sha === context.sha;
+            core.setOutput("current", String(current));
+            if (!current) core.info("A newer main commit exists; this older Pages run will not deploy.");
       - name: Deploy to GitHub Pages
+        if: steps.freshness.outputs.current == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
