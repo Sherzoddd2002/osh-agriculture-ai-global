@@ -44,17 +44,25 @@ Bu yangi global loyiha. U sizning mavjud `E:\OSH`, `osh` PostgreSQL bazangiz yok
 - Hosildorlik CSV yuklanganda ob-havo job’i avtomatik boshlanadi; kamida 8 ta moslangan haqiqiy hosil kuzatuvi va kamida 2 ta usable ob-havo feature bo‘lsa, Linear, Ridge, ElasticNet, Random Forest, Extra Trees va HistGradientBoosting modellarini expanding validation bilan baholaydi va Persistence benchmark bilan solishtiradi.
 - Yetarli hosildorlik ma’lumoti bo‘lmasa, model prognozi yasamaydi; mavjud iqlim tarixi, joriy ob-havo va qisqa muddatli prognozni ko‘rsatadi.
 
-## Environmental connectorlar va kichik dala tahlili
+## Public demo: kichik hudud va maydon tahlili
 
-Sentinel-2 katalog qidiruvi, SMAP va SoilGrids manbalarining real holati, kichik AOI chizish, AI prognoz talablari va server/worker deployment tafsilotlari: [docs/ENVIRONMENT_CONNECTORS.md](docs/ENVIRONMENT_CONNECTORS.md).
+[Dashboard’ni oching](https://sherzoddd2002.github.io/osh-agriculture-ai-global/) → **Maydon tahlili** bo‘limiga o‘ting.
+
+- Mamlakat ISO-3 (masalan, UZB) va ADM1–ADM5 darajasini tanlab, geoBoundaries poligonlarini xaritada ko‘rsatish mumkin.
+- **Maydon chizish** tugmasi bilan xaritada kamida 3 nuqta bosib custom dala poligoni yarating; **Poligonni tugatish** bilan yakunlang.
+- **Hududni tahlil qilish** Open-Meteo ERA5-Land tarixiy reanalysis qatori va 7 kunlik ob-havo prognozini tanlangan poligon markazidan oladi. Bu butun poligon bo‘yicha zonal o‘rtacha emas.
+- Copernicus STAC orqali oxirgi 12 oydagi Sentinel-2 L2A sahnalari (bulutlilik ≤30%) qidiriladi. Natija scene metadata; NDVI hali hisoblanmaydi.
+- Haqiqiy `year,yield_t_ha` CSV faylni brauzerga tanlab, lokal Ridge + expanding-window OOF / Persistence baseline ssenariysini hisoblash mumkin. CSV serverga yuklanmaydi. Kamida 8 ta kuzatilgan yil talab qilinadi. Bu model faqat yield tarixidan foydalanadi; universal global yoki dala bo‘yicha tasdiqlangan AI prognozi emas.
+
+**Public demo cheklovi:** GitHub Pages statik sayt. U autentifikatsiyalangan FastAPI, PostgreSQL, shaxsiy datasetlar yoki background worker bilan bog‘lanmagan; sahifadagi maydon chizmasi saqlanmaydi. Doimiy AOI, full ML pipeline va markaziy FAOSTAT/MAPSPAM qatorlari uchun haqiqiy backend + DB + worker HTTPS orqali alohida deploy qilinishi kerak.
 
 ## Environmental connectorlar holati
 
-- **Sentinel-2:** Copernicus STAC orqali saved AOI kesishadigan L2A sahnalarini sana va bulut chegarasi bilan qidirish ulangan. Hozircha katalog metadatasi qaytadi; B04/B08 raster yuklash, SCL/CLD cloud-shadow mask, NDVI va mavsumiy zonal statistikalar hali hisoblanmaydi.
-- **NASA SMAP:** SPL3SMP_E v6 global daily 9 km mahsuloti mavjud. Yuklab olish uchun bepul NASA Earthdata Login, retrieval quality flag filtri va zonal raster adapter kerak. Bu 9 km signal dala o‘lchovi emas.
-- **SoilGrids:** 250 m tuproq xaritalari mavjud; REST API vaqtincha to‘xtatilgan. WCS GetCoverage yoki WebDAV VRT orqali kerakli AOI subsetini olish mumkin, lekin loyiha ichidagi zonal-statistika adapteri hali yakunlanmagan.
+- **Sentinel-2:** Copernicus STAC scene discovery ishlaydi. B04/B08 raster olish, SCL/CLD cloud-shadow mask, NDVI va mavsumiy zonal statistikalar hali bajarilmagan.
+- **NASA SMAP:** SPL3SMP_E v6 daily 9 km mahsuloti mavjud; download uchun bepul NASA Earthdata Login, quality flag filtri va raster zonal adapter kerak. 9 km signal dala o‘lchovi emas.
+- **SoilGrids:** 250 m global tuproq xaritalari va noaniqlik qatlamlari mavjud. ISRIC REST API pausada; WCS GetCoverage/WebDAV VRT orqali AOI subset va zonal-statistika adapteri hali kerak.
 
-Aniq endpointlar, cheklovlar va keyingi processing bosqichlari: [docs/ENVIRONMENT_CONNECTORS.md](docs/ENVIRONMENT_CONNECTORS.md).
+Texnik endpointlar, aniqlik va keyingi processing bosqichlari: [docs/ENVIRONMENT_CONNECTORS.md](docs/ENVIRONMENT_CONNECTORS.md).
 
 ## Ixtiyoriy: markaziy server — barcha foydalanuvchilar uchun bitta PostgreSQL
 
