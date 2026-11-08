@@ -401,15 +401,16 @@ $("region-crop-select").innerHTML=cropList.map(c=>'<option value="'+c[0]+'">'+c[
 let activeCropCode="whea";
 function syncCropSelection(){
  const code=$("crop-select").value;
- if(code!==activeCropCode){
+ const changed=code!==activeCropCode;
+ if(changed){
   activeCropCode=code;
   clearYieldInputOnContextChange("Ekin tanlovi o‘zgardi.");
-  updateYieldModelButton();
  }
  const crop=cropList.find(item=>item[0]===code);
  if($("region-crop-select")&&$("region-crop-select").value!==code)$("region-crop-select").value=code;
  document.querySelectorAll(".crop-chip[data-code]").forEach(button=>button.classList.toggle("selected",button.dataset.code===code));
  if(crop)$("crop-detail").innerHTML="<b>"+crop[0].toUpperCase()+" · "+crop[1]+"</b><br>MAPSPAM 2020 v2r2 katalogidagi ekin qatlami. Bu tanlov alohida tuman hosildorligi raqamini anglatmaydi.";
+ if(changed)updateYieldModelButton();
 }
 function renderCropList(filter){
  const q=(filter||"").trim().toLowerCase();
