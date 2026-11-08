@@ -552,7 +552,7 @@ async def main() -> None:
             "source provides it."
         ),
         "attribution": (
-            "geoBoundaries, William & Mary geoLab and upstream contributors. "
+            "geoBoundaries, William & Mary geoLab, World Bank and upstream contributors. "
             "Retain each file's boundary source, license and license-source metadata."
         ),
         "level_summary": {
