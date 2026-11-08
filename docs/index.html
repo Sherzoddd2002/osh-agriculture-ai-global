@@ -583,7 +583,7 @@ async function fetchRegionWeather(center){
  historyUrl.search=new URLSearchParams({
   latitude:center.lat.toFixed(5),longitude:center.lon.toFixed(5),
   start_date:isoDate(archiveStart),end_date:isoDate(archiveEnd),
-  daily:"temperature_2m_mean,temperature_2m_max,temperature_2m_min,precipitation_sum,et0_fao_evapotranspiration,soil_moisture_0_to_7cm_mean",
+  daily:"temperature_2m_mean,temperature_2m_max,temperature_2m_min,precipitation_sum,et0_fao_evapotranspiration",
   models:"era5_land",timezone:"auto"
  }).toString();
  const forecastUrl=new URL("https://api.open-meteo.com/v1/forecast");
@@ -598,16 +598,16 @@ async function fetchRegionWeather(center){
   fetch(forecastUrl).then(r=>{if(!r.ok)throw new Error("Open-Meteo Forecast HTTP "+r.status);return r.json();})
  ]);
  const history=results[0],forecast=results[1],daily=history.daily||{};
- const dates=daily.time||[],temps=daily.temperature_2m_mean||[],rain=daily.precipitation_sum||[],et0=daily.et0_fao_evapotranspiration||[],soil=daily.soil_moisture_0_to_7cm_mean||[];
+ const dates=daily.time||[],temps=daily.temperature_2m_mean||[],rain=daily.precipitation_sum||[],et0=daily.et0_fao_evapotranspiration||[];
  function mean(values){const valid=values.filter(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v))).map(Number);return valid.length?valid.reduce((a,b)=>a+b,0)/valid.length:null;}
- const tempMean=mean(temps),soilMean=mean(soil);
+ const tempMean=mean(temps),maxMean=mean(daily.temperature_2m_max||[]),minMean=mean(daily.temperature_2m_min||[]);
  const rainTotal=rain.reduce((sum,v)=>sum+(Number.isFinite(Number(v))?Number(v):0),0);
  const et0Total=et0.reduce((sum,v)=>sum+(Number.isFinite(Number(v))?Number(v):0),0);
  $("region-weather-kpis").innerHTML=[
   ["O‘rtacha harorat",regionFmt(tempMean,1),"°C"],
   ["Yog‘in yig‘indisi",regionFmt(rainTotal,0),"mm / 12 oy"],
   ["ET₀ yig‘indisi",regionFmt(et0Total,0),"mm / 12 oy"],
-  ["0–7 cm soil moisture",regionFmt(soilMean,3),"m³/m³ · ERA5-Land"],
+  ["Harorat max–min farqi",regionFmt(maxMean-minMean,1),"°C · daily mean"],
   ["Kunlar soni",regionFmt(dates.length,0),"daily rows"],
   ["Joriy harorat",regionFmt(forecast.current&&forecast.current.temperature_2m,1),"°C · forecast model"]
  ].map(item=>'<div class="region-kpi"><small>'+item[0]+'</small><strong>'+item[1]+'</strong><span>'+item[2]+'</span></div>').join("");
@@ -677,58 +677,6 @@ $("region-analyze").addEventListener("click",async()=>{
  $("region-analyze").disabled=false;
 });
 
-function parseRegionCsvLine(line,delimiter){
- const values=[];let value="",quoted=false;
- for(let i=0;i<line.length;i++){
-  const c=line[i];
-  if(c==='"'&&quoted&&line[i+1]==='"'){value+='"';i++;}
-  else if(c==='"')quoted=!quoted;
-  else if(c===delimiter&&!quoted){values.push(value);value="";}
-  else value+=c;
- }
- values.push(value);return values;
-}
-function solveLinearSystem(matrix,vector){
- const a=matrix.map((row,i)=>row.slice().concat([vector[i]]));
- const n=vector.length;
- for(let col=0;col<n;col++){
-  let pivot=col;
-  for(let row=col+1;row<n;row++)if(Math.abs(a[row][col])>Math.abs(a[pivot][col]))pivot=row;
-  if(Math.abs(a[pivot][col])<1e-12)throw new Error("Ridge matrix singular");
-  [a[col],a[pivot]]=[a[pivot],a[col]];
-  const divisor=a[col][col];
-  for(let k=col;k<=n;k++)a[col][k]/=divisor;
-  for(let row=0;row<n;row++){
-   if(row===col)continue;
-   const factor=a[row][col];
-   for(let k=col;k<=n;k++)a[row][k]-=factor*a[col][k];
-  }
- }
- return a.map(row=>row[n]);
-}
-function fitRegionRidge(xRows,yRows,xValid,alpha){
- const p=xValid.length,n=xRows.length;
- const xMean=Array(p).fill(0),xScale=Array(p).fill(1);
- let yMean=0;
- for(let i=0;i<p;i++)xMean[i]=xRows.reduce((sum,row)=>sum+row[i],0)/n;
- for(let i=0;i<p;i++){
-  const variance=xRows.reduce((sum,row)=>sum+Math.pow(row[i]-xMean[i],2),0)/n;
-  xScale[i]=Math.sqrt(variance)||1;
- }
- yMean=yRows.reduce((a,b)=>a+b,0)/n;
- const standardized=xRows.map(row=>row.map((v,i)=>(v-xMean[i])/xScale[i]));
- const matrix=Array.from({length:p},()=>Array(p).fill(0));
- const vector=Array(p).fill(0);
- for(let r=0;r<n;r++){
-  const centered=standardized[r];
-  const y=yRows[r]-yMean;
-  for(let i=0;i<p;i++){vector[i]+=centered[i]*y;for(let j=0;j<p;j++)matrix[i][j]+=centered[i]*centered[j];}
- }
- for(let i=0;i<p;i++)matrix[i][i]+=alpha;
- const beta=solveLinearSystem(matrix,vector);
- const validStandardized=xValid.map((v,i)=>(v-xMean[i])/xScale[i]);
- return yMean+validStandardized.reduce((sum,v,i)=>sum+v*beta[i],0);
-}
 function parseRegionCsvLine(line,delimiter){
  const values=[];let value="",quoted=false;
  for(let i=0;i<line.length;i++){
