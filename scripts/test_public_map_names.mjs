@@ -61,9 +61,12 @@ const mapspamReference=JSON.parse(fs.readFileSync(mapspamPath,"utf8"));
 assert.equal(mapspamReference.dataset_id,"mapspam-2020-v2r2");
 assert.equal(mapspamReference.source_year,2020);
 assert.equal(mapspamReference.license,"CC BY-SA 4.0");
-const cropListMatch=html.match(/const cropList=(\\[[\\s\\S]*?\\n\\]);/);
-assert.ok(cropListMatch,"website crop list is missing");
-const publicCropList=new Function("return "+cropListMatch[1])();
+const cropListStart=html.indexOf("const cropList=[");
+assert.notEqual(cropListStart,-1,"website crop list is missing");
+const cropListEnd=html.indexOf("\\n];",cropListStart);
+assert.notEqual(cropListEnd,-1,"website crop list closing bracket is missing");
+const cropListLiteral=html.slice(cropListStart+"const cropList=".length,cropListEnd+2);
+const publicCropList=new Function("return "+cropListLiteral)();
 assert.equal(publicCropList.length,46);
 for(const [level,count] of Object.entries({ADM1:14,ADM2:199})){
  const areas=mapspamReference.levels[level].areas;
@@ -77,7 +80,7 @@ const adm2ForMapspam=JSON.parse(fs.readFileSync(path.join(docs,"data","boundarie
 const mapspamHarnessSource=[
  nameObject[0],
  "let mapspamReferenceCache=null;let selectedAOI=null;let activeCrop='whea';",
- "const cropList="+cropListMatch[1]+";",
+ "const cropList="+cropListLiteral+";",
  "const elements={'region-mapspam-result':{innerHTML:'',textContent:''},'region-crop-select':{}};",
  "Object.defineProperty(elements['region-crop-select'],'value',{get:()=>activeCrop});",
  "function $(id){return elements[id];}",
