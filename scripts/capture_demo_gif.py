@@ -52,11 +52,11 @@ with sync_playwright() as p:
 
     # Forecast smoke test uses an isolated CI-only fixture; it is never saved
     # into the public screenshot or the user's data.
-    fixture_csv = (
-        "year,yield_t_ha\\n"
-        "2015,3.72\\n2016,3.81\\n2017,3.76\\n2018,3.94\\n"
-        "2019,4.02\\n2020,3.88\\n2021,4.11\\n2022,4.18\\n"
-    )
+    fixture_csv = "\n".join([
+        "year,yield_t_ha",
+        "2015,3.72", "2016,3.81", "2017,3.76", "2018,3.94",
+        "2019,4.02", "2020,3.88", "2021,4.11", "2022,4.18",
+    ]) + "\n"
     page.locator("#region-yield-file").set_input_files({
         "name": "ci-yield-smoke.csv",
         "mimeType": "text/csv",
