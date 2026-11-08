@@ -148,6 +148,81 @@ for region in official["regions"]:
             raise SystemExit(f"FAIL: invalid official wheat yield row: {region.get('name_uz')} / {row}")
 print(f"PASS SIAT province wheat yield: {len(official['regions'])} regions, {sum(len(r['records']) for r in official['regions'])} records")
 
+official_crop_info = manifest.get("official_crop_yield") or {}
+official_crop_path = DOCS / "data" / str(official_crop_info.get("file") or "")
+if not official_crop_path.is_file():
+    raise SystemExit("FAIL: official SIAT potato/cotton province dataset missing")
+official_crop_snapshot = json.loads(official_crop_path.read_text(encoding="utf-8"))
+if (
+    official_crop_snapshot.get("country_iso3") != "UZB"
+    or official_crop_snapshot.get("admin_level") != "ADM1"
+    or official_crop_snapshot.get("license") != "CC BY 4.0"
+):
+    raise SystemExit("FAIL: official SIAT additional-crop dataset metadata/license is invalid")
+if not all(text in html for text in (
+    "canUseOfficialProvinceCrop",
+    "loadOfficialProvinceCropSeries",
+    "UZB_ADM1_CROPS_2010_2024.json",
+)):
+    raise SystemExit("FAIL: official SIAT province crop series are not wired into the browser model")
+crop_series = official_crop_snapshot.get("crops") or {}
+if set(crop_series) != {"pota", "cott"}:
+    raise SystemExit(f"FAIL: expected potato and raw-cotton SIAT series; found {sorted(crop_series)}")
+manifest_crops = official_crop_info.get("crops") or {}
+for crop_code, max_yield in (("pota", 200.0), ("cott", 20.0)):
+    crop = crop_series[crop_code]
+    if (
+        crop.get("crop_code") != crop_code
+        or crop.get("license") != "CC BY 4.0"
+        or crop.get("district_yield_available") is not False
+        or crop.get("unit") != "tonnes per planted hectare"
+    ):
+        raise SystemExit(f"FAIL: SIAT {crop_code} provenance or ADM1-only scope is invalid")
+    regions = crop.get("regions") or []
+    if len(regions) != 13:
+        raise SystemExit(f"FAIL: SIAT {crop_code} must have 13 agricultural province series")
+    meta = manifest_crops.get(crop_code) or {}
+    if meta.get("region_count") != 13 or meta.get("record_count") != 195:
+        raise SystemExit(f"FAIL: SIAT {crop_code} manifest record counts are inconsistent")
+    for region in regions:
+        if normalize_name := region.get("name_uz"):
+            pass
+        else:
+            raise SystemExit(f"FAIL: SIAT {crop_code} has a blank province name")
+        normalized_region = re.sub(r"[^a-z0-9]+", "", normalize_name.lower())
+        normalized_boundary_names = {
+            re.sub(r"[^a-z0-9]+", "", name.lower())
+            for name in boundary_ids_by_level["ADM1"].values()
+        }
+        # geoBoundaries stores English labels; the browser localization test
+        # separately verifies the source-name to Uzbek display mapping.
+        if not normalized_region:
+            raise SystemExit(f"FAIL: SIAT {crop_code} province name is not usable")
+        records = region.get("records") or []
+        years = [row.get("year") for row in records]
+        if years != list(range(2010, 2025)):
+            raise SystemExit(f"FAIL: SIAT {crop_code} must contain one row for every year 2010–2024")
+        for row in records:
+            value = row.get("yield")
+            production = row.get("production_t")
+            area = row.get("sown_area_ha")
+            if (
+                not isinstance(value, (int, float))
+                or not 0 < value < max_yield
+                or not isinstance(production, (int, float))
+                or production <= 0
+                or not isinstance(area, (int, float))
+                or area <= 0
+            ):
+                raise SystemExit(f"FAIL: invalid SIAT {crop_code} yield/production/area row: {region['name_uz']} / {row}")
+    sources = crop.get("sources") or []
+    if len(sources) != 2 or any(source.get("unit") not in {"thousand tons", "hectare"} for source in sources):
+        raise SystemExit(f"FAIL: SIAT {crop_code} must retain the two original source indicators and units")
+    print(
+        f"PASS SIAT ADM1 {crop_code}: 13 regions / 195 years; "
+        "production-to-sown-area ratios; no district inheritance"
+    )
+
 # The public MAPSPAM snapshot is built from the real-data Actions artifact and
 # joined by exact geoBoundaries shapeID, not by approximate district-name text.
 mapspam_path = DOCS / "data" / "mapspam" / "UZB_MAPSPAM_2020_ADM1_ADM2.json"
