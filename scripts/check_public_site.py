@@ -286,6 +286,6 @@ finally:
     Path(temp_path).unlink(missing_ok=True)
 
 subprocess.run(["node", str(ROOT / "scripts" / "test_public_model.mjs")], check=True)
-subprocess.run(["node", str(ROOT / "scripts" / "test_public_map_names.mjs")], check=True)
+subprocess.run(["node", str(ROOT / "scripts" / "test_public_map_names.mjs")], check=True)\nsubprocess.run(["node", str(ROOT / "scripts" / "test_public_global_boundaries.mjs")], check=True)
 
 print("PASS: dashboard IDs, Pages-only API wiring, 46 crops, localized ADM names, polygon centroids and JavaScript syntax")
