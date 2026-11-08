@@ -14,7 +14,9 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-from shapely import make_valid\nfrom shapely.geometry import MultiPolygon, Polygon, mapping, shape\nfrom shapely.ops import unary_union
+from shapely import make_valid
+from shapely.geometry import mapping, shape
+from shapely.ops import unary_union
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "data" / "boundaries" / "global"
@@ -126,7 +128,10 @@ def validate_and_prepare(record: dict, level: str, source: dict) -> dict:
             raise ValueError(f"{iso} {level}: duplicate shape ID {shape_id}")
         if shape_id:
             identifiers.add(shape_id)
-        properties.setdefault("shapeName", name)
+        if not feature_name(properties):
+            properties["shapeName"] = name
+        else:
+            properties.setdefault("shapeName", name)
         properties["shapeType"] = level
         properties["countryISO3"] = iso
         feature["properties"] = properties
