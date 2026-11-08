@@ -11,7 +11,6 @@ import csv
 import json
 import math
 import re
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -271,6 +270,13 @@ def main() -> None:
     adm2_rows = read_csv(adm2_csv)
     adm1 = build_level(adm1_rows, "ADM1", crop_catalog, adm1_index)
     adm2 = build_level(adm2_rows, "ADM2", crop_catalog, adm2_index)
+    computed_at = [
+        (row.get("computed_at_utc") or "").strip()
+        for row in (*adm1_rows, *adm2_rows)
+    ]
+    if not all(computed_at):
+        raise SystemExit("FAIL: one or more MAPSPAM rows have no computed_at_utc provenance")
+    generated_at = max(computed_at)
 
     parent_ids = {
         area["parent_admin_id"] for area in adm2["areas"].values()
@@ -311,7 +317,7 @@ def main() -> None:
             "(MAPSPAM) 2020 v2r2; CC BY-SA 4.0."
         ),
         "source_url": SOURCE_URL,
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "generated_at_utc": generated_at,
         "boundary_sources": {
             "ADM1": {
                 "source": adm1_meta.get("source"),
