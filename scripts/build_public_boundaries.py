@@ -70,6 +70,28 @@ SIAT_WHEAT_PRODUCTION_URL = (
 SIAT_WHEAT_AREA_URL = (
     "https://api.siat.stat.uz/media/uploads/sdmx/sdmx_data_2761.json"
 )
+SIAT_OFFICIAL_CROP_DATASETS = {
+    "pota": {
+        "name_uz": "Kartoshka",
+        "production_code": "1.03.03.0031",
+        "production_url": "https://api.siat.stat.uz/media/uploads/sdmx/sdmx_data_323.json",
+        "production_page": "https://siat.stat.uz/data/323/?lang=en",
+        "area_code": "1.03.03.0070",
+        "area_url": "https://api.siat.stat.uz/media/uploads/sdmx/sdmx_data_2040.json",
+        "area_page": "https://siat.stat.uz/data/2040/?lang=en",
+        "max_yield": 200.0,
+    },
+    "cott": {
+        "name_uz": "Paxta (xom paxta)",
+        "production_code": "1.03.03.0073",
+        "production_url": "https://api.siat.stat.uz/media/uploads/sdmx/sdmx_data_2389.json",
+        "production_page": "https://siat.stat.uz/data/2389/?lang=en",
+        "area_code": "1.03.03.0069",
+        "area_url": "https://api.siat.stat.uz/media/uploads/sdmx/sdmx_data_2039.json",
+        "area_page": "https://siat.stat.uz/data/2039/?lang=en",
+        "max_yield": 20.0,
+    },
+}
 OFFICIAL_YIELD_OUTPUT = ROOT / "docs" / "data" / "official-yield"
 YEARS = tuple(range(2010, 2025))
 
@@ -304,6 +326,167 @@ async def build_official_wheat_yield(client: httpx.AsyncClient) -> dict:
     }
 
 
+async def build_official_crop_yield(
+    client: httpx.AsyncClient,
+    crop_code: str,
+    definition: dict,
+) -> dict:
+    """Build province-level crop yield from paired official SIAT production/area series.
+
+    Production is thousand tonnes and planted area is hectares. The derived
+    value is therefore tonnes per planted hectare, not a field measurement.
+    SIAT source tables do not publish matching district-level production, so
+    this static model bundle intentionally contains ADM1 only.
+    """
+    production_response, area_response = await asyncio.gather(
+        client.get(definition["production_url"]),
+        client.get(definition["area_url"]),
+    )
+    production_response.raise_for_status()
+    area_response.raise_for_status()
+    production_doc = _siat_document(
+        production_response.json(),
+        definition["production_code"],
+        "thousand tons",
+    )
+    area_doc = _siat_document(
+        area_response.json(),
+        definition["area_code"],
+        "hectare",
+    )
+    production = {
+        str(row.get("Code")): row
+        for row in production_doc["records"]
+        if isinstance(row, dict) and row.get("Code") is not None
+    }
+    areas = {
+        str(row.get("Code")): row
+        for row in area_doc["records"]
+        if isinstance(row, dict) and row.get("Code") is not None
+    }
+    if not production or not areas:
+        raise ValueError(f"SIAT {crop_code}: production/area records are missing")
+
+    regions = []
+    for code in sorted(set(production) & set(areas)):
+        if code in {"1700", "1726"}:  # National total and non-agricultural Tashkent city.
+            continue
+        p_row, a_row = production[code], areas[code]
+        name = " ".join(str(p_row.get("Klassifikator") or "").split())
+        area_name = " ".join(str(a_row.get("Klassifikator") or "").split())
+        if not name or name != area_name:
+            raise ValueError(
+                f"SIAT {crop_code} administrative labels differ for code {code}: "
+                f"{name!r} vs {area_name!r}"
+            )
+
+        rows = []
+        for year in YEARS:
+            production_thousand_t = p_row.get(str(year))
+            area_ha = a_row.get(str(year))
+            if production_thousand_t is None or area_ha is None:
+                raise ValueError(
+                    f"SIAT {crop_code} missing {year} production/area for {name}"
+                )
+            production_thousand_t = float(production_thousand_t)
+            area_ha = float(area_ha)
+            if production_thousand_t <= 0 or area_ha <= 0:
+                raise ValueError(
+                    f"SIAT {crop_code} non-positive production/area in {name}, {year}: "
+                    f"{production_thousand_t}, {area_ha}"
+                )
+            production_t = production_thousand_t * 1000.0
+            yield_t_ha = production_t / area_ha
+            if not (0 < yield_t_ha < float(definition["max_yield"])):
+                raise ValueError(
+                    f"SIAT {crop_code} derived yield outside the broad validation "
+                    f"range for {name}, {year}: {yield_t_ha}"
+                )
+            rows.append(
+                {
+                    "year": year,
+                    "yield": round(yield_t_ha, 6),
+                    "production_t": round(production_t, 3),
+                    "sown_area_ha": round(area_ha, 3),
+                }
+            )
+        if len(rows) != len(YEARS):
+            raise ValueError(f"SIAT {crop_code} incomplete yearly series for {name}")
+        regions.append({"admin_code": code, "name_uz": name, "records": rows})
+
+    if len(regions) != 13:
+        raise ValueError(
+            f"SIAT {crop_code} should contain 13 agricultural ADM1 regions, "
+            f"received {len(regions)}"
+        )
+    return {
+        "crop_code": crop_code,
+        "crop_name_uz": definition["name_uz"],
+        "unit": "tonnes per planted hectare",
+        "years": [YEARS[0], YEARS[-1]],
+        "method": (
+            "official production (thousand tonnes) * 1000 / "
+            "official planted area (hectares)"
+        ),
+        "sources": [
+            {
+                "indicator_code": definition["production_code"],
+                "name": "Official crop production in all categories of farms",
+                "unit": "thousand tons",
+                "url": definition["production_page"],
+                "raw_url": definition["production_url"],
+                "updated": production_doc["metadata"].get("Last modified date"),
+            },
+            {
+                "indicator_code": definition["area_code"],
+                "name": "Official crop sown area in all categories of farms",
+                "unit": "hectare",
+                "url": definition["area_page"],
+                "raw_url": definition["area_url"],
+                "updated": area_doc["metadata"].get("Last modified date"),
+            },
+        ],
+        "license": "CC BY 4.0",
+        "geographic_coverage": "13 agricultural ADM1 regions; Tashkent city excluded",
+        "district_yield_available": False,
+        "regions": sorted(regions, key=lambda region: region["name_uz"]),
+    }
+
+
+def load_cached_official_crops(path: Path) -> dict | None:
+    """Reuse the previous Pages artifact only after validating crop identities."""
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        crops = payload.get("crops") or {}
+        if (
+            payload.get("country_iso3") != "UZB"
+            or payload.get("admin_level") != "ADM1"
+            or payload.get("license") != "CC BY 4.0"
+            or set(crops) != set(SIAT_OFFICIAL_CROP_DATASETS)
+        ):
+            return None
+        for crop_code, definition in SIAT_OFFICIAL_CROP_DATASETS.items():
+            crop = crops[crop_code]
+            if crop.get("crop_code") != crop_code or crop.get("license") != "CC BY 4.0":
+                return None
+            regions = crop.get("regions")
+            if not isinstance(regions, list) or len(regions) != 13:
+                return None
+            for region in regions:
+                records = region.get("records") or []
+                if [row.get("year") for row in records] != list(YEARS):
+                    return None
+                if any(not isinstance(row.get("yield"), (int, float)) or row["yield"] <= 0
+                       or row["yield"] >= float(definition["max_yield"]) for row in records):
+                    return None
+        return payload
+    except Exception as exc:
+        print(f"WARN: cached SIAT crop series is unusable: {exc}")
+        return None
+
+
 async def main() -> None:
     OUTPUT.mkdir(parents=True, exist_ok=True)
     official_target = OFFICIAL_YIELD_OUTPUT / "UZB_ADM1_WHEA_2010_2024.json"
@@ -330,6 +513,47 @@ async def main() -> None:
         f"{len(official_wheat['regions'])} regions, "
         f"{sum(len(region['records']) for region in official_wheat['regions'])} yearly records"
     )
+    official_crops_target = OFFICIAL_YIELD_OUTPUT / "UZB_ADM1_CROPS_2010_2024.json"
+    try:
+        async with httpx.AsyncClient(timeout=45.0, follow_redirects=True) as client:
+            official_crops = {
+                crop_code: await build_official_crop_yield(client, crop_code, definition)
+                for crop_code, definition in SIAT_OFFICIAL_CROP_DATASETS.items()
+            }
+        official_crops_payload = {
+            "country_iso3": "UZB",
+            "admin_level": "ADM1",
+            "years": [YEARS[0], YEARS[-1]],
+            "license": "CC BY 4.0",
+            "geographic_coverage": "13 agricultural ADM1 regions; Tashkent city excluded",
+            "source_note": (
+                "SIAT production (thousand tonnes) divided by SIAT sown area (hectares). "
+                "These are province-level official statistical ratios, not district or field measurements."
+            ),
+            "crops": official_crops,
+        }
+        official_crops_target.parent.mkdir(parents=True, exist_ok=True)
+        official_crops_target.write_text(
+            json.dumps(official_crops_payload, ensure_ascii=False, separators=(",", ":")),
+            encoding="utf-8",
+        )
+        print("PASS: SIAT potato and raw-cotton province series refreshed from live sources")
+    except Exception as exc:
+        official_crops_payload = load_cached_official_crops(official_crops_target)
+        if official_crops_payload is None:
+            raise RuntimeError(
+                "SIAT potato/cotton source is unavailable and no previously validated "
+                f"Pages crop snapshot exists: {exc}"
+            ) from exc
+        print(f"WARN: SIAT potato/cotton source unavailable; using validated Pages snapshot: {exc}")
+    print(
+        "PASS SIAT ADM1 additional crops: "
+        + ", ".join(
+            f"{code}={len(data['regions'])} regions / "
+            f"{sum(len(region['records']) for region in data['regions'])} records"
+            for code, data in official_crops_payload["crops"].items()
+        )
+    )
     manifest = {
         "country_iso3": "UZB",
         "country_name": "Uzbekistan",
@@ -343,6 +567,18 @@ async def main() -> None:
             "region_count": len(official_wheat["regions"]),
             "record_count": sum(len(region["records"]) for region in official_wheat["regions"]),
             "license": official_wheat["license"],
+        },
+        "official_crop_yield": {
+            "file": "official-yield/UZB_ADM1_CROPS_2010_2024.json",
+            "crops": {
+                code: {
+                    "region_count": len(data["regions"]),
+                    "record_count": sum(len(region["records"]) for region in data["regions"]),
+                    "license": data["license"],
+                    "sources": data["sources"],
+                }
+                for code, data in official_crops_payload["crops"].items()
+            },
         },
     }
 
