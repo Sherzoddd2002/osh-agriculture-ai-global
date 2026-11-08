@@ -71,6 +71,29 @@
 @media(max-width:1050px){.region-controls{grid-template-columns:1fr 1fr}.region-controls button{width:100%}.region-selected{grid-template-columns:1fr 1fr}.region-selected button{grid-column:1/-1}.region-yield-controls{grid-template-columns:1fr 1fr}.region-yield-controls button{grid-column:1/-1;width:100%}}
 @media(max-width:760px){.region-result-grid{grid-template-columns:1fr}.region-weather-kpis{grid-template-columns:repeat(2,1fr)}.region-selected{grid-template-columns:1fr}.region-yield-controls{grid-template-columns:1fr}}
 
+
+/* Mobile-first navigation: keep section names visible and remove the desktop side rail. */
+@media(max-width:600px){
+ .sidebar{width:100%;height:54px;position:sticky;top:68px;inset:auto;z-index:14;flex-direction:row;align-items:center;gap:8px;padding:4px 9px;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:1px solid #20394a}
+ .brand{display:none}
+ .sidebar>div:nth-of-type(1){min-width:max-content;flex:1}
+ .nav-label,.side-card,.side-foot{display:none}
+ .nav{display:flex;align-items:center;gap:5px;width:max-content}
+ .nav a{justify-content:center;white-space:nowrap;padding:9px 10px;gap:6px;font-size:10px}
+ .nav a .nav-text{display:block;font-size:10px}
+ .nav-icon{display:none}
+ .main{margin-left:0}
+ .content{padding-top:15px}
+ .globe{height:340px}
+ .region-controls{grid-template-columns:1fr 1fr}
+ .region-controls button{width:100%}
+ .region-controls label:last-child{grid-column:1/-1}
+ .region-selected{grid-template-columns:1fr}
+ .region-selected button{grid-column:auto}
+ .region-yield-controls{grid-template-columns:1fr 1fr}
+ .region-yield-controls button{grid-column:1/-1;width:100%}
+ .source-grid{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
@@ -440,8 +463,12 @@ if(window.maplibregl){
    map.on("mousemove","country-fill",()=>map.getCanvas().style.cursor="pointer");
    map.on("mouseleave","country-fill",()=>map.getCanvas().style.cursor="");
    const uz=features.find(x=>iso3(x)==="UZB")||features.find(x=>countryName(x)==="Uzbekistan");
-   if(uz)choose(uz,false);
-   else $("map-status").textContent="Mamlakatni tanlash uchun chegarani bosing.";
+   if(uz){
+    choose(uz,false);
+    $("region-iso3").value=iso3(uz);
+    // The default public experience opens the verified ADM2 district layer automatically.
+    loadRegionBoundaries();
+   }else $("map-status").textContent="Mamlakatni tanlash uchun chegarani bosing.";
   }catch(error){console.error(error);$("map-status").textContent="Chegaralar yuklanmadi. Tashqi GeoJSON xizmati vaqtincha ishlamasligi mumkin.";}
  });
 }else{$("map-status").textContent="MapLibre kutubxonasi yuklanmadi.";}
