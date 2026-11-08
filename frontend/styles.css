@@ -259,3 +259,10 @@ input::placeholder{color:#71899b}
 #draw-aoi-finish:disabled,#draw-aoi-cancel:disabled{opacity:.42;cursor:not-allowed}
 #draw-aoi-start:not(:disabled){border-color:#2bb78c;color:#146f55}
 #global-map .maplibregl-canvas{cursor:inherit}
+
+.source-state.partial{color:#9a6a13}
+.sentinel2-discovery{margin:18px 0;padding:18px}
+.sentinel2-controls{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;margin:12px 0}
+.sentinel2-controls label{display:grid;gap:5px;font-size:11px;color:var(--muted)}
+.sentinel2-controls input{min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
+@media(max-width:760px){.sentinel2-controls{grid-template-columns:1fr 1fr}.sentinel2-controls button{grid-column:1/-1}}
