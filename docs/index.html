@@ -500,9 +500,85 @@ function regionEscape(value){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char];
  });
 }
+const UZB_ADMIN_NAMES={
+ "republic of karakalpakstan":"Qoraqalpog‘iston Respublikasi",
+ "andijan region":"Andijon viloyati","namangan region":"Namangan viloyati","fergana region":"Farg‘ona viloyati",
+ "xorazm region":"Xorazm viloyati","navoiy region":"Navoiy viloyati","surxondaryo region":"Surxondaryo viloyati",
+ "samarkand region":"Samarqand viloyati","tashkent region":"Toshkent viloyati","syrdarya region":"Sirdaryo viloyati",
+ "jizzakh region":"Jizzax viloyati","bukhara region":"Buxoro viloyati","kashkadarya region":"Qashqadaryo viloyati",
+ "termez":"Termiz tumani","nurata":"Nurota tumani","navoi city":"Navoiy shahri","jondor":"Jondor tumani",
+ "bukhara":"Buxoro tumani","alat":"Olot tumani","karakul":"Qorako‘l tumani","kasbi":"Kasbi tumani",
+ "mirishkar":"Mirishkor tumani","nishan":"Nishon tumani","mubarek":"Muborak tumani",
+ "karaulbazar":"Qorovulbozor tumani","nurabad":"Nurobod tumani","shafirkan":"Shofirkon tumani",
+ "ramitan":"Romitan tumani","peshku":"Peshku tumani","kagan":"Kogon tumani","kiziltepa":"Qiziltepa tumani",
+ "kagan city":"Kogon shahri","bukhara city":"Buxoro shahri","pakhtachi":"Paxtachi tumani",
+ "gijduvan":"G‘ijduvon tumani","vabkent":"Vobkent tumani","karmana":"Karmana tumani","navbakhor":"Navbahor tumani",
+ "kitab":"Kitob tumani","kamashi":"Qamashi tumani","karshi":"Qarshi tumani","guzar":"G‘uzor tumani",
+ "dehkanabad":"Dehqonobod tumani","kasan":"Koson tumani","karshi city":"Qarshi shahri",
+ "chirakchi":"Chiroqchi tumani","baysun":"Boysun tumani","muzrabad":"Muzrabot tumani","sherabad":"Sherobod tumani",
+ "angor":"Angor tumani","yakkabag":"Yakkabog‘ tumani","shakhrisabz":"Shahrisabz tumani",
+ "pastdargom":"Pastdarg‘om tumani","ishtikhan":"Ishtixon tumani","narpay":"Narpay tumani",
+ "kattakurgan":"Kattaqo‘rg‘on tumani","khatirchi":"Xatirchi tumani","kattakurgan city":"Kattaqo‘rg‘on shahri",
+ "koshrabad":"Qo‘shrabot tumani","samarkand city":"Samarqand shahri","urgut":"Urgut tumani",
+ "samarkand":"Samarqand tumani","taylak":"Toyloq tumani","dzhambay":"Jomboy tumani","payarik":"Payariq tumani",
+ "akdarya":"Oqdaryo tumani","farish":"Forish tumani","gallyaaral":"G‘allaorol tumani","khiva":"Xiva tumani",
+ "karauzyak":"Qorao‘zak tumani","kungrad":"Qo‘ng‘irot tumani","shavat":"Shovot tumani",
+ "koshkupir":"Qo‘shko‘pir tumani","amudarya":"Amudaryo tumani","gurlen":"Gurlan tumani","chimbay":"Chimboy tumani",
+ "kanlikul":"Qanliko‘l tumani","shumanay":"Shumanay tumani","khojeyli":"Xo‘jayli tumani","kegeyli":"Kegeyli tumani",
+ "muynak":"Mo‘ynoq tumani","nukus":"Nukus tumani","takhtakupir":"Taxtako‘pir tumani","nukus city":"Nukus shahri",
+ "turtkul":"To‘rtko‘l tumani","uchkuduk":"Uchquduq tumani","khazarasp":"Xazorasp tumani",
+ "kanimekh":"Konimex tumani","tamdi":"Tomdi tumani","ellikkala":"Ellikqal’a tumani","khanka":"Xonqa tumani",
+ "yangiarik":"Yangiariq tumani","bagat":"Bog‘ot tumani","urgench":"Urganch tumani","beruniy":"Beruniy tumani",
+ "yangibazar":"Yangibozor tumani","urgench city":"Urganch shahri","zarafshan city":"Zarafshon shahri",
+ "bagdad":"Bag‘dod tumani","yangiabad":"Yangiobod tumani","sariasiya":"Sariosiyo tumani",
+ "dzharkurgan":"Jarqo‘rg‘on tumani","termez city":"Termiz shahri","kizirik":"Qiziriq tumani",
+ "shurchi":"Sho‘rchi tumani","kumkurgan":"Qumqo‘rg‘on tumani","uzun":"Uzun tumani","altinsay":"Oltinsoy tumani",
+ "denau":"Denov tumani","dzhizak city":"Jizzax shahri","bakhmal":"Baxmal tumani","bulungur":"Bulung‘ur tumani",
+ "sharof rashidov":"Sharof Rashidov tumani","zafarabad":"Zafarobod tumani","zarbdar":"Zarbdor tumani",
+ "zaamin":"Zomin tumani","sardoba":"Sardoba tumani","paxtakor":"Paxtakor tumani","dustlik":"Do‘stlik tumani",
+ "khavas":"Xovos tumani","mirzaabad":"Mirzaobod tumani","bekabad":"Bekobod tumani",
+ "uzbekistan":"O‘zbekiston tumani","besharik":"Beshariq tumani","sokh":"So‘x tumani",
+ "fergana":"Farg‘ona tumani","bekabad city":"Bekobod shahri","bayaut":"Boyovut tumani",
+ "shirin city":"Shirin shahri","yangiyer city":"Yangiyer shahri","rishtan":"Rishton tumani",
+ "altiarik":"Oltiariq tumani","uchkuprik":"Uchko‘prik tumani","kuvasay city":"Quvasoy shahri",
+ "fergana city":"Farg‘ona shahri","pap":"Pop tumani","urtachirchik":"O‘rtachirchiq tumani",
+ "gulistan city":"Guliston shahri","saykhunabad":"Sayxunobod tumani","mirzachul":"Mirzacho‘l tumani",
+ "arnasay":"Arnasoy tumani","gulistan":"Guliston tumani","akaltin":"Oqoltin tumani",
+ "sirdarya":"Sirdaryo tumani","kuyichirchik":"Quyi Chirchiq tumani","chinaz":"Chinoz tumani",
+ "akhangaran":"Ohangaron tumani","akhangaran city":"Ohangaron shahri","buka":"Bo‘ka tumani",
+ "akkurgan":"Oqqo‘rg‘on tumani","pskent":"Piskent tumani","almalik city":"Olmaliq shahri",
+ "bektemir":"Bektemir tumani","sergeli":"Sergeli tumani","yangiyul":"Yangiyo‘l tumani",
+ "yangiyul city":"Yangiyo‘l shahri","zangiata":"Zangiota tumani","chilanzar":"Chilonzor tumani",
+ "uchtepa":"Uchtepa tumani","tashkent":"Toshkent tumani","yakkasaray":"Yakkasaroy tumani",
+ "almazar":"Olmazor tumani","shaykhantokhur":"Shayxontohur tumani","yunusabad":"Yunusobod tumani",
+ "yukarichirchik":"Yuqori Chirchiq tumani","parkent":"Parkent tumani","angren city":"Angren shahri",
+ "kibray":"Qibray tumani","yashnobod":"Yashnobod tumani","mirabad":"Mirobod tumani",
+ "mirzo ulugbek":"Mirzo Ulug‘bek tumani","bostanlik":"Bo‘stonliq tumani","chirchik city":"Chirchiq shahri",
+ "andijan":"Andijon tumani","ulugnar":"Ulug‘nor tumani","kokand city":"Qo‘qon shahri","furkat":"Furqat tumani",
+ "kushtepa":"Qo‘shtepa tumani","buvayda":"Buvayda tumani","dangara":"Dang‘ara tumani",
+ "yazyavan":"Yozyovon tumani","mingbulak":"Mingbuloq tumani","khadjaabad":"Xo‘jaobod tumani",
+ "kuva":"Quva tumani","tashlak":"Toshloq tumani","margilan city":"Marg‘ilon shahri",
+ "markhamat":"Marhamat tumani","asaka":"Asaka tumani","shakhrixan":"Shahrixon tumani",
+ "boz":"Bo‘z tumani","djalalkuduk":"Jalolquduq tumani","bulakbashi":"Buloqboshi tumani",
+ "kurgantepa":"Qo‘rg‘ontepa tumani","narin":"Norin tumani","chust":"Chust tumani",
+ "namangan":"Namangan tumani","turakurgan":"To‘raqo‘rg‘on tumani","balikchi":"Baliqchi tumani",
+ "yangikurgan":"Yangiqo‘rg‘on tumani","kasansay":"Kosonsoy tumani","namangan city":"Namangan shahri",
+ "uychi":"Uychi tumani","chartak":"Chortoq tumani","khanabad city":"Xonobod shahri",
+ "altinkul":"Oltinko‘l tumani","andijan city":"Andijon shahri","uchkurgan":"Uchqo‘rg‘on tumani",
+ "izboskan":"Izboskan tumani","paxtaabad":"Paxtaobod tumani","khiva city":"Xiva shahri",
+ "nurafshon city":"Nurafshon shahri","shakhrisabz city":"Shahrisabz shahri"
+};
+function normalizeRegionSearch(value){
+ return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+  .toLocaleLowerCase("uz").replace(/[\u2018\u2019\u02bb\u02bc\u0060\u0027\u0430]/g,"")
+  .replace(/\s+/g," ").trim();
+}
 function regionFeatureName(feature){
  const p=feature&&feature.properties||{};
- return p.shapeName||p.shape_name||p.shapeNameEn||p.NAME_1||p.NAME_2||p.name||p.NAME||p.ADMIN||"Tanlangan maydon";
+ const raw=p.shapeName||p.shape_name||p.shapeNameEn||p.NAME_1||p.NAME_2||p.name||p.NAME||p.ADMIN||"Tanlangan maydon";
+ if(raw==="Tashkent"&&p.shapeType==="ADM1")return "Toshkent shahri";
+ const source=raw.replace(/\u0430/g,"a").toLocaleLowerCase("en").trim();
+ return UZB_ADMIN_NAMES[source]||raw;
 }
 function regionGeometryPositions(geometry){
  const points=[];
@@ -557,11 +633,13 @@ function updateRegionDraft(){
  map.getSource("region-draft-points").setData({type:"FeatureCollection",features:regionDraftPoints.map((point,index)=>({type:"Feature",properties:{index:index+1},geometry:{type:"Point",coordinates:point}}))});
 }
 function renderRegionOptions(filter){
- const query=(filter||"").trim().toLocaleLowerCase();
+ const query=normalizeRegionSearch(filter);
  const current=$("region-select").value;
  const matches=adminFeatures.map((feature,index)=>({feature,index})).filter(item=>{
   const p=item.feature.properties||{};
-  return !query||[regionFeatureName(item.feature),p.shapeID,p.shapeISO,p.shapeGroup].join(" ").toLocaleLowerCase().includes(query);
+  const raw=p.shapeName||p.shape_name||p.shapeNameEn||p.NAME_1||p.NAME_2||p.name||p.NAME||"";
+  const haystack=normalizeRegionSearch([raw,regionFeatureName(item.feature),p.shapeID,p.shapeISO,p.shapeGroup].join(" "));
+  return !query||haystack.includes(query);
  });
  $("region-select").innerHTML='<option value="">'+(matches.length?'Hududni tanlang…':'Mos hudud topilmadi')+'</option>'+
   matches.map(item=>'<option value="'+item.index+'">'+regionEscape(regionFeatureName(item.feature))+'</option>').join("");
