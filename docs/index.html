@@ -459,7 +459,28 @@ if(window.maplibregl){
    map.on("mouseenter","admin-area-fill",()=>{if(!regionDrawing)map.getCanvas().style.cursor="pointer";});
    map.on("mouseleave","admin-area-fill",()=>{if(!regionDrawing)map.getCanvas().style.cursor="";});
 
-   map.on("click","country-fill",function(e){if(regionSelectionActive||regionDrawing)return;if(e.features&&e.features[0]){choose(e.features[0],true);$("region-iso3").value=iso3(e.features[0]);}});
+   map.on("click","country-fill",function(e){
+     if(regionDrawing||!e.features||!e.features[0])return;
+     const feature=e.features[0],code=iso3(feature);
+     if(code==="UZB"&&adminFeatures.length)return;
+     choose(feature,true);
+     $("region-iso3").value=code;
+     regionSelectionActive=false;
+     selectedAOI=null;
+     adminFeatures=[];
+     if(map.getSource("admin-areas"))map.getSource("admin-areas").setData({type:"FeatureCollection",features:[]});
+     if(map.getSource("region-selected"))map.getSource("region-selected").setData({type:"FeatureCollection",features:[]});
+     $("region-select").disabled=true;
+     $("region-select").innerHTML='<option value="">Avval O‘zbekiston ADM1/ADM2 ni yuklang</option>';
+     $("region-search").value="";
+     $("region-name").textContent="Hudud tanlanmagan";
+     $("region-center").textContent="—";
+     $("region-analyze").disabled=true;
+     $("region-results").hidden=true;
+     $("region-status").textContent=code==="UZB"
+      ?"O‘zbekiston tanlandi. Viloyat yoki tuman chegaralarini yuklang."
+      :code+" mamlakati tanlandi. Public statik ADM1/ADM2 paketi hozircha faqat O‘zbekiston uchun mavjud.";
+   });
    map.on("mousemove","country-fill",()=>map.getCanvas().style.cursor="pointer");
    map.on("mouseleave","country-fill",()=>map.getCanvas().style.cursor="");
    const uz=features.find(x=>iso3(x)==="UZB")||features.find(x=>countryName(x)==="Uzbekistan");
