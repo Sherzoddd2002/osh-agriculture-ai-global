@@ -590,12 +590,45 @@ function regionGeometryPositions(geometry){
  if(geometry&&geometry.coordinates)visit(geometry.coordinates);
  return points;
 }
+function regionRingCentroid(ring){
+ if(!Array.isArray(ring)||ring.length<4)return null;
+ let twiceArea=0,cx=0,cy=0;
+ for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+  const xi=Number(ring[i][0]),yi=Number(ring[i][1]);
+  const xj=Number(ring[j][0]),yj=Number(ring[j][1]);
+  const cross=xj*yi-xi*yj;
+  twiceArea+=cross;
+  cx+=(xj+xi)*cross;
+  cy+=(yj+yi)*cross;
+ }
+ if(Math.abs(twiceArea)<1e-12)return null;
+ return {area:Math.abs(twiceArea)/2,lon:cx/(3*twiceArea),lat:cy/(3*twiceArea)};
+}
+function regionPolygonCentroid(rings){
+ let area=0,x=0,y=0;
+ (rings||[]).forEach((ring,index)=>{
+  const center=regionRingCentroid(ring);
+  if(!center)return;
+  const weight=center.area*(index===0?1:-1);
+  area+=weight;x+=center.lon*weight;y+=center.lat*weight;
+ });
+ return area>1e-12?{area,lon:x/area,lat:y/area}:null;
+}
 function regionCenter(feature){
- const points=regionGeometryPositions(feature.geometry);
+ const geometry=feature&&feature.geometry;
+ const polygons=geometry&&geometry.type==="Polygon"?[geometry.coordinates]:
+  geometry&&geometry.type==="MultiPolygon"?geometry.coordinates:[];
+ let area=0,x=0,y=0;
+ polygons.forEach(rings=>{
+  const center=regionPolygonCentroid(rings);
+  if(center){area+=center.area;x+=center.lon*center.area;y+=center.lat*center.area;}
+ });
+ if(area>1e-12)return {lon:x/area,lat:y/area};
+ const points=regionGeometryPositions(geometry);
  if(!points.length)return null;
- let x=0,y=0;
- points.forEach(p=>{x+=p[0];y+=p[1];});
- return {lon:x/points.length,lat:y/points.length};
+ let sumLon=0,sumLat=0;
+ points.forEach(point=>{sumLon+=point[0];sumLat+=point[1];});
+ return {lon:sumLon/points.length,lat:sumLat/points.length};
 }
 function regionBounds(feature){
  const points=regionGeometryPositions(feature.geometry);
