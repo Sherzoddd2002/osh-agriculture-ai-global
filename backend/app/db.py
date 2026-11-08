@@ -7,11 +7,21 @@ class Base(DeclarativeBase):
     pass
 
 
-_is_sqlite = settings.database_url.startswith("sqlite:")
+def _sqlalchemy_database_url(url: str) -> str:
+    """Use the psycopg v3 driver for standard Fly MPG PostgreSQL URLs."""
+    if url.startswith("postgres://"):
+        return "postgresql+psycopg://" + url[len("postgres://"):]
+    if url.startswith("postgresql://"):
+        return "postgresql+psycopg://" + url[len("postgresql://"):]
+    return url
+
+
+DATABASE_URL = _sqlalchemy_database_url(settings.database_url)
+_is_sqlite = DATABASE_URL.startswith("sqlite:")
 _connect_args = {"check_same_thread": False} if _is_sqlite else {}
 
 engine = create_engine(
-    settings.database_url,
+    DATABASE_URL,
     pool_pre_ping=True,
     pool_recycle=1800,
     pool_size=5,
