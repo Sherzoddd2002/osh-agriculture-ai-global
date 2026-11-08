@@ -70,6 +70,31 @@ for(const [level,count] of Object.entries(expected)){
  console.log("PASS UZB "+level+": "+count+" Uzbek-localized names");
 }
 
+const officialNamesMatch=html.match(/const OFFICIAL_WHEAT_ADM1_NAMES=(\\[[\\s\\S]*?\\]);/);
+assert.ok(officialNamesMatch,"official ADM1 wheat allow-list is missing");
+const gateSource=[
+ nameObject[0],
+ extractFunction("normalizeRegionSearch"),
+ extractFunction("regionFeatureName"),
+ officialNamesMatch[0],
+ 'let selectedAOI=null;let selectedCrop="whea";function $(id){return {value:selectedCrop};}',
+ extractFunction("canUseOfficialProvinceWheat"),
+ 'return {check:()=>canUseOfficialProvinceWheat(),setArea:value=>{selectedAOI=value;},setCrop:value=>{selectedCrop=value;}};'
+].join("\\n");
+const gate=new Function(gateSource)();
+gate.setArea({properties:{shapeName:"Andijan Region",shapeType:"ADM1"}});
+assert.equal(gate.check(),true,"Andijan ADM1 wheat should use official SIAT");
+gate.setArea({properties:{shapeName:"Tashkent",shapeType:"ADM1"}});
+assert.equal(gate.check(),false,"Tashkent city has no official province wheat time series");
+gate.setArea({properties:{shapeName:"Andijan Region",shapeType:"ADM2"}});
+assert.equal(gate.check(),false,"districts must not inherit province yield");
+gate.setArea({properties:{shapeName:"Andijan Region",shapeType:"ADM1"}});
+gate.setCrop("cott");
+assert.equal(gate.check(),false,"non-wheat crops must require their own yield data");
+gate.setCrop("whea");
+gate.setArea({properties:{shapeName:"Custom field"}});
+assert.equal(gate.check(),false,"custom AOIs must require user-provided yield data");
+
 const andijan=regionFeatureName({properties:{shapeName:"Andijan Region",shapeType:"ADM1"}});
 const chilanzar=regionFeatureName({properties:{shapeName:"Chilanzar",shapeType:"ADM2"}});
 const tashkentCity=regionFeatureName({properties:{shapeName:"Tashkent",shapeType:"ADM1"}});
