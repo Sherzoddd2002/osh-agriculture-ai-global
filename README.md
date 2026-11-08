@@ -28,7 +28,7 @@
 
 **A location-first agricultural data and yield-forecasting platform.** Users select a country and administrative area, upload historical crop observations, enrich the selected area with environmental datasets, run quality checks, and receive a clearly labelled yield estimate.
 
-> **Status: MVP foundation.** The starter includes global administrative-boundary lookup (geoBoundaries), NASA POWER daily weather retrieval, CSV yield-data upload, SQLite for personal local installations, optional PostgreSQL/PostGIS for a shared central deployment, a database-backed background-job queue, a research forecasting endpoint, and a responsive web interface. Sentinel-2 NDVI, SMAP, and SoilGrids are explicit connector slots; they are not presented as available until their raster/data adapters and credentials are configured.
+> **Status: MVP foundation.** The starter includes global administrative-boundary lookup (geoBoundaries), NASA POWER daily weather retrieval, CSV yield-data upload, SQLite for personal local installations, optional PostgreSQL/PostGIS for a shared central deployment, a database-backed background-job queue, a research forecasting endpoint, and a responsive web interface. Sentinel-2 CDSE STAC scene discovery is connected, but NDVI raster processing is not. NASA SMAP SPL3SMP_E is an available 9 km product that still needs Earthdata authentication and a raster adapter. SoilGrids REST is paused; WCS/WebDAV access is available, while AOI subset and zonal-statistics processing remains to be integrated.
 
 For Uzbek setup instructions, see [README_UZ.md](README_UZ.md).
 
@@ -38,7 +38,7 @@ For Uzbek setup instructions, see [README_UZ.md](README_UZ.md).
 - **API:** FastAPI (Python).
 - **Database:** each personal local installation uses its own SQLite file. The optional shared-server/Docker deployment uses PostgreSQL; PostGIS is optional.
 - **Background work:** a local worker process polls the installation's own database-backed job queue. No cloud worker is required for personal mode.
-- **Environmental sources:** geoBoundaries, NASA POWER annual historical weather, and Open-Meteo current/16-day forecast are connected. NDVI, SMAP, SoilGrids remain explicit `PLANNED_CONNECTOR` sources.
+- **Environmental sources:** geoBoundaries, NASA POWER annual historical weather, and Open-Meteo current/16-day forecast are connected. Sentinel-2 STAC catalogue discovery is connected; NDVI, SMAP and SoilGrids zonal raster features are not yet persisted as model inputs.
 - **Deployment:** GitHub source + local CLI for personal use; Docker Compose or a separately hosted central backend are optional alternatives.
 
 ## Optional: shared central Windows + PostgreSQL server
