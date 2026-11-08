@@ -896,12 +896,14 @@ $("region-run-model").addEventListener("click",async()=>{
   const climateByYear=await fetchYieldClimateHistory(center,series,startSeason,endSeason);
   output.textContent="ERA5-Land iqlim qatori moslandi. Expanding-window Ridge modeli va Persistence benchmark hisoblanmoqda…";
   const result=runRegionRidge(series,target,climateByYear);
-  output.innerHTML="<strong>"+regionFmt(result.forecast,3)+" t/ha</strong> · "+target+" yil uchun Ridge + ERA5-Land ssenariysi"+
+  const selectedCropLabel=$("crop-select").selectedOptions[0]?.textContent||"Tanlangan ekin";
+  const selectedAreaLabel=$("region-name").textContent||"Tanlangan AOI";
+  output.innerHTML="<strong>"+regionFmt(result.forecast,3)+" t/ha</strong> · "+target+" yil · "+regionEscape(selectedCropLabel)+" · "+regionEscape(selectedAreaLabel)+" · Ridge + ERA5-Land ssenariysi"+
    "<div class='region-weather-kpis' style='margin-top:12px'>"+
    [["Oxirgi kuzatuv",regionFmt(result.last,3)+" t/ha"],["Ridge OOF MAE",regionFmt(result.mae,3)+" t/ha"],["Persistence MAE",regionFmt(result.persistenceMae,3)+" t/ha"],["OOF tekshiruv",result.oof.length+" yil"],["Moslangan yield+weather",result.rows+" yil"],["Weather coverage",regionFmt(result.coverageMean*100,1)+"%"]].map(k=>"<div class='region-kpi'><small>"+k[0]+"</small><strong style='font-size:14px'>"+k[1]+"</strong></div>").join("")+
    "</div><p class='region-footnote'>Persistence bilan solishtirish: "+(result.beatsPersistence?"Ridge OOF MAE kichikroq bo‘ldi.":"Ridge OOF MAE Persistence’dan kichik bo‘lmadi.")+
    "<br>Kelajak ob-havosi noma’lum bo‘lgani uchun feature’lar oxirgi 5 ta mos mavsumning ERA5-Land o‘rtacha normasi bilan to‘ldirildi ("+result.climateNormalYears.join(", ")+"). Bu tuman/dala uchun mustaqil validatsiyadan o‘tgan universal model emas; bir foydalanuvchi yuklagan tarixiy CSV asosidagi research scenario."+
-   "<br>NDVI/SMAP/SoilGrids hali model featurelariga qo‘shilmagan. CSV serverga yuborilmadi.</p>";
+   "<br>CSV aynan tanlangan ekin ("+regionEscape(selectedCropLabel)+") bo‘yicha bo‘lishi kerak. NDVI/SMAP/SoilGrids hali model featurelariga qo‘shilmagan. CSV serverga yuborilmadi.</p>";
  }catch(error){output.textContent="AI ssenariysi ishga tushmadi: "+error.message;}
  finally{$("region-run-model").disabled=false;}
 });
