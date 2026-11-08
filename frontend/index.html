@@ -136,6 +136,17 @@
         <button class="primary-button" id="refresh-climate" type="button">Iqlimni qayta hisoblash</button>
         <span id="environment-status" class="muted" role="status">Hudud saqlangandan keyin iqlim natijalari shu yerda ko‘rinadi.</span>
       </div>
+      <section class="panel sentinel2-discovery">
+        <div class="panel-title"><div><span class="eyebrow">COPERNICUS · SENTINEL-2 L2A</span><h3>Hudud bo‘yicha sun’iy yo‘ldosh sahnalarini qidirish</h3><small>STAC katalogi · bu bosqich sahna metadatasini topadi, NDVI rasterini hali hisoblamaydi.</small></div><span class="source-pill">CATALOG CONNECTED</span></div>
+        <div class="sentinel2-controls">
+          <label>Boshlanish sanasi<input id="sentinel2-start-date" type="date" value="2024-01-01"></label>
+          <label>Tugash sanasi<input id="sentinel2-end-date" type="date"></label>
+          <label>Maksimal bulut (%)<input id="sentinel2-max-cloud" type="number" min="0" max="100" value="30"></label>
+          <button class="primary-button" id="search-sentinel2" type="button">Sentinel-2 sahnalarini qidirish</button>
+        </div>
+        <div id="sentinel2-search-status" class="muted" role="status">Avval hududni saqlang, keyin shu AOI bilan katalog qidiruvi bajariladi.</div>
+        <div id="sentinel2-scene-results" class="table-wrap"></div>
+      </section>
       <section class="climate-dashboard" id="location-climate-results" hidden>
         <div class="climate-dashboard-head"><div><span class="eyebrow">REGIONAL CLIMATE INTELLIGENCE</span><h2 id="climate-title">Hudud iqlim tahlili</h2><p id="climate-subtitle">Yillik tarixiy ko‘rsatkichlar, joriy ob-havo va qisqa muddatli prognoz.</p></div><span class="source-pill" id="climate-source-status">Ma’lumot kutilmoqda</span></div>
         <div id="climate-current-kpis" class="climate-current-grid"></div>
