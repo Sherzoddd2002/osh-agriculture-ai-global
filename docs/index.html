@@ -94,6 +94,7 @@
  .region-yield-controls button{grid-column:1/-1;width:100%}
  .source-grid{grid-template-columns:1fr 1fr}
 }
+.region-csv-help{margin:12px 0;border:1px solid #315064;background:#0e2636}.region-csv-help summary{cursor:pointer;color:#c5d8e1;font-size:11px;font-weight:850;list-style-position:inside}.region-csv-help p{margin:10px 0 0;color:#98afbd;font-size:10px;line-height:1.7}.region-csv-help code{color:var(--mint);font-size:10px}
 </style>
 </head>
 <body>
@@ -214,6 +215,12 @@
 
         <article class="panel region-result-card region-yield-card">
           <div class="region-result-head"><div><span class="eyebrow">RESEARCH MODEL / CSV INPUT</span><h3>Hosildorlik uchun Ridge baseline ssenariysi</h3><small>O‘zingizdagi haqiqiy yillik yield CSV faylini yuklang. Hisob brauzerda bajariladi.</small></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><a class="btn-secondary" href="./data/templates/yield-template.csv" download>CSV shablon ↓</a><span class="tag">LOCAL · NO UPLOAD</span></div></div>
+          <details class="info-note region-csv-help">
+            <summary>CSV faylni qanday tayyorlash kerak?</summary>
+            <p>Faylning birinchi qatorida <code>year,yield_t_ha</code> ustunlari bo‘lsin. Har yil uchun bitta qator, hosildorlik esa <b>tonna/gektar (t/ha)</b> birlikda yoziladi. Takroriy yil bo‘lmasin; kamida 8 ta haqiqiy kuzatuv kiriting. Ma’lumot UTF-8 CSV bo‘lishi kerak.</p>
+            <p><b>Hudud qoidasi:</b> ADM2 tuman tanlangan bo‘lsa, CSV ham aynan shu tuman va shu ekin bo‘yicha bo‘lishi kerak. Viloyat ma’lumotini tuman ma’lumoti sifatida kiritmang. Rasmiy tuman qatori bo‘lmasa, sun’iy raqam qo‘shmang — model noto‘g‘ri hududni bashorat qilmasligi kerak.</p>
+            <p><b>Mavsum:</b> bug‘doy kabi kuzgi ekinlar uchun odatda 10-01 dan 06-30 gacha; boshqa ekinlarda o‘zingizning haqiqiy ekish/yig‘im mavsumingizni belgilang. Kelajak ob-havosi modelda so‘nggi 5 mos mavsum normasi bilan ifodalanadi.</p>
+          </details>
           <div class="region-yield-controls">
             <label>CSV fayl<input type="file" id="region-yield-file" accept=".csv,text/csv"></label>
             <label>Yil ustuni<input id="region-year-column" value="year"></label>
@@ -679,6 +686,19 @@ function renderRegionOptions(filter){
  if(matches.some(item=>String(item.index)===current))$("region-select").value=current;
 }
 $("region-search").addEventListener("input",event=>renderRegionOptions(event.target.value));
+$("region-level").addEventListener("change",()=>{
+ selectedAOI=null;
+ adminFeatures=[];
+ if(map&&map.getSource("admin-areas"))map.getSource("admin-areas").setData({type:"FeatureCollection",features:[]});
+ if(map&&map.getSource("region-selected"))map.getSource("region-selected").setData({type:"FeatureCollection",features:[]});
+ $("region-select").disabled=true;
+ $("region-select").innerHTML='<option value="">Chegaralarni qayta yuklang</option>';
+ $("region-name").textContent="Hudud tanlanmagan";
+ $("region-center").textContent="—";
+ $("region-analyze").disabled=true;
+ $("region-results").hidden=true;
+ $("region-status").textContent=$("region-level").value+" tanlandi. Yangi chegara qatlamini yuklash uchun tugmani bosing.";
+});
 async function loadRegionBoundaries(){
  const iso=$("region-iso3").value.trim().toUpperCase(),level=$("region-level").value;
  if(!/^[A-Z]{3}$/.test(iso)){ $("region-status").textContent="ISO-3 kodini kiriting (masalan UZB).";return; }
@@ -1063,13 +1083,19 @@ $("region-run-model").addEventListener("click",async()=>{
   const series=lines.slice(1).map(line=>{
    const values=parseRegionCsvLine(line,delimiter);
    return {year:Number(values[yearIndex]),yield:Number(String(values[yieldIndex]||"").replace(",", "."))};
-  }).filter(row=>Number.isInteger(row.year)&&Number.isFinite(row.yield)&&row.yield>=0&&row.yield<=30).sort((a,b)=>a.year-b.year);
+  }).filter(row=>Number.isInteger(row.year)&&Number.isFinite(row.yield)&&row.yield>=0&&row.yield<=1000).sort((a,b)=>a.year-b.year);
   if(series.length<8)throw new Error("CSV ichida kamida 8 ta to‘g‘ri year/yield kuzatuvi bo‘lishi kerak.");
   if(series.length!==new Set(series.map(row=>row.year)).size)throw new Error("Takroriy hosil yillari bor. Har yil uchun bitta kuzatilgan qator qoldiring.");
   const target=Number($("region-target-year").value);
   if(!Number.isInteger(target)||target<=series[series.length-1].year)throw new Error("Maqsadli yil oxirgi kuzatilgan yildan keyin bo‘lishi kerak.");
   const startSeason=$("region-season-start").value.trim(),endSeason=$("region-season-end").value.trim();
-  if(!/^\d{2}-\d{2}$/.test(startSeason)||!/^\d{2}-\d{2}$/.test(endSeason))throw new Error("Mavsum sanalari MM-DD formatida bo‘lishi kerak.");
+  const validSeasonDate=value=>{
+   if(!/^\d{2}-\d{2}$/.test(value))return false;
+   const [month,day]=value.split("-").map(Number);
+   const date=new Date(Date.UTC(2000,month-1,day));
+   return date.getUTCMonth()===month-1&&date.getUTCDate()===day;
+  };
+  if(!validSeasonDate(startSeason)||!validSeasonDate(endSeason)||startSeason===endSeason)throw new Error("Mavsum sanalari haqiqiy MM-DD formatida bo‘lishi va boshlanish/tugash kuni farq qilishi kerak.");
   const center=regionCenter(selectedAOI);
   if(!center)throw new Error("Tanlangan AOI koordinatalari olinmadi.");
   const climateByYear=await fetchYieldClimateHistory(center,series,startSeason,endSeason);
