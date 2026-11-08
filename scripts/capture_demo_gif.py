@@ -1,18 +1,23 @@
 from pathlib import Path
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from functools import partial
+from threading import Thread
 from PIL import Image
 from playwright.sync_api import sync_playwright
-import time
 
 ROOT = Path(__file__).resolve().parents[1]
 PAGE = ROOT / "docs" / "index.html"
 ASSETS = ROOT / "docs" / "assets"
 ASSETS.mkdir(parents=True, exist_ok=True)
 frames = []
+server = ThreadingHTTPServer(("127.0.0.1", 0), partial(SimpleHTTPRequestHandler, directory=str(ROOT / "docs")))
+Thread(target=server.serve_forever, daemon=True).start()
+url = f"http://127.0.0.1:{server.server_port}/"
 
 with sync_playwright() as p:
     browser = p.chromium.launch()
     page = browser.new_page(viewport={"width": 1440, "height": 920}, device_scale_factor=1)
-    page.goto(PAGE.as_uri(), wait_until="domcontentloaded", timeout=60000)
+    page.goto(url, wait_until="domcontentloaded", timeout=60000)
     try:
         page.wait_for_selector("#map canvas", timeout=30000)
         page.wait_for_timeout(9000)
@@ -28,6 +33,8 @@ with sync_playwright() as p:
     page.wait_for_timeout(900)
     frames.append(Image.open(__import__("io").BytesIO(page.screenshot(full_page=True))).convert("RGB"))
     browser.close()
+
+server.shutdown()
 
 # README screenshot is the selected-country state, not a synthetic forecast result.
 frames[1].save(ASSETS / "osh-global-preview.png", optimize=True)
