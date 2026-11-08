@@ -461,34 +461,42 @@ fetch("./data/catalog.json").then(r=>{if(!r.ok)throw new Error("manifest "+r.sta
 
 let map=null,features=[],selected=null;
 let regionSelectionActive=false,regionDrawing=false,regionDraftPoints=[],adminFeatures=[],selectedAOI=null;
-const OFFICIAL_WHEAT_ADM1_NAMES=[
+const OFFICIAL_PROVINCE_ADM1_NAMES=[
  "Qoraqalpog‘iston Respublikasi","Andijon viloyati","Buxoro viloyati","Jizzax viloyati",
  "Qashqadaryo viloyati","Navoiy viloyati","Namangan viloyati","Samarqand viloyati",
  "Surxondaryo viloyati","Sirdaryo viloyati","Toshkent viloyati","Farg‘ona viloyati",
  "Xorazm viloyati"
 ];
-function canUseOfficialProvinceWheat(){
+const OFFICIAL_PROVINCE_CROP_CONFIG={
+ whea:{name:"Bug‘doy",file:"./data/official-yield/UZB_ADM1_WHEA_2010_2024.json"},
+ pota:{name:"Kartoshka",file:"./data/official-yield/UZB_ADM1_CROPS_2010_2024.json"},
+ cott:{name:"Paxta (xom paxta)",file:"./data/official-yield/UZB_ADM1_CROPS_2010_2024.json"}
+};
+function canUseOfficialProvinceCrop(){
  if(!selectedAOI)return false;
  const props=selectedAOI.properties||{};
  const level=String(props.shapeType||"").toUpperCase();
- const crop=$("region-crop-select").value;
+ const cropCode=$("region-crop-select").value;
+ if(level!=="ADM1"||!OFFICIAL_PROVINCE_CROP_CONFIG[cropCode])return false;
  const name=normalizeRegionSearch(regionFeatureName(selectedAOI));
- return level==="ADM1"&&crop==="whea"&&OFFICIAL_WHEAT_ADM1_NAMES.some(value=>normalizeRegionSearch(value)===name);
+ return OFFICIAL_PROVINCE_ADM1_NAMES.some(value=>normalizeRegionSearch(value)===name);
 }
 function updateYieldModelButton(){
  const hasCsv=$("region-yield-file").files.length>0;
- const hasOfficial=canUseOfficialProvinceWheat();
+ const hasOfficial=canUseOfficialProvinceCrop();
+ const cropCode=$("region-crop-select").value;
+ const officialCrop=OFFICIAL_PROVINCE_CROP_CONFIG[cropCode];
  $("region-run-model").disabled=!(selectedAOI&&(hasCsv||hasOfficial));
  if(hasOfficial&&!hasCsv){
-  $("region-model-source-help").textContent="Rasmiy SIAT bug‘doy qatori topildi: "+regionFeatureName(selectedAOI)+", 2010–2024. CSV yuklamasdan Ridge + ERA5-Land hisoblash mumkin.";
+  $("region-model-source-help").textContent="Rasmiy SIAT qatori topildi: "+regionFeatureName(selectedAOI)+" · "+officialCrop.name+" · 2010–2024. CSV yuklamasdan Ridge + ERA5-Land hisoblash mumkin.";
  }else if(selectedAOI&&String((selectedAOI.properties||{}).shapeType||"").toUpperCase()==="ADM2"&&!hasCsv){
-  $("region-model-source-help").textContent="Tuman tanlandi. SIAT bug‘doy qatori faqat viloyat kesimida; tuman prognozi uchun aynan shu tuman/ekin bo‘yicha haqiqiy CSV yuklang.";
+  $("region-model-source-help").textContent="Tuman tanlandi. SIAT’ning avtomatik tarixiy qatorlari hozircha viloyat (ADM1) darajasida; tuman prognozi uchun aynan shu tuman va ekin bo‘yicha haqiqiy CSV kerak.";
  }else if(selectedAOI&&!hasCsv){
-  $("region-model-source-help").textContent="Bu maydon/ekin uchun rasmiy ko‘p yillik yield qatori yo‘q. Prognoz uchun mos tarixiy CSV yuklang.";
+  $("region-model-source-help").textContent="Bu hudud/ekin uchun avtomatik rasmiy yillik qator yo‘q. Prognoz uchun shu hudud/ekin bo‘yicha haqiqiy tarixiy CSV yuklang.";
  }else if(hasCsv){
   $("region-model-source-help").textContent="CSV brauzerda qayta ishlanadi va serverga yuborilmaydi. Fayl tanlangan hudud va ekinga mosligini tekshiring.";
  }else{
-  $("region-model-source-help").textContent="Viloyat (ADM1) + bug‘doy: SIAT rasmiy 2010–2024 qatori avtomatik yuklanadi. Tuman (ADM2), qo‘lda chizilgan maydon yoki boshqa ekinlar uchun aynan shu hudud/ekin bo‘yicha haqiqiy CSV talab qilinadi.";
+  $("region-model-source-help").textContent="SIAT avtomatik qatori: viloyatlar (ADM1) uchun bug‘doy, kartoshka va xom paxta. Tuman, custom maydon va boshqa ekinlar uchun aynan shu hudud/ekin bo‘yicha tarixiy CSV talab qilinadi.";
  }
 }
 function clearYieldInputOnContextChange(reason){
@@ -1251,41 +1259,60 @@ $("region-yield-file").addEventListener("change",()=>{
  updateYieldModelButton();
  $("region-model-result").textContent=$("region-yield-file").files.length
   ?"CSV tanlandi. Yil/yield ustunlari va mavsum sanalarini tekshirib, iqlim bilan ML hisoblang."
-  :(canUseOfficialProvinceWheat()?"Rasmiy SIAT viloyat bug‘doy qatori tanlandi. CSV majburiy emas.":"CSV tanlanmagan.");
+  :(canUseOfficialProvinceCrop()?"Rasmiy SIAT viloyat/ekin qatori tanlandi. CSV majburiy emas.":"CSV tanlanmagan.");
 });
-async function loadOfficialWheatSeries(){
- const response=await fetch("./data/official-yield/UZB_ADM1_WHEA_2010_2024.json",{cache:"no-cache"});
+async function loadOfficialProvinceCropSeries(){
+ const selectedFeature=selectedAOI;
+ const cropCode=$("region-crop-select").value;
+ const config=OFFICIAL_PROVINCE_CROP_CONFIG[cropCode];
+ if(!selectedFeature||!config||!canUseOfficialProvinceCrop())throw new Error("SIAT avtomatik qatori faqat mos viloyat va ekin tanlanganda ishlaydi.");
+ const response=await fetch(config.file,{cache:"no-cache"});
  if(!response.ok)throw new Error("Rasmiy SIAT ma’lumot fayli HTTP "+response.status);
  const payload=await response.json();
- if(payload.country_iso3!=="UZB"||payload.admin_level!=="ADM1"||payload.crop_code!=="whea")
-  throw new Error("SIAT statik dataset metama’lumoti noto‘g‘ri");
- const wanted=normalizeRegionSearch(regionFeatureName(selectedAOI));
- const region=(payload.regions||[]).find(item=>normalizeRegionSearch(item.name_uz)===wanted);
- if(!region)throw new Error("Tanlangan viloyat uchun SIAT bug‘doy qatori topilmadi. Bu viloyat CSV bilan tahlil qilinishi kerak.");
+ let cropPayload,regions;
+ if(cropCode==="whea"){
+  if(payload.country_iso3!=="UZB"||payload.admin_level!=="ADM1"||payload.crop_code!=="whea"||payload.license!=="CC BY 4.0")
+   throw new Error("SIAT bug‘doy dataset metama’lumoti noto‘g‘ri");
+  cropPayload=payload;
+  regions=payload.regions||[];
+ }else{
+  if(payload.country_iso3!=="UZB"||payload.admin_level!=="ADM1"||payload.license!=="CC BY 4.0"||!payload.crops)
+   throw new Error("SIAT ekin dataset metama’lumoti noto‘g‘ri");
+  cropPayload=payload.crops[cropCode];
+  if(!cropPayload||cropPayload.crop_code!==cropCode||cropPayload.license!=="CC BY 4.0"||cropPayload.district_yield_available!==false)
+   throw new Error("Tanlangan ekin uchun SIAT viloyat qatori yoki provenance topilmadi");
+  regions=cropPayload.regions||[];
+ }
+ const wanted=normalizeRegionSearch(regionFeatureName(selectedFeature));
+ const region=regions.find(item=>normalizeRegionSearch(item.name_uz)===wanted);
+ if(!region)throw new Error("Tanlangan viloyat uchun SIAT "+config.name+" qatori topilmadi.");
  const series=(region.records||[]).map(row=>({year:Number(row.year),yield:Number(row.yield)}))
   .filter(row=>Number.isInteger(row.year)&&Number.isFinite(row.yield)&&row.yield>0)
   .sort((a,b)=>a.year-b.year);
- if(series.length<8)throw new Error("Rasmiy SIAT bug‘doy qatori 8 ta mos yildan kam.");
+ if(series.length<8)throw new Error("Rasmiy SIAT "+config.name+" qatori 8 ta mos yildan kam.");
  if(series.length!==new Set(series.map(row=>row.year)).size)throw new Error("SIAT qatorida takroriy yil bor.");
- return {series:series,region:region,metadata:payload};
+ if(selectedAOI!==selectedFeature||$("region-crop-select").value!==cropCode)
+  throw new Error("Hudud yoki ekin tanlovi o‘zgardi. Modelni qayta ishga tushiring.");
+ return {series:series,region:region,metadata:payload,cropMetadata:cropPayload,cropCode:cropCode};
 }
 $("region-run-model").addEventListener("click",async()=>{
  const file=$("region-yield-file").files[0];
- const officialMode=!file&&canUseOfficialProvinceWheat();
+ const officialMode=!file&&canUseOfficialProvinceCrop();
  if(!selectedAOI){$("region-model-result").textContent="Avval viloyat/tuman poligonini tanlang yoki maydon chizing.";return;}
- if(!file&&!officialMode){$("region-model-result").textContent="Bu hudud va ekin uchun haqiqiy tarixiy CSV yuklang. Rasmiy SIAT avtomatik qatori faqat 13 ta qishloq xo‘jaligi viloyatida bug‘doy uchun mavjud.";return;}
+ if(!file&&!officialMode){$("region-model-result").textContent="Bu hudud/ekin uchun SIAT avtomatik tarixiy qatori mavjud emas. Aynan shu hudud va ekinga tegishli haqiqiy CSV yuklang.";return;}
  const output=$("region-model-result");
  $("region-run-model").disabled=true;
  output.textContent=officialMode
-  ?"Rasmiy SIAT bug‘doy statistikasi yuklanmoqda. ERA5-Land tarixiy mavsumiy iqlim qatori olinmoqda…"
+  ?"Rasmiy SIAT statistikasi yuklanmoqda. ERA5-Land tarixiy mavsumiy iqlim qatori olinmoqda…"
   :"CSV tekshirilmoqda. ERA5-Land tarixiy mavsumiy ob-havo qatori olinmoqda…";
  try{
-  let series=[],datasetSource="",datasetMeta=null;
+  let series=[],datasetSource="",datasetMeta=null,officialCropMeta=null;
   if(officialMode){
-   const official=await loadOfficialWheatSeries();
+   const official=await loadOfficialProvinceCropSeries();
    series=official.series;
    datasetMeta=official.metadata;
-   datasetSource="SIAT rasmiy bug‘doy ishlab chiqarishi / bug‘doy ekilgan maydonidan hisoblangan ADM1 yield";
+   officialCropMeta=official.cropMetadata;
+   datasetSource="SIAT rasmiy "+(officialCropMeta.crop_name_uz||OFFICIAL_PROVINCE_CROP_CONFIG[official.cropCode].name)+" ishlab chiqarishi / ekilgan maydonidan hisoblangan viloyat nisbati";
   }else{
    const csv=await file.text();
    const lines=csv.replace(/^\uFEFF/,"").split(/\r?\n/).filter(line=>line.trim());
@@ -1323,8 +1350,9 @@ $("region-run-model").addEventListener("click",async()=>{
   const selectedAreaLabel=$("region-name").textContent||"Tanlangan AOI";
   const rangeLow=Math.max(0,result.forecast-result.mae),rangeHigh=result.forecast+result.mae;
   const validationRows=result.oof.slice(-8).map(row=>"<tr><td>"+row.year+"</td><td>"+regionFmt(row.actual,3)+"</td><td>"+regionFmt(row.predicted,3)+"</td><td>"+regionFmt(row.persistence,3)+"</td><td>"+regionFmt(Math.abs(row.actual-row.predicted),3)+"</td></tr>").join("");
-  const officialSourceHtml=officialMode&&datasetMeta
-   ?"<p class='region-footnote'>Manba: <a href='https://siat.stat.uz/data/1458/?lang=en' target='_blank' rel='noopener'>SIAT bug‘doy ishlab chiqarishi</a> va <a href='https://siat.stat.uz/data/2761/?lang=en' target='_blank' rel='noopener'>bug‘doy ekilgan maydoni</a>. Hisob: ming tonna × 1000 / gektar = t/ha. SIAT qatori 13 ta qishloq xo‘jaligi viloyatini qamrab oladi; Toshkent shahri kiritilmagan. CC BY 4.0.</p>"
+  const officialSources=officialMode&&officialCropMeta?(officialCropMeta.sources||[]):[];
+  const officialSourceHtml=officialMode&&datasetMeta&&officialCropMeta
+   ?"<p class='region-footnote'>Rasmiy SIAT manbalari: "+officialSources.map(source=>"<a href='"+regionEscape(source.url)+"' target='_blank' rel='noopener'>"+regionEscape(source.name)+"</a>").join(" · ")+". Hisoblash: ishlab chiqarish (ming tonna × 1000) / ekilgan maydon (gektar) = ishlab chiqarish/ekilgan maydon nisbati (t/ha). Qator 13 ta qishloq xo‘jaligi viloyatiga tegishli; tuman yoki dala qiymati emas. CC BY 4.0.</p>"
    :"";
   output.innerHTML="<div class='eyebrow'>AI YIELD SCENARIO · RIDGE + ERA5-LAND</div><strong style='font-size:30px'>"+regionFmt(result.forecast,3)+" t/ha</strong> · "+target+" yil · "+regionEscape(selectedCropLabel)+" · "+regionEscape(selectedAreaLabel)+
    "<div class='region-weather-kpis' style='margin-top:12px'>"+
