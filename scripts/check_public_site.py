@@ -206,7 +206,7 @@ for crop_code, max_yield in (("pota", 200.0), ("cott", 20.0)):
             ):
                 raise SystemExit(f"FAIL: invalid SIAT {crop_code} yield/production/area row: {region['name_uz']} / {row}")
     sources = crop.get("sources") or []
-    if len(sources) != 2 or any(source.get("unit") not in {"thousand tons", "hectare"} for source in sources):
+    if len(sources) != 2 or any(source.get("unit") not in {"thousand tons", "hectare", "hectares"} for source in sources):
         raise SystemExit(f"FAIL: SIAT {crop_code} must retain the two original source indicators and units")
     print(
         f"PASS SIAT ADM1 {crop_code}: 13 regions / 195 years; "
