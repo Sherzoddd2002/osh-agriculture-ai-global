@@ -114,15 +114,18 @@
     },
     {
       "id": "SENTINEL2_NDVI",
-      "status": "PLANNED_CONNECTOR"
+      "status": "CATALOG_AVAILABLE",
+      "scope": "CDSE STAC AOI/date/cloud-filtered scene metadata; NDVI pixels not yet computed"
     },
     {
       "id": "NASA_SMAP",
-      "status": "PLANNED_CONNECTOR"
+      "status": "DATASET_AVAILABLE_AUTH_REQUIRED",
+      "scope": "NSIDC SPL3SMP_E v6 daily 9 km product; Earthdata Login and raster zonal adapter required"
     },
     {
       "id": "SOILGRIDS",
-      "status": "PLANNED_CONNECTOR"
+      "status": "WCS_AVAILABLE_REST_PAUSED",
+      "scope": "ISRIC 250 m WCS/WebDAV access route; project AOI raster adapter not connected"
     }
   ],
   "private_data_note": "The public GitHub Pages site displays this aggregate inventory snapshot. It does not expose the central PostgreSQL records or authenticated user uploads. Full country/item series and MAPSPAM rows need the protected FastAPI/PostgreSQL service."
