@@ -253,3 +253,9 @@ input::placeholder{color:#71899b}
   .globe-hud-top{font-size:8px}
   .globe-hud-top b{width:100%;margin-left:16px}
 }
+
+/* Custom small-field AOI drawing controls */
+#draw-aoi-start,#draw-aoi-finish,#draw-aoi-cancel{white-space:nowrap}
+#draw-aoi-finish:disabled,#draw-aoi-cancel:disabled{opacity:.42;cursor:not-allowed}
+#draw-aoi-start:not(:disabled){border-color:#2bb78c;color:#146f55}
+#global-map .maplibregl-canvas{cursor:inherit}
