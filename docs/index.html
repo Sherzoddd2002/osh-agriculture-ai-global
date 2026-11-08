@@ -350,6 +350,7 @@ fetch("./data/catalog.json").then(r=>{if(!r.ok)throw new Error("manifest "+r.sta
 }).catch(function(error){console.warn("Data inventory manifest could not load",error);});
 
 let map=null,features=[],selected=null;
+let regionSelectionActive=false,regionDrawing=false,regionDraftPoints=[],adminFeatures=[],selectedAOI=null;
 function countryName(f){const p=f&&f.properties||{};return p.ADMIN||p.name||p.NAME||p.NAME_EN||"Tanlangan mamlakat";}
 function iso3(f){const p=f&&f.properties||{};return p.ISO_A3||p["ISO3166-1-Alpha-3"]||p.ADM0_A3||p.iso_a3||"—";}
 function choose(f,animate){
@@ -395,7 +396,35 @@ if(window.maplibregl){
    map.addSource("countries",{type:"geojson",data:geo,generateId:false});
    map.addLayer({id:"country-fill",type:"fill",source:"countries",paint:{"fill-color":["case",["boolean",["feature-state","selected"],false],"#eac477","#1d826f"],"fill-opacity":["case",["boolean",["feature-state","selected"],false],.38,.13],"fill-outline-color":"#59dcb8"}});
    map.addLayer({id:"country-lines",type:"line",source:"countries",paint:{"line-color":["case",["boolean",["feature-state","selected"],false],"#f5d38c","#48cda8"],"line-width":["case",["boolean",["feature-state","selected"],false],2.1,.55],"line-opacity":.9}});
-   map.on("click","country-fill",function(e){if(e.features&&e.features[0])choose(e.features[0],true);});
+   map.addSource("admin-areas",{type:"geojson",data:{type:"FeatureCollection",features:[]},generateId:true});
+   map.addLayer({id:"admin-area-fill",type:"fill",source:"admin-areas",paint:{"fill-color":"#3cddb0","fill-opacity":.12}});
+   map.addLayer({id:"admin-area-line",type:"line",source:"admin-areas",paint:{"line-color":"#4de1b7","line-width":["interpolate",["linear"],["zoom"],2,.6,7,1.3,12,2.2],"line-opacity":.85}});
+   map.addLayer({id:"admin-area-selected-fill",type:"fill",source:"admin-areas",filter:["==",["get","__selected"],1],paint:{"fill-color":"#eac477","fill-opacity":.25}});
+   map.addLayer({id:"admin-area-selected-line",type:"line",source:"admin-areas",filter:["==",["get","__selected"],1],paint:{"line-color":"#f5d38c","line-width":2.6,"line-opacity":1}});
+   map.addSource("region-draft",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+   map.addSource("region-draft-points",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+   map.addSource("region-selected",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+   map.addLayer({id:"region-selected-fill",type:"fill",source:"region-selected",paint:{"fill-color":"#eac477","fill-opacity":.24}});
+   map.addLayer({id:"region-selected-line",type:"line",source:"region-selected",paint:{"line-color":"#ffe0a0","line-width":3}});
+   map.addLayer({id:"region-draft-fill",type:"fill",source:"region-draft",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#39ddb0","fill-opacity":.18}});
+   map.addLayer({id:"region-draft-line",type:"line",source:"region-draft",paint:{"line-color":"#45edbd","line-width":2.4,"line-dasharray":[1.2,1.2]}});
+   map.addLayer({id:"region-draft-points-layer",type:"circle",source:"region-draft-points",paint:{"circle-radius":5,"circle-color":"#f2c879","circle-stroke-color":"#07131f","circle-stroke-width":1.5}});
+   map.on("click","admin-area-fill",function(event){
+     if(regionDrawing||!regionSelectionActive||!event.features||!event.features.length)return;
+     const index=Number(event.features[0].properties.__admin_idx);
+     const feature=adminFeatures[index];
+     if(feature)selectRegionFeature(feature,"GEOBOUNDARIES "+$("region-level").value);
+   });
+   map.on("click",function(event){
+     if(!regionDrawing)return;
+     regionDraftPoints.push([Number(event.lngLat.lng.toFixed(7)),Number(event.lngLat.lat.toFixed(7))]);
+     updateRegionDraft();
+     $("region-status").textContent="Maydon chizilmoqda · "+regionDraftPoints.length+" ta nuqta · kamida 3 ta kerak";
+   });
+   map.on("mouseenter","admin-area-fill",()=>{if(!regionDrawing)map.getCanvas().style.cursor="pointer";});
+   map.on("mouseleave","admin-area-fill",()=>{if(!regionDrawing)map.getCanvas().style.cursor="";});
+
+   map.on("click","country-fill",function(e){if(regionSelectionActive||regionDrawing)return;if(e.features&&e.features[0]){choose(e.features[0],true);$("region-iso3").value=iso3(e.features[0]);}});
    map.on("mousemove","country-fill",()=>map.getCanvas().style.cursor="pointer");
    map.on("mouseleave","country-fill",()=>map.getCanvas().style.cursor="");
    const uz=features.find(x=>iso3(x)==="UZB")||features.find(x=>countryName(x)==="Uzbekistan");
@@ -404,6 +433,358 @@ if(window.maplibregl){
   }catch(error){console.error(error);$("map-status").textContent="Chegaralar yuklanmadi. Tashqi GeoJSON xizmati vaqtincha ishlamasligi mumkin.";}
  });
 }else{$("map-status").textContent="MapLibre kutubxonasi yuklanmadi.";}
+
+
+function regionEscape(value){
+ return String(value==null?"":value).replace(/[&<>"']/g,function(char){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char];
+ });
+}
+function regionFeatureName(feature){
+ const p=feature&&feature.properties||{};
+ return p.shapeName||p.shape_name||p.shapeNameEn||p.NAME_1||p.NAME_2||p.name||p.NAME||p.ADMIN||"Tanlangan maydon";
+}
+function regionGeometryPositions(geometry){
+ const points=[];
+ function visit(value){
+  if(!Array.isArray(value))return;
+  if(typeof value[0]==="number"&&typeof value[1]==="number"){points.push(value);return;}
+  value.forEach(visit);
+ }
+ if(geometry&&geometry.coordinates)visit(geometry.coordinates);
+ return points;
+}
+function regionCenter(feature){
+ const points=regionGeometryPositions(feature.geometry);
+ if(!points.length)return null;
+ let x=0,y=0;
+ points.forEach(p=>{x+=p[0];y+=p[1];});
+ return {lon:x/points.length,lat:y/points.length};
+}
+function regionBounds(feature){
+ const points=regionGeometryPositions(feature.geometry);
+ if(!points.length)return null;
+ let minX=180,minY=90,maxX=-180,maxY=-90;
+ points.forEach(p=>{minX=Math.min(minX,p[0]);maxX=Math.max(maxX,p[0]);minY=Math.min(minY,p[1]);maxY=Math.max(maxY,p[1]);});
+ return [[minX,minY],[maxX,maxY]];
+}
+function selectRegionFeature(feature,sourceLabel){
+ if(!feature)return;
+ selectedAOI=feature;
+ regionSelectionActive=true;
+ const center=regionCenter(feature);
+ $("region-name").textContent=regionFeatureName(feature);
+ $("region-meta").textContent=(sourceLabel||"CUSTOM AOI")+" · "+(feature.geometry.type||"Polygon")+" · "+(feature.properties&&feature.properties.shapeID||"ID not assigned");
+ $("region-center").textContent=center?center.lat.toFixed(5)+", "+center.lon.toFixed(5):"—";
+ $("region-analyze").disabled=!center;
+ $("region-results").hidden=true;
+ if(map&&map.getSource("region-selected")){
+  map.getSource("region-selected").setData({type:"FeatureCollection",features:[feature]});
+ }
+ if(map){
+  const bounds=regionBounds(feature);
+  if(bounds)map.fitBounds(bounds,{padding:70,maxZoom:16,duration:850});
+ }
+}
+function updateRegionDraft(){
+ if(!map||!map.getSource("region-draft"))return;
+ const drawing=[];
+ if(regionDraftPoints.length>=2)drawing.push({type:"Feature",properties:{kind:"draft-line"},geometry:{type:"LineString",coordinates:regionDraftPoints}});
+ if(regionDraftPoints.length>=3)drawing.push({type:"Feature",properties:{kind:"draft-polygon"},geometry:{type:"Polygon",coordinates:[[...regionDraftPoints,regionDraftPoints[0]]]}});
+ map.getSource("region-draft").setData({type:"FeatureCollection",features:drawing});
+ map.getSource("region-draft-points").setData({type:"FeatureCollection",features:regionDraftPoints.map((point,index)=>({type:"Feature",properties:{index:index+1},geometry:{type:"Point",coordinates:point}}))});
+}
+async function loadRegionBoundaries(){
+ const iso=$("region-iso3").value.trim().toUpperCase();
+ const level=$("region-level").value;
+ if(!/^[A-Z]{3}$/.test(iso)){ $("region-status").textContent="ISO-3 kodini kiriting (masalan UZB).";return; }
+ $("region-load").disabled=true;
+ $("region-status").textContent=iso+" · "+level+" chegaralari geoBoundaries’dan olinmoqda…";
+ try{
+  const metadataUrl="https://www.geoboundaries.org/api/current/gbOpen/"+iso+"/"+level+"/";
+  const metadataResponse=await fetch(metadataUrl);
+  if(!metadataResponse.ok)throw new Error("geoBoundaries metadata HTTP "+metadataResponse.status+" · bu mamlakatda "+level+" mavjud bo‘lmasligi mumkin");
+  const metadata=await metadataResponse.json();
+  const urls=[metadata.simplifiedGeometryGeoJSON,metadata.gjDownloadURL].filter(Boolean);
+  if(!urls.length)throw new Error("GeoJSON download URL topilmadi");
+  let geo=null,lastError=null;
+  for(const url of urls){
+   try{
+    const response=await fetch(url);
+    if(!response.ok)throw new Error("GeoJSON HTTP "+response.status);
+    const payload=await response.json();
+    if(payload.type==="FeatureCollection"&&Array.isArray(payload.features)){geo=payload;break;}
+    throw new Error("GeoJSON FeatureCollection emas");
+   }catch(error){lastError=error;}
+  }
+  if(!geo)throw lastError||new Error("GeoJSON yuklanmadi");
+  adminFeatures=(geo.features||[]).filter(f=>f&&f.geometry&&["Polygon","MultiPolygon"].includes(f.geometry.type));
+  adminFeatures.forEach((feature,index)=>{feature.properties=feature.properties||{};feature.properties.__admin_idx=index;feature.properties.__selected=0;});
+  if(!adminFeatures.length)throw new Error("Yaroqli Polygon/MultiPolygon topilmadi");
+  if(!map||!map.getSource("admin-areas"))throw new Error("Globus xaritasi hali tayyor emas");
+  map.getSource("admin-areas").setData({type:"FeatureCollection",features:adminFeatures});
+  $("region-select").disabled=false;
+  $("region-select").innerHTML='<option value="">Ro‘yxatdan hudud tanlang…</option>'+adminFeatures.map((feature,index)=>'<option value="'+index+'">'+regionEscape(regionFeatureName(feature))+'</option>').join("");
+  $("region-status").textContent=adminFeatures.length.toLocaleString("en-US")+" ta "+level+" polygon yuklandi · "+(metadata.boundaryYearRepresented||"boundary year unknown")+" · geoBoundaries "+(metadata.boundaryLicense||"license metadata");
+  $("region-meta").textContent="geoBoundaries gbOpen · "+level+" · "+(metadata.boundaryYearRepresented||"yil ko‘rsatilmagan");
+  regionSelectionActive=true;
+  const allPoints=adminFeatures.flatMap(f=>regionGeometryPositions(f.geometry));
+  const bounds=regionBounds({geometry:{type:"MultiPoint",coordinates:allPoints}});
+  if(bounds)map.fitBounds(bounds,{padding:55,maxZoom:6,duration:700});
+ }catch(error){
+  $("region-status").textContent="Chegaralar yuklanmadi: "+error.message;
+ }finally{$("region-load").disabled=false;}
+}
+$("region-load").addEventListener("click",loadRegionBoundaries);
+$("region-iso3").addEventListener("keydown",event=>{if(event.key==="Enter")loadRegionBoundaries();});
+$("region-select").addEventListener("change",event=>{
+ const index=Number(event.target.value);
+ if(event.target.value===""||!Number.isInteger(index)||!adminFeatures[index])return;
+ selectRegionFeature(adminFeatures[index],"GEOBOUNDARIES "+$("region-level").value);
+});
+$("region-draw-start").addEventListener("click",()=>{
+ if(!map||!map.isStyleLoaded()){ $("region-status").textContent="Xarita tayyor emas. Birozdan keyin urinib ko‘ring.";return; }
+ regionDrawing=true;regionSelectionActive=true;regionDraftPoints=[];selectedAOI=null;
+ updateRegionDraft();
+ $("region-analyze").disabled=true;
+ $("region-draw-start").disabled=true;$("region-draw-finish").disabled=false;$("region-draw-cancel").disabled=false;
+ map.getCanvas().style.cursor="crosshair";
+ $("region-status").textContent="Dala chegarasi bo‘ylab xaritada ketma-ket 3 yoki undan ko‘p burchakni bosing.";
+});
+$("region-draw-cancel").addEventListener("click",()=>{
+ regionDrawing=false;regionDraftPoints=[];updateRegionDraft();
+ $("region-draw-start").disabled=false;$("region-draw-finish").disabled=true;$("region-draw-cancel").disabled=true;
+ if(map)map.getCanvas().style.cursor="";
+ $("region-status").textContent="Maydon chizish bekor qilindi.";
+});
+$("region-draw-finish").addEventListener("click",()=>{
+ if(!regionDrawing)return;
+ if(regionDraftPoints.length<3){$("region-status").textContent="Poligon uchun kamida 3 ta nuqta kerak.";return;}
+ const ring=[...regionDraftPoints,regionDraftPoints[0]];
+ const feature={type:"Feature",properties:{shapeName:"Foydalanuvchi chizgan dala",__custom_aoi:true,boundarySource:"USER_DRAWN"},geometry:{type:"Polygon",coordinates:[ring]}};
+ regionDrawing=false;regionDraftPoints=[];updateRegionDraft();
+ $("region-draw-start").disabled=false;$("region-draw-finish").disabled=true;$("region-draw-cancel").disabled=true;
+ if(map)map.getCanvas().style.cursor="";
+ $("region-status").textContent="Custom AOI tanlandi. Endi iqlim va Sentinel-2 scene qidiruvini ishga tushiring.";
+ selectRegionFeature(feature,"USER-DRAWN CUSTOM AOI");
+});
+function regionFmt(value,digits){
+ if(value===null||value===undefined||!Number.isFinite(Number(value)))return "—";
+ return Number(value).toLocaleString("en-US",{minimumFractionDigits:digits||0,maximumFractionDigits:digits||0});
+}
+async function fetchRegionWeather(center){
+ const today=new Date();
+ const archiveEnd=new Date(today.getTime());archiveEnd.setUTCDate(archiveEnd.getUTCDate()-6);
+ const archiveStart=new Date(archiveEnd.getTime());archiveStart.setUTCFullYear(archiveStart.getUTCFullYear()-1);
+ const isoDate=d=>d.toISOString().slice(0,10);
+ const historyUrl=new URL("https://archive-api.open-meteo.com/v1/archive");
+ historyUrl.search=new URLSearchParams({
+  latitude:center.lat.toFixed(5),longitude:center.lon.toFixed(5),
+  start_date:isoDate(archiveStart),end_date:isoDate(archiveEnd),
+  daily:"temperature_2m_mean,temperature_2m_max,temperature_2m_min,precipitation_sum,et0_fao_evapotranspiration,soil_moisture_0_to_7cm_mean",
+  models:"era5_land",timezone:"auto"
+ }).toString();
+ const forecastUrl=new URL("https://api.open-meteo.com/v1/forecast");
+ forecastUrl.search=new URLSearchParams({
+  latitude:center.lat.toFixed(5),longitude:center.lon.toFixed(5),
+  current:"temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m",
+  daily:"temperature_2m_max,temperature_2m_min,precipitation_sum,et0_fao_evapotranspiration",
+  forecast_days:"7",timezone:"auto"
+ }).toString();
+ const results=await Promise.all([
+  fetch(historyUrl).then(r=>{if(!r.ok)throw new Error("Open-Meteo Archive HTTP "+r.status);return r.json();}),
+  fetch(forecastUrl).then(r=>{if(!r.ok)throw new Error("Open-Meteo Forecast HTTP "+r.status);return r.json();})
+ ]);
+ const history=results[0],forecast=results[1],daily=history.daily||{};
+ const dates=daily.time||[],temps=daily.temperature_2m_mean||[],rain=daily.precipitation_sum||[],et0=daily.et0_fao_evapotranspiration||[],soil=daily.soil_moisture_0_to_7cm_mean||[];
+ function mean(values){const valid=values.filter(v=>v!==null&&v!==undefined&&Number.isFinite(Number(v))).map(Number);return valid.length?valid.reduce((a,b)=>a+b,0)/valid.length:null;}
+ const tempMean=mean(temps),soilMean=mean(soil);
+ const rainTotal=rain.reduce((sum,v)=>sum+(Number.isFinite(Number(v))?Number(v):0),0);
+ const et0Total=et0.reduce((sum,v)=>sum+(Number.isFinite(Number(v))?Number(v):0),0);
+ $("region-weather-kpis").innerHTML=[
+  ["O‘rtacha harorat",regionFmt(tempMean,1),"°C"],
+  ["Yog‘in yig‘indisi",regionFmt(rainTotal,0),"mm / 12 oy"],
+  ["ET₀ yig‘indisi",regionFmt(et0Total,0),"mm / 12 oy"],
+  ["0–7 cm soil moisture",regionFmt(soilMean,3),"m³/m³ · ERA5-Land"],
+  ["Kunlar soni",regionFmt(dates.length,0),"daily rows"],
+  ["Joriy harorat",regionFmt(forecast.current&&forecast.current.temperature_2m,1),"°C · forecast model"]
+ ].map(item=>'<div class="region-kpi"><small>'+item[0]+'</small><strong>'+item[1]+'</strong><span>'+item[2]+'</span></div>').join("");
+ const years={};
+ dates.forEach((day,i)=>{
+  const year=day.slice(0,4);
+  if(!years[year])years[year]={t:[],rain:0,et0:0,n:0};
+  if(Number.isFinite(Number(temps[i])))years[year].t.push(Number(temps[i]));
+  if(Number.isFinite(Number(rain[i])))years[year].rain+=Number(rain[i]);
+  if(Number.isFinite(Number(et0[i])))years[year].et0+=Number(et0[i]);
+  years[year].n++;
+ });
+ const yearRows=Object.keys(years).sort().reverse().slice(0,3).map(year=>{
+  const row=years[year];
+  return "<tr><td>"+year+"</td><td>"+regionFmt(mean(row.t),1)+" °C</td><td>"+regionFmt(row.rain,0)+" mm</td><td>"+regionFmt(row.et0,0)+" mm</td><td>"+row.n+"</td></tr>";
+ }).join("");
+ const forecastRows=(forecast.daily&&forecast.daily.time||[]).slice(0,7).map((day,i)=>{
+  return "<tr><td>"+day+"</td><td>"+regionFmt(forecast.daily.temperature_2m_max[i],0)+" / "+regionFmt(forecast.daily.temperature_2m_min[i],0)+" °C</td><td>"+regionFmt(forecast.daily.precipitation_sum[i],1)+" mm</td></tr>";
+ }).join("");
+ $("region-weather-table").innerHTML="<table><thead><tr><th>Yil</th><th>O‘rtacha harorat</th><th>Yog‘in</th><th>ET₀</th><th>Kun</th></tr></thead><tbody>"+yearRows+"</tbody></table><p class='region-footnote'>Keyingi 7 kun: "+regionEscape((forecast.timezone||"timezone unknown"))+"</p><table><thead><tr><th>Sana</th><th>Max / min</th><th>Yog‘in</th></tr></thead><tbody>"+forecastRows+"</tbody></table>";
+ return {history:history,forecast:forecast};
+}
+async function fetchRegionSentinelScenes(feature){
+ const end=new Date();end.setUTCDate(end.getUTCDate()-1);
+ const start=new Date(end.getTime());start.setUTCFullYear(start.getUTCFullYear()-1);
+ const toIso=d=>d.toISOString().slice(0,10);
+ const response=await fetch("https://stac.dataspace.copernicus.eu/v1/search",{
+  method:"POST",headers:{"Content-Type":"application/json","Accept":"application/geo+json"},
+  body:JSON.stringify({
+   collections:["sentinel-2-l2a"],intersects:feature.geometry,
+   datetime:toIso(start)+"T00:00:00Z/"+toIso(end)+"T23:59:59Z",
+   limit:30,query:{"eo:cloud_cover":{"lte":30}}
+  })
+ });
+ if(!response.ok)throw new Error("CDSE STAC HTTP "+response.status);
+ const document=await response.json();
+ const items=document.features||[];
+ $("region-scene-summary").innerHTML="<b>"+items.length+"</b> ta Sentinel-2 L2A sahnasi topildi · oxirgi 12 oy · bulut ≤ 30%.<br><span class='region-footnote'>Bu faqat metadata qidiruvi. NDVI hali hisoblanmagan.</span>";
+ $("region-scene-table").innerHTML=items.length?
+  "<table><thead><tr><th>Sana</th><th>Scene ID</th><th>Cloud cover</th><th>Platform</th></tr></thead><tbody>"+
+  items.slice(0,12).map(item=>{
+   const p=item.properties||{};
+   return "<tr><td>"+regionEscape((p.datetime||"").slice(0,10))+"</td><td>"+regionEscape(item.id||"—")+"</td><td>"+regionFmt(p["eo:cloud_cover"],1)+"%</td><td>"+regionEscape(p.platform||"—")+"</td></tr>";
+  }).join("")+"</tbody></table>":
+  "<div class='region-empty'>Ushbu vaqt oralig‘i va cloud threshold bo‘yicha sahna topilmadi.</div>";
+ return {count:items.length,items:items};
+}
+$("region-analyze").addEventListener("click",async()=>{
+ if(!selectedAOI){$("region-status").textContent="Avval kichik hudud yoki maydon tanlang.";return;}
+ const center=regionCenter(selectedAOI);
+ if(!center){$("region-status").textContent="Tanlangan poligon koordinatalari noto‘g‘ri.";return;}
+ $("region-results").hidden=false;
+ $("region-analyze").disabled=true;
+ $("region-status").textContent="Iqlim reanalysis va Sentinel-2 sahna qidiruvi bajarilmoqda…";
+ $("region-weather-kpis").innerHTML="<div class='region-empty'>Open-Meteo history + 7 day forecast…</div>";
+ $("region-weather-table").innerHTML="";
+ $("region-scene-summary").textContent="Copernicus STAC catalogue qidirilmoqda…";
+ $("region-scene-table").innerHTML="";
+ const outcomes=await Promise.allSettled([fetchRegionWeather(center),fetchRegionSentinelScenes(selectedAOI)]);
+ const weather=outcomes[0],sentinel=outcomes[1];
+ const messages=[];
+ if(weather.status==="fulfilled")messages.push("ERA5-Land iqlim qatori tayyor");
+ else{messages.push("Iqlim xatosi: "+weather.reason.message);$("region-weather-kpis").innerHTML="<div class='region-empty'>"+regionEscape(weather.reason.message)+"</div>";}
+ if(sentinel.status==="fulfilled")messages.push("Sentinel-2 scene: "+sentinel.value.count);
+ else{messages.push("Sentinel-2 qidiruv xatosi: "+sentinel.reason.message);$("region-scene-summary").textContent=sentinel.reason.message;}
+ $("region-status").textContent=messages.join(" · ");
+ $("region-analyze").disabled=false;
+});
+
+function parseRegionCsvLine(line,delimiter){
+ const values=[];let value="",quoted=false;
+ for(let i=0;i<line.length;i++){
+  const c=line[i];
+  if(c==='"'&&quoted&&line[i+1]==='"'){value+='"';i++;}
+  else if(c==='"')quoted=!quoted;
+  else if(c===delimiter&&!quoted){values.push(value);value="";}
+  else value+=c;
+ }
+ values.push(value);return values;
+}
+function solveLinearSystem(matrix,vector){
+ const a=matrix.map((row,i)=>row.slice().concat([vector[i]]));
+ const n=vector.length;
+ for(let col=0;col<n;col++){
+  let pivot=col;
+  for(let row=col+1;row<n;row++)if(Math.abs(a[row][col])>Math.abs(a[pivot][col]))pivot=row;
+  if(Math.abs(a[pivot][col])<1e-12)throw new Error("Ridge matrix singular");
+  [a[col],a[pivot]]=[a[pivot],a[col]];
+  const divisor=a[col][col];
+  for(let k=col;k<=n;k++)a[col][k]/=divisor;
+  for(let row=0;row<n;row++){
+   if(row===col)continue;
+   const factor=a[row][col];
+   for(let k=col;k<=n;k++)a[row][k]-=factor*a[col][k];
+  }
+ }
+ return a.map(row=>row[n]);
+}
+function fitRegionRidge(xRows,yRows,xValid,alpha){
+ const p=xValid.length,n=xRows.length;
+ const xMean=Array(p).fill(0);
+ let yMean=0;
+ for(let i=0;i<p;i++)xMean[i]=xRows.reduce((sum,row)=>sum+row[i],0)/n;
+ yMean=yRows.reduce((a,b)=>a+b,0)/n;
+ const matrix=Array.from({length:p},()=>Array(p).fill(0));
+ const vector=Array(p).fill(0);
+ for(let r=0;r<n;r++){
+  const centered=xRows[r].map((v,i)=>v-xMean[i]);
+  const y=yRows[r]-yMean;
+  for(let i=0;i<p;i++){vector[i]+=centered[i]*y;for(let j=0;j<p;j++)matrix[i][j]+=centered[i]*centered[j];}
+ }
+ for(let i=0;i<p;i++)matrix[i][i]+=alpha;
+ const beta=solveLinearSystem(matrix,vector);
+ const intercept=yMean-xMean.reduce((sum,v,i)=>sum+v*beta[i],0);
+ return intercept+xValid.reduce((sum,v,i)=>sum+v*beta[i],0);
+}
+function runRegionRidge(series,targetYear){
+ if(series.length<8)throw new Error("Kamida 8 ta haqiqiy yillik yield kuzatuvi kerak. Mavjud: "+series.length);
+ const x=[],y=[],years=[];
+ for(let i=3;i<series.length;i++){
+  const recent=series.slice(i-3,i).map(r=>r.yield);
+  const avg=recent.reduce((a,b)=>a+b,0)/recent.length;
+  const std=Math.sqrt(recent.reduce((sum,v)=>sum+Math.pow(v-avg,2),0)/recent.length);
+  x.push([series[i].year,series[i-1].yield,avg,std]);
+  y.push(series[i].yield);years.push(series[i].year);
+ }
+ const errors=[],persistenceErrors=[],oof=[];
+ for(let split=3;split<x.length;split++){
+  const pred=Math.max(0,fitRegionRidge(x.slice(0,split),y.slice(0,split),x[split],2));
+  const persistence=y[split-1],actual=y[split];
+  errors.push(Math.abs(actual-pred));persistenceErrors.push(Math.abs(actual-persistence));
+  oof.push({year:years[split],actual:actual,predicted:pred,baseline:persistence});
+ }
+ if(!errors.length)throw new Error("Expanding-window OOF validatsiya uchun qator yetarli emas.");
+ const recent=series.slice(-3).map(r=>r.yield);
+ const avg=recent.reduce((a,b)=>a+b,0)/recent.length;
+ const std=Math.sqrt(recent.reduce((sum,v)=>sum+Math.pow(v-avg,2),0)/recent.length);
+ const last=series[series.length-1];
+ const future=Math.max(0,fitRegionRidge(x,y,[targetYear,last.yield,avg,std],2));
+ const mae=errors.reduce((a,b)=>a+b,0)/errors.length;
+ const persistenceMae=persistenceErrors.reduce((a,b)=>a+b,0)/persistenceErrors.length;
+ return {forecast:future,mae:mae,persistenceMae:persistenceMae,last:last.yield,lastYear:last.year,rows:series.length,oof:oof};
+}
+$("region-yield-file").addEventListener("change",()=>{
+ $("region-run-model").disabled=!$("region-yield-file").files.length;
+ $("region-model-result").textContent=$("region-yield-file").files.length?"CSV tanlandi. Ustun nomlarini tekshirib, Ridge baseline ssenariysini hisoblang.":"CSV tanlanmagan.";
+});
+$("region-run-model").addEventListener("click",async()=>{
+ const file=$("region-yield-file").files[0];
+ if(!file)return;
+ const output=$("region-model-result");
+ $("region-run-model").disabled=true;
+ output.textContent="CSV tekshirilmoqda va vaqtli Ridge validation hisoblanmoqda…";
+ try{
+  const text=await file.text();
+  const lines=text.replace(/^\uFEFF/,"").split(/\r?\n/).filter(line=>line.trim());
+  if(lines.length<9)throw new Error("Kamida header + 8 ta ma’lumot qatori kerak.");
+  const delimiter=(lines[0].match(/;/g)||[]).length>(lines[0].match(/,/g)||[]).length?";":",";
+  const header=parseRegionCsvLine(lines[0],delimiter).map(v=>v.trim().toLowerCase());
+  const yearIndex=header.indexOf($("region-year-column").value.trim().toLowerCase());
+  const yieldIndex=header.indexOf($("region-yield-column").value.trim().toLowerCase());
+  if(yearIndex<0||yieldIndex<0)throw new Error("CSV ichida ko‘rsatilgan year va yield ustunlari topilmadi.");
+  const series=lines.slice(1).map(line=>{
+   const values=parseRegionCsvLine(line,delimiter);
+   return {year:Number(values[yearIndex]),yield:Number(String(values[yieldIndex]||"").replace(",", "."))};
+  }).filter(row=>Number.isInteger(row.year)&&Number.isFinite(row.yield)&&row.yield>=0&&row.yield<=30).sort((a,b)=>a.year-b.year);
+  if(series.length!==new Set(series.map(row=>row.year)).size)throw new Error("Takroriy hosil yillari bor. Har yil uchun bitta kuzatilgan qator qoldiring.");
+  const target=Number($("region-target-year").value);
+  if(!Number.isInteger(target)||target<=series[series.length-1].year)throw new Error("Maqsadli yil oxirgi kuzatilgan yildan keyin bo‘lishi kerak.");
+  const result=runRegionRidge(series,target);
+  const lower=Math.max(0,result.forecast-1.96*result.mae),upper=result.forecast+1.96*result.mae;
+  output.innerHTML="<strong>"+regionFmt(result.forecast,3)+" t/ha</strong> · "+target+" yil uchun Ridge baseline ssenariysi"+
+   "<div class='region-weather-kpis' style='margin-top:12px'>"+
+   [["Oxirgi kuzatuv",regionFmt(result.last,3)+" t/ha"],["OOF MAE",regionFmt(result.mae,3)+" t/ha"],["Persistence MAE",regionFmt(result.persistenceMae,3)+" t/ha"],["OOF validatsiya",result.oof.length+" yil"],["O‘quv qatori",result.rows+" yil"],["Taxminiy xato diapazoni",regionFmt(lower,3)+"–"+regionFmt(upper,3)+" t/ha"]].map(k=>"<div class='region-kpi'><small>"+k[0]+"</small><strong style='font-size:14px'>"+k[1]+"</strong></div>").join("")+
+   "</div><p class='region-footnote'>Model faqat yuklangan tarixiy yield CSV’dan o‘rgandi. Bu milliy/dala prognozi sifatida tasdiqlanmagan research scenario; ob-havo va raster featurelari bu brauzer hisobiga kiritilmagan. Diapazon OOF MAE asosidagi taxminiy xato diapazoni, statistik confidence interval emas. CSV serverga yuborilmadi.</p>";
+ }catch(error){output.textContent="Model ishlamadi: "+error.message;}
+ finally{$("region-run-model").disabled=false;}
+});
+
 })();
 </script>
 </body>
