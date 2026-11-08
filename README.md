@@ -28,18 +28,19 @@
 
 **A location-first agricultural data and yield-forecasting platform.** Users select a country and administrative area, upload historical crop observations, enrich the selected area with environmental datasets, run quality checks, and receive a clearly labelled yield estimate.
 
-> **Status: MVP foundation.** The starter includes global administrative-boundary lookup (geoBoundaries), NASA POWER daily weather retrieval, CSV yield-data upload, SQLite for personal local installations, optional PostgreSQL/PostGIS for a shared central deployment, a database-backed background-job queue, a research forecasting endpoint, and a responsive web interface. Sentinel-2 CDSE STAC scene discovery is connected, but NDVI raster processing is not. NASA SMAP SPL3SMP_E is an available 9 km product that still needs Earthdata authentication and a raster adapter. SoilGrids REST is paused; WCS/WebDAV access is available, while AOI subset and zonal-statistics processing remains to be integrated.
+> **Public-site architecture:** the public dashboard is hosted entirely by GitHub Pages. GitHub Actions packages and validates Uzbekistan's 14 ADM1 and 199 ADM2 geoBoundaries polygons as static GeoJSON during each Pages build (and on a weekly refresh). The browser reads these files directly; it does not call Fly.io, FastAPI, or PostgreSQL. The selected area's weather and Sentinel-2 scene metadata are retrieved from their public providers. A user's real historical yield CSV is processed locally in the browser by a Ridge + ERA5-Land research scenario and is never uploaded. This is not a pre-trained universal district-yield service: a location-specific CSV is required for a location-specific estimate.
 
 For Uzbek setup instructions, see [README_UZ.md](README_UZ.md).
 
 ## Architecture
 
 - **Frontend:** vanilla HTML/CSS/JS + MapLibre GL JS.
-- **API:** FastAPI (Python).
-- **Database:** each personal local installation uses its own SQLite file. The optional shared-server/Docker deployment uses PostgreSQL; PostGIS is optional.
-- **Background work:** a local worker process polls the installation's own database-backed job queue. No cloud worker is required for personal mode.
-- **Environmental sources:** geoBoundaries, NASA POWER annual historical weather, and Open-Meteo current/16-day forecast are connected. Sentinel-2 STAC catalogue discovery is connected; NDVI, SMAP and SoilGrids zonal raster features are not yet persisted as model inputs.
-- **Deployment:** GitHub source + local CLI for personal use; Docker Compose or a separately hosted central backend are optional alternatives.
+- **Public frontend:** vanilla HTML/CSS/JavaScript + MapLibre GL JS, hosted on GitHub Pages.
+- **Public boundaries:** static Uzbekistan ADM1/ADM2 GeoJSON generated and validated by GitHub Actions; 14 viloyat and 199 tuman features.
+- **Browser-side analysis:** Open-Meteo weather retrieval, Copernicus Sentinel-2 scene discovery, local CSV parsing, Ridge model and expanding-window OOF benchmark.
+- **Research backend:** FastAPI, SQLAlchemy, PostgreSQL/PostGIS and a background worker remain in the repository for optional local/private deployments; they are not part of the public Pages runtime.
+- **Environmental source status:** Sentinel-2 scene discovery is connected but NDVI pixels are not computed; SMAP and SoilGrids zonal raster inputs are not yet integrated.
+- **Public deployment:** GitHub Pages + GitHub Actions only. No Fly.io service or public database is required.
 
 ## Optional: shared central Windows + PostgreSQL server
 
@@ -109,10 +110,6 @@ year,yield_t_ha,area_ha,production_t
 The model endpoint is a local research scenario, not a validated global crop model. It uses expanding-window chronological validation and a Persistence benchmark. It refuses to predict if fewer than eight aligned observations/features exist. Future-season weather is unknown, so a future prediction uses a recent five-year observed seasonal weather normal and is explicitly labelled `CLIMATOLOGY_SCENARIO`.
 
 Generated yields are never re-labelled as observed values. A global training opt-in is stored as consent only; a later review must check provenance, license, units, time coverage, duplicates, and quality before the dataset enters a shared training pool.
-
-## Fly.io
-
-Review [docs/FLY_DEPLOY.md](docs/FLY_DEPLOY.md) before deployment. The web process has autostop disabled, and the worker is separate. This keeps the app from sleeping due to inactivity but does not guarantee zero downtime. Machines, managed Postgres, storage, data-source traffic, and egress can incur charges.
 
 ## GitHub source
 
