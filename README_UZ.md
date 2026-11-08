@@ -40,6 +40,7 @@ Public sayt **GitHub Pages + GitHub Actions** asosida ishlaydi. Saytni ochgan od
 - Tanlangan hudud markazining taxminiy koordinatasi bo‘yicha Open-Meteo ERA5-Land tarixiy ob-havo qatori va 7 kunlik ob-havo ma’lumoti olinadi. Bu poligon bo‘yicha zonal o‘rtacha emas.
 - Copernicus STAC orqali so‘nggi 12 oydagi Sentinel-2 L2A sahnalari (bulutlilik ≤30%) qidiriladi. Bu hozircha scene metadata; NDVI rasteri hisoblanmaydi.
 - MAPSPAM katalogidagi **46 ta ekin** to‘liq tanlanadi va qidiriladi.
+- MAPSPAM 2020 v2r2 bo‘yicha **14 viloyat × 46 ekin** va **199 tuman × 46 ekin** tarixiy fazoviy reference qiymatlari xaritada tanlangan hududga bog‘langan holda ko‘rsatiladi. Bog‘lanish aniq `shapeID` orqali; raster katagi mavjud bo‘lmagan kombinatsiya `NULL` bo‘lib qoladi.
 - Haqiqiy `year,yield_t_ha` CSV fayl brauzerda o‘qiladi. Ridge + ERA5-Land modeli expanding-window OOF natijalarini Persistence benchmark bilan taqqoslaydi. CSV serverga yuborilmaydi.
 
 ## Public demo: tuman va dala tahlili
@@ -49,11 +50,14 @@ Public sayt **GitHub Pages + GitHub Actions** asosida ishlaydi. Saytni ochgan od
 1. Sayt ochilganda **ADM2 · Tumanlar** qatlami avtomatik yuklanadi (199 ta tuman). Xaritada tuman poligonini bosing yoki qidiruvga nomini yozing.
 2. Viloyat kesimiga o‘tish uchun **ADM1 · Viloyatlar** ni tanlang va **Chegaralarni yuklash** tugmasini bosing (14 ta viloyat). Tuman qatlamiga qaytish ham shu usulda bajariladi.
 3. **Hududni tahlil qilish** orqali tarixiy ERA5-Land ob-havo qatori va 7 kunlik prognozni oling; Sentinel-2 sahnalari alohida ko‘rsatiladi.
-4. Ekinni to‘liq 46 ta MAPSPAM katalogidan tanlang. Tanlangan hudud va ekinga tegishli haqiqiy tarixiy hosildorlik CSV faylini yuklang; CSV shablonini sayt ichidagi **CSV shablon** havolasidan olasiz. Kamida 8 ta mos yield-yil va yetarli ob-havo qamrovi talab qilinadi.
+4. Shu natijalar ichida tanlangan tuman/viloyat va 46 ekindan biri uchun **MAPSPAM 2020** hosildorlik, ishlab chiqarish, fizik/yig‘ib olingan maydon hamda yaroqli raster kataklari ko‘rinadi. `NO_RASTER_CELLS` holatida yield `NULL` bo‘ladi; 0 deb ko‘rsatilmaydi.
+5. Ekinni to‘liq 46 ta MAPSPAM katalogidan tanlang. Tanlangan hudud va ekinga tegishli haqiqiy tarixiy hosildorlik CSV faylini yuklang; CSV shablonini sayt ichidagi **CSV shablon** havolasidan olasiz. Kamida 8 ta mos yield-yil va yetarli ob-havo qamrovi talab qilinadi.
+
+**MAPSPAM 2020 va AI bashorati farqi:** MAPSPAM paneli — 2020-yil uchun 5 arc-minute (~9.3 km ekvatorda) rasterdan yig‘ilgan tarixiy fazoviy baho; u kelajak prognozi, joriy yil kuzatuvi yoki dala o‘lchovi emas. 199 tuman va 14 viloyat bo‘yicha 46 crop qatlamining mavjudligi har bir kombinatsiyada yaroqli katak borligini anglatmaydi. 
 
 **AI bashorati haqida:** bu oldindan tayyorlab qo‘yilgan, barcha tumanlar uchun bir xil qiymat qaytaradigan model emas. U aynan foydalanuvchi yuklagan hudud/ekin tarixiy hosildorlik qatorini ERA5-Land feature’lari bilan birlashtiradi. Kelajak ob-havosi mavjud bo‘lmagani uchun so‘nggi 5 mos mavsumning normasi ishlatiladi. Natija research scenario; O‘zbekistonning barcha tumanlari bo‘yicha mustaqil tasdiqlangan universal prognoz deb talqin qilinmasin. OOF MAE va Persistence benchmark natijalari bashorat bilan birga ko‘rsatiladi.
 
-**Public Pages cheklovlari:** GitHub Pages statik hosting hisoblanadi. U foydalanuvchi loginini, serverda saqlanadigan AOI/datasetlarni yoki markaziy PostgreSQL yozuvlarini bermaydi. Maydon poligoni faqat joriy brauzer sessiyasida turadi. Public dashboard markaziy bazadagi 838,919 qator inventarizatsiya metama’lumotini ko‘rsatadi, lekin maxfiy xom qatorlarni tarqatmaydi. GeoBoundaries chegaralari GitHub Actions build vaqtida yuklanib, sayt fayllari tarkibiga kiritiladi — tashrif buyuruvchining brauzeri Fly/FastAPI API’siga murojaat qilmaydi.
+**Public Pages cheklovlari:** GitHub Pages statik hosting hisoblanadi. U foydalanuvchi loginini, serverda saqlanadigan AOI/datasetlarni yoki markaziy PostgreSQL yozuvlarini bermaydi. Maydon poligoni faqat joriy brauzer sessiyasida turadi. Public dashboard markaziy bazadagi 838,919 qator inventarizatsiya metama’lumotini ko‘rsatadi, shuningdek alohida ochiq manbadagi MAPSPAM 2020 UZB ADM1/ADM2 reference paketini (9,798 admin × crop yozuv) ommaga beradi; maxfiy markaziy PostgreSQL xom qatorlari va foydalanuvchi CSV fayllari tarqatilmaydi. GeoBoundaries chegaralari GitHub Actions build vaqtida yuklanib, sayt fayllari tarkibiga kiritiladi — tashrif buyuruvchining brauzeri Fly/FastAPI API’siga murojaat qilmaydi.
 
 ## Environmental connectorlar holati
 
