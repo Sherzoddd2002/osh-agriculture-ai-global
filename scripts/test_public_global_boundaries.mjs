@@ -17,12 +17,24 @@ assert.ok(manifest.countries&&Object.keys(manifest.countries).length>100,
   "global manifest should include more than 100 countries/territories");
 for(const level of ["ADM1","ADM2"]){
  const summary=manifest.level_summary?.[level];
- assert.ok(summary?.country_count>=190,level+" country coverage is unexpectedly small after World Bank fallback");
+ assert.ok(summary?.country_count>=240,level+" country coverage is unexpectedly small after World Bank fallback");
  assert.ok(summary?.feature_count>summary.country_count,level+" polygon count is inconsistent");
 }
 const fallbackCounts=manifest.world_bank_fallback?.added_by_level;
-assert.ok(fallbackCounts?.ADM1?.country_count>=0 && fallbackCounts?.ADM2?.country_count>=0,
-  "World Bank fallback summary is missing");
+assert.ok(fallbackCounts?.ADM1?.country_count>=40 && fallbackCounts?.ADM2?.country_count>=60,
+  "World Bank fallback did not add the expected missing country/level packages");
+for(const level of ["ADM1","ADM2"]){
+ const fallback=Object.entries(manifest.countries).find(([,country])=>country.levels?.[level]?.is_global_composite_fallback);
+ assert.ok(fallback,level+" World Bank fallback feature package is missing");
+ const [fallbackIso,fallbackCountry]=fallback;
+ const info=fallbackCountry.levels[level];
+ const payload=JSON.parse(fs.readFileSync(path.join(root,"docs","data",info.file),"utf8"));
+ assert.equal(payload.metadata.country_iso3,fallbackIso);
+ assert.equal(payload.metadata.admin_level,level);
+ assert.equal(payload.metadata.source,"World Bank Official Boundaries (WB-GAD)");
+ assert.equal(payload.metadata.license,"CC BY 4.0");
+ assert.ok(payload.features.length>0);
+ }
 const sample=Object.entries(manifest.countries).find(([,country])=>
  country.levels?.ADM1?.file&&country.levels?.ADM2?.file
 );
