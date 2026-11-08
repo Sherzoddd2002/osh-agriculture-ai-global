@@ -1,4 +1,20 @@
-# OSH Agriculture AI — Global
+# Dunyo bo‘yicha hosil prognozi, NASA ma’lumotlari asosida
+
+**OSH Agriculture AI Global** — global qishloq xo‘jaligi ma’lumotlari, hududiy tahlil va hosildorlik prognozi uchun ochiq tadqiqot platformasi.
+
+🌍 **[Interaktiv 3D demo’ni ochish](https://sherzoddd2002.github.io/osh-agriculture-ai-global/)** · [GitHub repository](https://github.com/Sherzoddd2002/osh-agriculture-ai-global)
+
+![OSH Agriculture AI Global public demo](docs/assets/osh-global-preview.png)
+
+[Qisqa demo: xaritada mamlakatni tanlash → tahlil jarayoni](docs/assets/demo-walkthrough.gif)
+
+> **Muhim:** NASA POWER platformaga tarixiy ob-havo ma’lumotlarini beradi; u hosildorlik modeli emas. Ochiq GitHub Pages demo hozircha 3D xarita va hudud tanlashni namoyish etadi. Haqiqiy hosil prognozi uchun backend API va yetarli, tekshirilgan hosildorlik tarixi kerak. Demo soxta prognoz raqamlarini ko‘rsatmaydi.
+
+---
+
+> **Deploy:** GitHub Pages source `GitHub Actions` qilib sozlangach, `main` branchga merge/push qilingan o‘zgarishlar saytni avtomatik yangilaydi. Deployment holati repository’ning **Actions** bo‘limida ko‘rinadi. Sayt manzili: https://sherzoddd2002.github.io/osh-agriculture-ai-global/ .
+
+## Ochiq demo va loyiha haqida
 
 **Dunyo bo‘yicha hudud tanlash, qishloq xo‘jaligi ma’lumotlarini birlashtirish va hosildorlikni prognozlash platformasi.**
 
