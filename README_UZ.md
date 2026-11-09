@@ -32,17 +32,36 @@ Bu yangi global loyiha. U sizning mavjud `E:\OSH`, `osh` PostgreSQL bazangiz yok
 
 ## Hozirgi public relizda nima ishlaydi?
 
-Public sayt **GitHub Pages + GitHub Actions** asosida ishlaydi. Saytni ochgan odamga Python, PostgreSQL yoki alohida server kerak emas.
+Bosh sahifa endi repodagi to‘liq OSH Agriculture AI Global frontendidan yig‘iladi. GitHub Pages interfeysni tarqatadi, server talab qiladigan amallar esa fly.toml dagi FastAPI backend’ga HTTPS orqali ulanadi. Saytning yuqori qismida server/worker holati ko‘rsatiladi.
 
-- Global 3D xaritada mamlakatlar ko‘rinadi va tanlanadi.
-- Global statik paketda avval geoBoundaries `gbOpen` mamlakat chegaralari ishlatiladi; yetishmayotgan ADM1/ADM2 qatlamlari World Bank Official Boundaries (WB-GAD) manbasidan to‘ldiriladi. Har bir mamlakat uchun faqat tanlangan ma’muriy darajadagi GeoJSON yuklanadi. Har bir paketda manba, chegaraning yili va CC BY 4.0 litsenziya ma’lumoti saqlanadi. O‘zbekistonning **14 ta ADM1 viloyati** va **199 ta ADM2 tumani** MAPSPAM `shapeID` bog‘lanishini saqlash uchun alohida tekshirilgan paket sifatida qoladi. Hozirgi paketda global manbalardan **245 ta mamlakat/hudud kodi** uchun ADM1 va ADM2 mavjud; bu son har bir yangilanishda qayta tekshiriladi.
-- Maydon chizish vositasi bilan xaritada o‘zingizning Polygon hududingizni chizishingiz mumkin.
-- Tanlangan hudud markazining taxminiy koordinatasi bo‘yicha Open-Meteo ERA5-Land tarixiy ob-havo qatori va 7 kunlik ob-havo ma’lumoti olinadi. Bu poligon bo‘yicha zonal o‘rtacha emas.
-- Copernicus STAC orqali so‘nggi 12 oydagi Sentinel-2 L2A sahnalari (bulutlilik ≤30%) qidiriladi. Bu hozircha scene metadata; NDVI rasteri hisoblanmaydi.
-- MAPSPAM katalogidagi **46 ta ekin** to‘liq tanlanadi va qidiriladi.
-- MAPSPAM 2020 v2r2 bo‘yicha **14 viloyat × 46 ekin** va **199 tuman × 46 ekin** tarixiy fazoviy reference qiymatlari xaritada tanlangan hududga bog‘langan holda ko‘rsatiladi. Bog‘lanish aniq `shapeID` orqali; raster katagi mavjud bo‘lmagan kombinatsiya `NULL` bo‘lib qoladi.
-- Haqiqiy `year,yield_t_ha` CSV fayl brauzerda o‘qiladi. Ridge + ERA5-Land modeli expanding-window OOF natijalarini Persistence benchmark bilan taqqoslaydi. CSV serverga yuborilmaydi.
-- Viloyat (ADM1) uchun SIAT’ning 2010–2024 yillik rasmiy statistikasi asosida bug‘doy, kartoshka va xom paxta bo‘yicha avtomatik model ssenariysi mavjud. Hisob `ishlab chiqarish / ekilgan maydon` nisbati (t/ha); bu tuman yoki dala kuzatuvi emas.
+To‘liq ilova 6 ta asosiy bo‘limdan iborat:
+- **Bosh sahifa** — platforma holati va ish jarayoni.
+- **Global xarita** — mamlakat, mavjud ADM darajalari, poligon tanlash va maxsus dala chizish.
+- **Hosildorlik prognozi** — CSV dataset, iqlim bilan boyitish, vaqt bo‘yicha validatsiya va prognoz ssenariysi.
+- **Model laboratoriyasi** — Linear Regression, Ridge, ElasticNet, Random Forest, Extra Trees va HistGradientBoosting natijalarini Persistence benchmark bilan solishtirish.
+- **Iqlim va tuproq** — NASA POWER/Open-Meteo ma’lumotlari, Sentinel-2 katalog qidiruvi va manba holati.
+- **Ma’lumotlar va hisobotlar** — global FAOSTAT crop katalogi, tarixiy qatorlar, datasetlar va joblar.
+
+**Til tanlash:** hozirgi to‘liq frontendda o‘zbek, ingliz va rus tillari mavjud. Bu 3 tildan ko‘proq tilni hali qo‘llab-quvvatlamaydi; to‘liq tarjima qilinmagan boshqa tilni mavjud deb ko‘rsatmaymiz.
+
+**Global chegaralar:** geoBoundaries gbOpen va World Bank Official Boundaries manbalari birlashtirilgan. Hozirgi statik paketda **245 ta mamlakat/hudud kodi** uchun ADM1 va ADM2 mavjud. Faqat tanlangan davlat/daraja yuklanadi. Boshqa ADM darajalari backend boundary provayderi orqali so‘raladi va mavjud bo‘lmagan daraja sun’iy yaratilmaydi.
+
+**Ekin va hosil ma’lumotlari:**
+- Markaziy bazadagi FAOSTAT QCL katalogi 202 mamlakat/hudud va 169 item kodini o‘z ichiga oladi; individual ekin, agregat va mahsulot shakllari alohida tasniflanadi.
+- MAPSPAM 2020 v2r2 — 46 ekin bo‘yicha tarixiy fazoviy reference. O‘zbekistonning 14 viloyat va 199 tumani uchun public shapeID bog‘lanishi tekshirilgan. MAPSPAM 2020 qiymati kelajak prognozi emas.
+- SIAT’ning 2010–2024 bug‘doy, kartoshka va xom paxta qatorlari O‘zbekistonning 13 qishloq xo‘jaligi viloyati uchun mavjud. Ular ishlab chiqarish/ekilgan maydon nisbati; tuman yoki dala o‘lchovi emas.
+- CSV orqali hudud va ekinga tegishli haqiqiy kuzatilgan hosil tarixini yuklash mumkin. Yetarli kuzatuv bo‘lmasa, model sun’iy yield qiymati yaratmaydi.
+
+**Environmental connector holati:**
+- NASA POWER — tarixiy kundalik ob-havo; hozirgi MVP saqlangan poligonning vakillik nuqtasidan foydalanadi, to‘liq poligon zonal o‘rtachasi emas.
+- Open-Meteo — joriy holat va qisqa muddatli prognoz; prognoz ob-havosi tarixiy kuzatuv o‘rniga ishlatilmaydi.
+- Sentinel-2 — hozircha STAC sahna metadata qidiruvi. NDVI raster hisoblash, bulut/soya maskasi, zonal statistika va natijani saqlash hali yakunlanmagan.
+- SMAP — Earthdata autentifikatsiyasi va raster adapteri kerak.
+- SoilGrids — WCS/WebDAV orqali AOI rasterini olish, chuqurlik/quantile tanlash va zonal statistika hali yakunlanmagan.
+
+**Muhim:** global yield modeli ADM3–ADM5 yoki dala darajasida barcha mamlakatlar uchun tasdiqlangan deb hisoblanmaydi. Modelning ishlashi kuzatilgan target ma’lumot, ekologik qamrov va benchmark natijasiga bog‘liq. API yoki worker ishlamasa, frontend buni server holatida ko‘rsatadi; bu natijani “tayyor” deb yashirmaydi.
+
+Eski, faqat Uzbek tilidagi brauzer demosi alohida [static-demo.html](./static-demo.html) sahifasida saqlanadi. Bu endi asosiy bosh sahifa emas.
 
 ## Public demo: tuman va dala tahlili
 
