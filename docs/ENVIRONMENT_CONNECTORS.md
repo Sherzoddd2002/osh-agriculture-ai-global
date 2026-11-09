@@ -45,21 +45,23 @@ Use WCS in this order:
 4. Mask the returned raster by the exact AOI polygon and calculate valid-pixel statistics.
 5. Preserve the 90% prediction interval/uncertainty when available.
 
-## Public GitHub Pages demonstration (static)
+## Public application: full frontend and API
 
-The public GitHub Pages dashboard includes a browser-only **Maydon tahlili** workspace:
-- static geoBoundaries **UZB ADM1 (14 viloyat) and ADM2 (199 tuman)** polygons, localized Uzbek search, map click selection and custom polygon drawing; this public bundle does not provide worldwide ADM1–ADM5 data;
-- Open-Meteo Archive API ERA5-Land daily history and Open-Meteo seven-day forecast at an approximate polygon center;
-- Copernicus Data Space STAC scene discovery for Sentinel-2 L2A with a 12-month window and 30% cloud-cover filter;
-- public **IFPRI MAPSPAM 2020 v2r2** reference values for all **14 ADM1 provinces × 46 crops** and **199 ADM2 districts × 46 crops**, joined to the static geoBoundaries features by exact `shapeID`; the public package contains 9,798 area/crop records;
-- MAPSPAM variables include physical area, harvested area, production, harvested-area-weighted yield, valid raster-cell count and spatial status. Rows with `NO_RASTER_CELLS` preserve NULL yield and are never converted to zero;
-- optional browser-local CSV Ridge ML with season-aligned ERA5-Land temperature, precipitation, ET₀ and GDD features; expanding-window OOF and Persistence comparison;
-- official SIAT wheat, potato and raw-cotton statistical series for 13 agricultural ADM1 regions (2010–2024; 195 rows per crop); annual production in thousand tonnes is converted to tonnes and divided by planted area in hectares, producing a production-to-sown-area ratio (t/ha), not a harvested-area or field-yield measurement; the package is CC BY 4.0 and excludes Tashkent city;
-- district or custom-field supervised predictions still require authentic yield history for that exact area and crop; province-level values are never copied to ADM2.
+The primary GitHub Pages homepage is assembled from the complete frontend/ application. It contains six views: overview, global map, yield forecast, model laboratory, climate/soil, and data/reports. Its language selector currently supports Uzbek, English, and Russian.
 
-The public SIAT static package uses `data/official-yield/UZB_ADM1_WHEA_2010_2024.json` plus `data/official-yield/UZB_ADM1_CROPS_2010_2024.json`. Automated ADM1 scenarios are currently enabled for wheat (`whea`), potato (`pota`) and raw cotton (`cott`) only. The potato and cotton files pair the corresponding SIAT production and planted-area indicators by administrative code and year. The derived field is explicitly a production-to-sown-area ratio in t/ha; it must not be interpreted as an independently measured harvest-area yield, a district value, or a farm-field value. The public dataset does not infer a missing district from its parent province.
+GitHub Pages hosts the static UI. API-backed features call the FastAPI service derived from fly.toml; account registration/login, AOI persistence, CSV upload, background processing, climate enrichment, prediction, global crop history and global crop trend endpoints require that service and its worker to be online. The UI must report API/worker availability rather than imply that a failed service is active.
 
-This public workspace is deliberately separate from the FastAPI service. It does not persist AOIs, read the maintainer's PostgreSQL records, or run the server-side worker. The browser Ridge scenario joins the uploaded yield observations with seasonal ERA5-Land weather features. It does not use Sentinel-2 NDVI, SMAP or SoilGrids features. The STAC panel returns catalogue metadata only and does not compute NDVI.
+Global ADM1/ADM2 files are served per country from the static GitHub Pages package: geoBoundaries gbOpen is preferred and World Bank Official Boundaries supplements missing country/level pairs. The old browser-only Uzbek research demo remains available as static-demo.html; it is not the primary application homepage.
+
+## Connector readiness (do not overstate)
+
+- NASA POWER: historical daily point weather is active. It samples the saved AOI representative point; it is not polygon-wide zonal weather.
+- Open-Meteo: current conditions and short-term forecast are active. Forecasts are not observed historical yield-season features.
+- Sentinel-2: catalogue-only STAC search. ndvi_status=NOT_COMPUTED; no NDVI raster or zonal feature is generated yet.
+- SMAP: the dataset is identified, but Earthdata authentication, download, decoding, QA filtering and zonal processing remain.
+- SoilGrids: the REST API is paused; WCS/WebDAV raster access and AOI zonal aggregation remain.
+- MAPSPAM: the central raster pipeline supports 46 crop layers, but per-country/area coverage and valid raster-cell counts must be checked. A missing raster cell stays NULL, not zero.
+- AI yield forecasting: national/global FAOSTAT trend baseline and user-dataset research scenario are separate routes. A national trend proxy must not be presented as an ADM2 or field observation.
 
 ## Small fields: administrative boundaries are not field boundaries
 
