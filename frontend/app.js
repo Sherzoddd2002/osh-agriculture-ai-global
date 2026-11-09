@@ -1,4 +1,5 @@
-const API = '/api/v1';
+const API_BASE = String(window.OSH_API_BASE || '').replace(/\\/+$/, '');
+const API = API_BASE + '/api/v1';
 const $ = (id) => document.getElementById(id);
 let token = localStorage.getItem('osh_global_token') || '';
 let map = null, boundaryFeatures = [], selectedFeature = null, selectedLocationId = null, currentDatasetId = null, currentJobId = null, currentClimateJobId = null;
@@ -303,7 +304,60 @@ function selectFeature(f){
   loadMapspamSummaries();
 }
 
-async function loadBoundaries(){const code=$('country-iso3').value.trim().toUpperCase(),level=$('admin-level').value;const status=$('boundary-status');if(!/^[A-Z]{3}$/.test(code)){toast(status,'ISO-3 kodini kiriting (masalan UZB, KAZ, DEU).');return;}toast(status,'Chegaralar olinmoqda…');try{const data=await api(`/boundaries/${code}/${level}`);boundaryFeatures=data.features||[];selectedFeature=null;loadMapspamSummaries();$('selected-area-name').textContent='Hududni tanlang';$('selected-country').textContent=code;$('selected-level').textContent=level;$('selected-center').textContent='—';$('save-location').disabled=true;if(map?.getSource('admin-boundaries'))map.getSource('admin-boundaries').setData({type:'FeatureCollection',features:boundaryFeatures.map((f,i)=>({...f,properties:{...(f.properties||{}),__idx:i}}))});if(boundaryFeatures.length&&map){const bounds=featureBounds(boundaryFeatures);if(bounds)map.fitBounds(bounds,{padding:42,maxZoom:level==='ADM0'?4:7,duration:900});}toast(status,`${boundaryFeatures.length} ta chegara yuklandi · ${data.metadata?.source||'geoBoundaries'}`);}catch(e){toast(status,e.message);}}
+async function loadBoundaries(){
+  const code=$('country-iso3').value.trim().toUpperCase();
+  const level=$('admin-level').value;
+  const status=$('boundary-status');
+  if(!/^[A-Z]{3}$/.test(code)){
+    toast(status,'ISO-3 kodini kiriting (masalan UZB, KAZ, DEU).');
+    return;
+  }
+  toast(status,'Chegaralar olinmoqda…');
+  try{
+    let data=null;
+    let boundarySource='geoBoundaries API';
+    if(level==='ADM1'||level==='ADM2'){
+      const staticPath=code==='UZB'
+        ?`./data/boundaries/${code}_${level}.geojson`
+        :`./data/boundaries/global/${code}_${level}.geojson`;
+      try{
+        const response=await fetch(staticPath,{cache:'no-cache',headers:{Accept:'application/geo+json, application/json'}});
+        if(response.ok){
+          const candidate=await response.json();
+          const metadata=candidate.metadata||{};
+          if(candidate.type==='FeatureCollection'&&Array.isArray(candidate.features)
+             &&metadata.country_iso3===code&&metadata.admin_level===level){
+            data=candidate;
+            boundarySource=metadata.source||'Static GeoJSON';
+          }
+        }
+      }catch(_){}
+    }
+    if(!data){
+      data=await api(`/boundaries/${code}/${level}`);
+      boundarySource=data.metadata?.source||'geoBoundaries API';
+    }
+    boundaryFeatures=(data.features||[]).filter(f=>f&&f.geometry&&['Polygon','MultiPolygon'].includes(f.geometry.type));
+    selectedFeature=null;
+    loadMapspamSummaries();
+    $('selected-area-name').textContent='Hududni tanlang';
+    $('selected-country').textContent=code;
+    $('selected-level').textContent=level;
+    $('selected-center').textContent='—';
+    $('save-location').disabled=true;
+    if(map?.getSource('admin-boundaries'))map.getSource('admin-boundaries').setData({
+      type:'FeatureCollection',
+      features:boundaryFeatures.map((f,i)=>({...f,properties:{...(f.properties||{}),__idx:i}}))
+    });
+    if(boundaryFeatures.length&&map){
+      const bounds=featureBounds(boundaryFeatures);
+      if(bounds)map.fitBounds(bounds,{padding:42,maxZoom:level==='ADM0'?4:7,duration:900});
+    }
+    toast(status,`${boundaryFeatures.length} ta chegara yuklandi · ${boundarySource}`);
+  }catch(e){
+    toast(status,e.message);
+  }
+}
 $('load-boundaries').addEventListener('click',loadBoundaries);
 
 let mapspamRequestSequence = 0;
