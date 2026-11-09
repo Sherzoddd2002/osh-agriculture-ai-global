@@ -1,4 +1,4 @@
-const API_BASE = String(window.OSH_API_BASE || '').replace(/\\/+$/, '');
+const API_BASE = String(window.OSH_API_BASE || '').replace(new RegExp('/+$'), '');
 const API = API_BASE + '/api/v1';
 const $ = (id) => document.getElementById(id);
 let token = localStorage.getItem('osh_global_token') || '';
