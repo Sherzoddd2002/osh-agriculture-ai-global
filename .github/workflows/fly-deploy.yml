@@ -1,0 +1,67 @@
+name: Deploy FastAPI backend and worker to Fly.io
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "Dockerfile"
+      - "fly.toml"
+      - "requirements.txt"
+      - ".github/workflows/fly-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fly-production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check whether Fly deployment token is configured
+        id: fly-token
+        shell: bash
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [ -n "$FLY_API_TOKEN" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "Fly deployment token is configured."
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::FLY_API_TOKEN is not configured. Backend deployment was skipped; the Pages frontend will show API offline until configured."
+          fi
+
+      - name: Install flyctl
+        if: steps.fly-token.outputs.available == 'true'
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy backend and worker
+        if: steps.fly-token.outputs.available == 'true'
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Verify deployed API health
+        if: steps.fly-token.outputs.available == 'true'
+        shell: bash
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            if curl --fail --silent --show-error --connect-timeout 5 --max-time 15 https://osh-agriculture-ai-global.fly.dev/api/v1/health; then
+              echo "Fly API health check passed."
+              exit 0
+            fi
+            echo "Fly API is not healthy yet (attempt $attempt/6)."
+            sleep 10
+          done
+          echo "::error::Fly API health check did not pass after deployment."
+          exit 1
