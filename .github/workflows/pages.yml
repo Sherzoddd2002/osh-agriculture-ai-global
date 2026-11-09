@@ -31,6 +31,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Restore static showcase source for data build and legacy QA
+        run: cp docs/static-demo.html docs/index.html
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Set up Python for static data packaging
@@ -173,10 +175,23 @@ jobs:
             git pull --rebase origin main
             git push origin HEAD:main
           fi
+      - name: Preserve refreshed standalone static showcase
+        run: cp docs/index.html docs/static-demo.html
       - name: Check Python build scripts
-        run: python -m py_compile scripts/build_public_boundaries.py scripts/build_public_global_boundaries.py scripts/build_public_mapspam.py scripts/check_public_site.py
-      - name: Check public dashboard and JavaScript
+        run: python -m py_compile scripts/build_public_boundaries.py scripts/build_public_global_boundaries.py scripts/build_public_mapspam.py scripts/check_public_site.py scripts/assemble_public_frontend.py
+      - name: Check public static data showcase and its QA suite
         run: python scripts/check_public_site.py
+      - name: Assemble complete application as GitHub Pages homepage
+        run: python scripts/assemble_public_frontend.py
+      - name: Verify complete application and language selector
+        run: node scripts/test_public_frontend.mjs
+      - name: Probe Fly API health (non-blocking visibility check)
+        run: |
+          if curl --fail --silent --show-error --connect-timeout 5 --max-time 15 https://osh-agriculture-ai-global.fly.dev/api/v1/health; then
+            echo "Fly API health endpoint responded."
+          else
+            echo "::warning::Fly API did not respond to the build-time probe; the Pages UI will show server-offline status until the API is available."
+          fi
       - name: Upload static demo
         uses: actions/upload-pages-artifact@v3
         with:
