@@ -215,7 +215,7 @@ def main() -> None:
             grouped[country].append(row)
 
     if not grouped:
-        raise SystemExit("No MAPSPAM 2020 ADM1/ADM2 rows matched the database filters.")
+        raise SystemExit("No MAPSPAM 2020 ADM0/ADM1/ADM2 rows matched the database filters.")
 
     countries: dict[str, dict] = {}
     total_rows = 0
