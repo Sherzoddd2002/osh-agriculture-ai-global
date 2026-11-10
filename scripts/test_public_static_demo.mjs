@@ -14,6 +14,13 @@ assert.ok(html.includes("./data/boundaries/global/"),"country ADM bundle path is
 assert.ok(!/fly\.dev|OSH_API_BASE/i.test(html),"public Pages html must not call Fly or expose a private API origin");
 assert.ok(html.includes("renderMapspamReference"),"selected-area MAPSPAM view is missing");
 assert.ok(html.includes("fetchYieldClimateHistory"),"observed-yield climate ML workflow is missing");
+assert.ok(html.includes('const modelButton=$("region-run-model");')&&html.includes('if(center&&modelButton&&!modelButton.disabled)modelButton.click();'),"an available official area prediction must start when an area is selected");
+assert.ok(html.includes('if(selectedAOI&&modelButton&&!modelButton.disabled)modelButton.click();'),"available prediction must refresh when crop or CSV input changes");
+assert.ok(html.includes('loadPublicMapspamCountry'),"country-level MAPSPAM loader is missing");
+assert.ok(html.includes('./data/mapspam/global/"+iso+".json.gz'),"country-level MAPSPAM package path is missing");
+assert.ok(html.includes("top_crops:top"),"selected-area crop insight summary is missing");
+assert.ok(!/FAOSTAT/i.test(html),"non-cleared national time-series source must not be exposed in the public showcase");
+assert.ok(html.includes("Qo‘lda chizilgan maydon"),"custom AOI guidance is missing");
 assert.ok(html.includes("NO_RASTER_CELLS"),"missing raster support must remain NULL, not zero");
 const inline=[...html.matchAll(/<script>([\s\S]*?)<\/script>/gi)];
 assert.equal(inline.length,1,"expected one inline application script");
