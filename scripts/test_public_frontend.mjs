@@ -36,7 +36,7 @@ const aoiAnalysisStart=app.indexOf("async function analyzeCustomAOI()");
 const aoiAnalysisEnd=app.indexOf("$('analyze-aoi-mapspam')",aoiAnalysisStart);
 assert.ok(aoiAnalysisStart>=0&&aoiAnalysisEnd>aoiAnalysisStart,"custom AOI analysis function is missing");
 assert.ok(!app.slice(aoiAnalysisStart,aoiAnalysisEnd).includes("if(!token)"),"public custom AOI raster analysis must not require login");
-assert.ok(page.includes("To‘lov yoki bank karta talabi yo‘q"),"account modal must explain that public analysis has no payment requirement");
+assert.ok(page.includes("ochiq MAPSPAM 2020 raster hisobi"),"account modal must explain that public AOI analysis is available without login");
 assert.ok(app.includes("dataset_id")&&app.includes("location_id"),"dataset-to-location model scope is not surfaced");
 for(const id of ["boundary-level-status","aoi-profile","aoi-crop-code","analyze-aoi-mapspam"]){
  assert.ok(page.includes('id="'+id+'"'),"full app page is missing "+id);
