@@ -257,7 +257,7 @@ function finishAOIDrawing(){
   selectFeature(customFeature);
   $('selected-level').textContent='CUSTOM AOI';
   $('selected-area-help').textContent='Dala poligoni tanlandi. Ochiq MAPSPAM 2020 raster tahlili avtomatik boshlanadi; maydonni keyinroq saqlash va shaxsiy hosil datasetini ulash uchun hisobga kiring.';
-  toast($('boundary-status'),'Maydon tanlandi va brauzerda saqlandi. Endi “Hududni saqlash va tahlil qilish”ni bosing.');
+  toast($('boundary-status'),'Maydon tanlandi va brauzerda saqlandi. Ochiq raster tahlili avtomatik boshlandi; serverda saqlash ixtiyoriy.');
 }
 $('draw-aoi-start').addEventListener('click',startAOIDrawing);
 $('draw-aoi-finish').addEventListener('click',finishAOIDrawing);
@@ -357,7 +357,7 @@ function restorePendingAOI(){
   boundaryFeatures.push(selectedFeature);
   selectFeature(selectedFeature);
   $('selected-level').textContent='CUSTOM AOI';
-  $('selected-area-help').textContent='Oldin chizilgan dala konturi tiklandi. Hisobga kirgach serverga saqlash mumkin.';
+  $('selected-area-help').textContent='Oldin chizilgan dala konturi tiklandi. Ochiq MAPSPAM tahlili avtomatik yangilanadi; serverda saqlash uchun hisobga kiring.';
   toast($('boundary-status'),'Oldin chizilgan maydon tiklandi · '+featureName(selectedFeature));
   if(token&&pendingLocationSave)saveSelectedLocation();
 }
@@ -641,7 +641,7 @@ async function saveSelectedLocation(){
     pendingLocationSave=true;
     localStorage.setItem('osh_pending_aoi_save','1');
     persistPendingAOI(selectedFeature);
-    toast($('saved-location-status'),'Poligon brauzerda saqlandi. Hisobga kirgach aynan shu kontur serverga yuboriladi.');
+    toast($('saved-location-status'),'Poligon brauzerda saqlandi. Ochiq raster tahlili guest rejimida ishlaydi; hisobga kirgach aynan shu kontur serverga saqlanadi.');
     openAuth();
     return;
   }
