@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="OSH Agriculture AI Global — FAOSTAT va MAPSPAM tarixiy ma'lumotlari, 3D globus, iqlim manbalari va ML model laboratoriyasi.">
+<meta name="description" content="OSH Agriculture AI Global — global xarita, ekinlar va hududga asoslangan agrar AI tahlili.">
 <meta name="theme-color" content="#07131f">
 <title>OSH Agriculture AI Global — Data Intelligence</title>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.css">
 <style>
 :root{color-scheme:dark;--bg:#07131f;--panel:#0d1d2b;--panel2:#102638;--panel3:#122c3d;--line:#1e394b;--line2:#2b4d5f;--text:#e9f2f6;--muted:#8fa7b7;--soft:#b7c9d3;--mint:#3cddb0;--mint2:#1ba889;--gold:#eac477;--blue:#7db6e8;--red:#df8d7e;--radius:18px}
-*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:86px}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--mint);outline-offset:3px}body{margin:0;background:radial-gradient(ellipse at 72% -12%,#153c4c66,transparent 38%),radial-gradient(ellipse at 20% 35%,#10263855,transparent 40%),var(--bg);color:var(--text);font:14px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{cursor:pointer}.app{min-height:100vh}.sidebar{width:244px;position:fixed;inset:0 auto 0 0;z-index:20;padding:24px 16px 18px;background:linear-gradient(180deg,#0b1a27f5,#081521f8);border-right:1px solid #20394a;display:flex;flex-direction:column;gap:26px}.brand{display:flex;align-items:center;gap:12px;padding:2px 8px}.brand-mark{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:23px;background:linear-gradient(145deg,#173a3c,#10232f);border:1px solid #3cddb066;box-shadow:0 8px 25px #0005}.brand b{display:block;letter-spacing:1.5px;font-size:15px}.brand small{display:block;color:var(--mint);font-size:9px;letter-spacing:2px;font-weight:850}.nav-label{color:#597183;font-size:9px;font-weight:900;letter-spacing:1.8px;padding:0 12px;margin-bottom:4px}.nav{display:grid;gap:5px}.nav a{padding:11px 12px;border-radius:11px;color:#9db2c0;display:flex;align-items:center;gap:11px;font-size:12px;border:1px solid transparent;transition:.2s}.nav a:hover,.nav a.active{background:#14303c;border-color:#295248;color:#ebfbf6}.nav a.active .nav-icon{color:var(--mint)}.nav-icon{font-size:16px;width:18px;text-align:center;color:#7793a4}.side-card{margin-top:auto;border:1px solid #274355;border-radius:15px;padding:14px;background:linear-gradient(145deg,#102a38,#0c1c29)}.side-card small{color:#7792a1;font-size:9px;letter-spacing:1.2px;font-weight:800}.side-card b{display:block;margin:7px 0 2px;font-size:13px}.side-card p{margin:0;color:#8fa6b4;font-size:10px}.side-foot{color:#637c8c;font-size:9px;padding:0 9px}
-.main{margin-left:244px;min-width:0}.topbar{height:76px;position:sticky;top:0;z-index:15;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(18px,3vw,42px);background:#081622e8;backdrop-filter:blur(18px);border-bottom:1px solid #1e394b}.top-eyebrow{font-size:9px;letter-spacing:2px;color:var(--mint);font-weight:900}.topbar h1{font-size:19px;margin:2px 0 0;letter-spacing:-.3px}.top-right{display:flex;align-items:center;gap:10px}.status-pill,.date-pill{border:1px solid var(--line2);border-radius:999px;padding:7px 11px;color:#abc0cc;font-size:10px;white-space:nowrap}.status-pill i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--mint);margin-right:7px;box-shadow:0 0 10px var(--mint)}.content{max-width:1600px;margin:auto;padding:26px clamp(16px,3vw,42px) 48px}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:86px}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--mint);outline-offset:3px}body{margin:0;background:radial-gradient(ellipse at 72% -12%,#153c4c66,transparent 38%),radial-gradient(ellipse at 20% 35%,#10263855,transparent 40%),var(--bg);color:var(--text);font:14px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{cursor:pointer}.app{min-height:100vh}.sidebar{width:220px;position:fixed;inset:0 auto 0 0;z-index:20;padding:20px 13px 16px;background:linear-gradient(180deg,#0b1a27f5,#081521f8);border-right:1px solid #20394a;display:flex;flex-direction:column;gap:20px}.brand{display:flex;align-items:center;gap:12px;padding:2px 8px}.brand-mark{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:23px;background:linear-gradient(145deg,#173a3c,#10232f);border:1px solid #3cddb066;box-shadow:0 8px 25px #0005}.brand b{display:block;letter-spacing:1.5px;font-size:15px}.brand small{display:block;color:var(--mint);font-size:9px;letter-spacing:2px;font-weight:850}.nav-label{color:#597183;font-size:9px;font-weight:900;letter-spacing:1.8px;padding:0 12px;margin-bottom:4px}.nav{display:grid;gap:4px}.nav a{padding:9px 10px;border-radius:10px;color:#9db2c0;display:flex;align-items:center;gap:9px;font-size:11px;border:1px solid transparent;transition:.2s}.nav a:hover,.nav a.active{background:#14303c;border-color:#295248;color:#ebfbf6}.nav a.active .nav-icon{color:var(--mint)}.nav-icon{font-size:16px;width:18px;text-align:center;color:#7793a4}.side-card{margin-top:auto;border:1px solid #274355;border-radius:15px;padding:14px;background:linear-gradient(145deg,#102a38,#0c1c29)}.side-card small{color:#7792a1;font-size:9px;letter-spacing:1.2px;font-weight:800}.side-card b{display:block;margin:7px 0 2px;font-size:13px}.side-card p{margin:0;color:#8fa6b4;font-size:10px}.side-foot{color:#637c8c;font-size:9px;padding:0 9px}
+.main{margin-left:220px;min-width:0}.topbar{height:76px;position:sticky;top:0;z-index:15;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(18px,3vw,42px);background:#081622e8;backdrop-filter:blur(18px);border-bottom:1px solid #1e394b}.top-eyebrow{font-size:9px;letter-spacing:2px;color:var(--mint);font-weight:900}.topbar h1{font-size:19px;margin:2px 0 0;letter-spacing:-.3px}.top-right{display:flex;align-items:center;gap:10px}.status-pill,.date-pill{border:1px solid var(--line2);border-radius:999px;padding:7px 11px;color:#abc0cc;font-size:10px;white-space:nowrap}.status-pill i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--mint);margin-right:7px;box-shadow:0 0 10px var(--mint)}.content{max-width:1600px;margin:auto;padding:26px clamp(16px,3vw,42px) 48px}
 .hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(290px,.8fr);gap:20px;align-items:stretch;margin:8px 0 19px}.hero-copy{padding:24px 4px 22px}.kicker{color:var(--mint);font-size:9px;letter-spacing:2px;font-weight:900}.hero h2{font-size:clamp(34px,4.4vw,59px);line-height:1.03;letter-spacing:-2.3px;margin:14px 0 16px;max-width:800px}.hero h2 span{color:var(--mint)}.hero-copy p{max-width:720px;color:#a8bdc9;font-size:14px;line-height:1.75;margin:0}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:23px}.btn-primary,.btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 15px;border-radius:11px;font-size:11px;font-weight:850;transition:.2s}.btn-primary{background:linear-gradient(120deg,#52e6b7,#20ae91);color:#062019;border:0;box-shadow:0 10px 28px #39d9a622}.btn-primary:hover{transform:translateY(-2px);filter:brightness(1.06)}.btn-secondary{background:#102637;border:1px solid #2b4b5d;color:#c1d2dc}.btn-secondary:hover{border-color:var(--mint);color:#fff}.hero-panel{position:relative;overflow:hidden;border:1px solid #285165;border-radius:20px;padding:21px;background:radial-gradient(circle at 92% 2%,#20796855,transparent 43%),linear-gradient(145deg,#102b3b,#0b1c29);box-shadow:0 24px 55px #0004;display:flex;flex-direction:column;justify-content:space-between;min-height:225px}.hero-panel:after{content:"";position:absolute;width:210px;height:210px;right:-55px;top:20px;border-radius:50%;border:1px solid #3cddb044;box-shadow:0 0 0 18px #3cddb00a,0 0 0 38px #3cddb008}.hero-panel small{font-size:9px;letter-spacing:1.8px;color:#91b9c6;font-weight:900;position:relative;z-index:1}.hero-panel strong{font-size:38px;letter-spacing:-1.5px;position:relative;z-index:1}.hero-panel strong em{font-size:13px;letter-spacing:0;color:var(--mint);font-style:normal}.hero-panel p{font-size:11px;color:#9cb5c1;max-width:300px;margin:0;position:relative;z-index:1}
 .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:18px 0 28px}.metric{position:relative;overflow:hidden;padding:16px 17px;border-radius:15px;border:1px solid #244154;background:linear-gradient(145deg,#102537,#0b1b29);min-height:113px}.metric:after{content:"";position:absolute;width:85px;height:85px;right:-28px;bottom:-39px;border-radius:50%;background:#3cddb00e}.metric .label{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#8ca5b4;font-weight:850}.metric strong{display:block;font-size:29px;letter-spacing:-1px;margin:7px 0 1px;font-variant-numeric:tabular-nums}.metric span{font-size:10px;color:#86a0af}.metric.green strong{color:var(--mint)}.metric.gold strong{color:var(--gold)}.section{margin:32px 0 0;scroll-margin-top:90px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:14px}.section-head .eyebrow{color:var(--mint);font-size:9px;letter-spacing:1.9px;font-weight:900}.section-head h2{font-size:23px;letter-spacing:-.6px;margin:3px 0 4px}.section-head p{color:#8ea5b3;font-size:11px;margin:0;max-width:760px}.section-index{font-size:10px;color:#678394;border:1px solid #254153;padding:7px 10px;border-radius:999px;white-space:nowrap}
 .panel{border:1px solid #244154;border-radius:var(--radius);background:linear-gradient(145deg,#102536,#0a1b28);box-shadow:0 16px 42px #0002}.globe-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(260px,.7fr);gap:13px}.map-panel{overflow:hidden}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 19px;border-bottom:1px solid #1b3546}.panel-head h3{margin:2px 0 0;font-size:15px}.panel-head small{color:#8ba3b1;font-size:10px}.tag{font-size:9px;border-radius:999px;padding:6px 9px;border:1px solid #2a5a50;color:var(--mint);background:#39ddb00b;font-weight:850;letter-spacing:.8px;white-space:nowrap}.globe{height:485px;position:relative;background:radial-gradient(ellipse at 50% 50%,#153c51,#07121e 72%)}#map{position:absolute;inset:0}.map-hud{position:absolute;z-index:2;top:14px;left:16px;right:16px;display:flex;justify-content:space-between;gap:10px;pointer-events:none;color:#9ab1be;text-shadow:0 1px 8px #000;font-size:8px;letter-spacing:1.3px;font-weight:900}.map-hud .live{color:var(--mint)}.map-foot{position:absolute;z-index:2;bottom:12px;left:16px;right:16px;display:flex;justify-content:space-between;color:#819aaa;pointer-events:none;text-shadow:0 1px 8px #000;font-size:8px;letter-spacing:1px}.map-note{padding:11px 17px;color:#7893a2;font-size:9px;border-top:1px solid #1b3546}
@@ -146,7 +146,7 @@
       <a href="#environment" title="Iqlim manbalari" aria-label="Iqlim manbalari"><span class="nav-icon">☁</span><span class="nav-text">Iqlim manbalari</span></a>
     </nav>
   </div>
-  <div class="side-card"><small>REFERENCE DATA SNAPSHOT</small><b>838,919 ta yozuv</b><p>FAOSTAT QCL + MAPSPAM · 08 Nov 2026</p></div>
+  <div class="side-card"><small>GLOBAL MAPSPAM REFERENCE</small><b>228,620 xulosa</b><p>IFPRI MAPSPAM · 2020 · 46 ekin</p></div>
   <div class="side-foot">Research workspace · v1.0</div>
 </aside>
 
@@ -159,25 +159,25 @@
   <div class="content">
     <section class="hero" id="overview">
       <div class="hero-copy">
-        <div class="kicker">OSH · GLOBAL EDITION / RESEARCH DATA PLATFORM</div>
-        <h2>Dunyo bo‘yicha hosilni <span>ma’lumotlar bilan</span> anglaymiz.</h2>
-        <p>FAOSTAT tarixiy statistikasi, MAPSPAM fazoviy ekin qatlamlari va NASA ob-havo manbalari bitta agrar tahlil muhitida. Bu sahifada ma’lumotlar inventarizatsiyasi, O‘zbekiston hududiy xaritasi va o‘zingiz yuklagan tarixiy CSV asosidagi ML ssenariysi mavjud.</p>
+        <div class="kicker">OSH · GLOBAL AGRICULTURE INTELLIGENCE</div>
+        <h2>Dunyo yerlarini <span>ma’lumotga aylantiramiz.</span></h2>
+        <p>Mamlakat yoki hududni tanlang, ekinlar va iqlim ko‘rsatkichlarini o‘rganing, o‘z dalangizni xaritada chizing. OSH global agrar ma’lumotlar va tekshiriladigan AI ssenariylarini bir joyga jamlaydi.</p>
         <div class="hero-actions"><a class="btn-primary" href="#archive">Data arxivini ko‘rish <b>→</b></a><a class="btn-secondary" href="#models">Model laboratoriyasi <span>↗</span></a></div>
       </div>
       <div class="hero-panel">
-        <small>REFERENCE DATA INVENTORY · 08 NOV 2026</small>
-        <strong id="combined-records">838,919 <em>rows</em></strong>
-        <p>Bu ikki manba bo‘yicha inventarizatsiya soni. Public dashboard individual xom qatorlarni yuklamaydi; raqam faqat mavjud ma’lumotlar qamrovini ko‘rsatadi.</p>
+        <small>MAPSPAM ADMINISTRATIVE REFERENCE · 2020</small>
+        <strong id="combined-records">228,620 <em>summaries</em></strong>
+        <p>153 mamlakat, 46 ekin va bir necha ma’muriy daraja bo‘yicha tarixiy fazoviy xulosalar. Har bir hududda barcha ekinlar uchun yaroqli raster katagi mavjud bo‘lavermaydi.</p>
       </div>
     </section>
 
     <div class="metrics">
-      <article class="metric green"><div class="label">FAOSTAT QCL</div><strong id="faostat-count">610,299</strong><span>reference inventory · 1961–2024</span></article>
-      <article class="metric"><div class="label">MAPSPAM summaries</div><strong id="mapspam-count">228,620</strong><span>reference inventory · 2020</span></article>
-      <article class="metric gold"><div class="label">FAOSTAT coverage</div><strong id="country-count">202</strong><span>countries / reporting areas</span></article>
-      <article class="metric"><div class="label">Crop catalogue</div><strong><span id="faostat-crops" style="font-size:29px;color:var(--text)">169</span> + <span id="mapspam-crops" style="font-size:29px;color:var(--mint)">46</span></strong><span>FAOSTAT item codes + MAPSPAM crop layers</span></article>
+      <article class="metric green"><div class="label">Global ADM boundaries</div><strong>245</strong><span>countries / areas · ADM1 + ADM2 catalog</span></article>
+      <article class="metric"><div class="label">MAPSPAM summaries</div><strong id="mapspam-count">228,620</strong><span>historical administrative estimates · 2020</span></article>
+      <article class="metric gold"><div class="label">MAPSPAM coverage</div><strong id="country-count">153</strong><span>countries in the reference archive</span></article>
+      <article class="metric"><div class="label">Crop catalogue</div><strong><span id="mapspam-crops" style="font-size:29px;color:var(--mint)">46</span></strong><span>crop layers · physical area, harvest, production and yield</span></article>
     </div>
-    <div class="info-note"><b>Public demo:</b> butun sayt GitHub Pages statik fayllari orqali ishlaydi; foydalanuvchi brauzeri hech qanday Fly/FastAPI serveriga ulanmaydi. Viloyat va tuman poligonlari GitHub Actions orqali tekshirilib, saytga GeoJSON sifatida joylanadi. Tanlangan hududning ob-havosi Open-Meteo’dan olinadi; Sentinel-2 sahnalari CDSE katalogidan qidiriladi; haqiqiy hosildorlik CSV fayli brauzerda Ridge ML ssenariysiga uzatiladi va serverga yuklanmaydi. Markaziy 838,919 yozuvning maxfiy xom qatorlari public saytga chiqarilmaydi. NDVI rasteri, SMAP va SoilGrids hali model feature’lariga ulanmagan.</div>
+    <div class="info-note"><b>Public demo:</b> butun sayt GitHub Pages statik fayllari orqali ishlaydi; foydalanuvchi brauzeri hech qanday Fly/FastAPI serveriga ulanmaydi. Viloyat va tuman poligonlari GitHub Actions orqali tekshirilib, saytga GeoJSON sifatida joylanadi. Tanlangan hududning ob-havosi Open-Meteo’dan olinadi; Sentinel-2 sahnalari CDSE katalogidan qidiriladi; haqiqiy hosildorlik CSV fayli brauzerda Ridge ML ssenariysiga uzatiladi va serverga yuklanmaydi. Sayt faqat e’lon qilishga ruxsat berilgan, manbasi ko‘rsatilgan statik ma’lumot paketlarini oladi. NDVI rasteri, SMAP va SoilGrids hali model feature’lariga ulanmagan.</div>
 
     <section class="section" id="globe">
       <div class="section-head"><div><div class="eyebrow">01 / GEOSPATIAL WORKSPACE</div><h2>Global 3D xarita</h2><p>Globusda mamlakatni tanlang, keyin O‘zbekistonning barcha viloyat (ADM1) yoki tuman (ADM2) poligonlarini xaritada oching. Zarur bo‘lsa, dala chegarasini o‘zingiz chizing.</p></div><span class="section-index">COUNTRY SELECTION</span></div>
@@ -189,16 +189,16 @@
         </article>
         <aside class="panel selection">
           <div><div class="eyebrow">SELECTED COUNTRY</div><h3 id="country-name">O‘zbekiston</h3><p>Tanlangan mamlakat bo‘yicha manbalar va dataset qamrovi haqida ma’lumot.</p></div>
-          <div class="selection-box"><small>COUNTRY ISO-3</small><strong id="country-code">UZB</strong><span>FAOSTAT QCL archive · annual national data</span></div>
+          <div class="selection-box"><small>COUNTRY ISO-3</small><strong id="country-code">UZB</strong><span>Global ADM boundary · MAPSPAM 2020 reference</span></div>
           <div class="mini-facts">
-            <div class="mini-fact"><small>FAOSTAT countries</small><b>202</b></div>
-            <div class="mini-fact"><small>Archive period</small><b>1961–2024</b></div>
+            <div class="mini-fact"><small>Global ADM coverage</small><b>245</b></div>
+            <div class="mini-fact"><small>MAPSPAM countries</small><b>153</b></div>
             <div class="mini-fact"><small>MAPSPAM snapshot</small><b>2020</b></div>
             <div class="mini-fact"><small>MAPSPAM countries</small><b>153</b></div>
           </div>
           <div class="field"><label for="crop-select">MAPSPAM crop layer · barcha 46 ta ekin</label><select id="crop-select"><option value="whea">Wheat</option></select></div>
           <div class="selection-actions"><a class="btn-primary" href="#spatial">46 ta ekin qatlamini ko‘rish →</a><a class="btn-secondary" href="#archive">Dataset qamroviga o‘tish ↗</a></div>
-          <div class="hint">Muhim: FAOSTAT tarixiy qatorlari milliy darajadagi statistikadir. MAPSPAM 2020 rasteridan hisoblangan admin xulosalari esa alohida fazoviy qatlam; xaritadagi mamlakat tanlovi o‘z-o‘zidan tuman bo‘yicha aniq qiymatni anglatmaydi.</div>
+          <div class="hint">Muhim: MAPSPAM 2020 tarixiy fazoviy bahodir. Mamlakatni bosish ma’muriy chegaralarni yuklaydi; keyin viloyat yoki tumanni tanlasangiz shu hududning mavjud ma’lumotlari ochiladi.</div>
         </aside>
       </div>
     </section>
@@ -286,34 +286,34 @@
     </section>
 
     <section class="section" id="archive">
-      <div class="section-head"><div><div class="eyebrow">02 / HISTORICAL DATA LIBRARY</div><h2>Biz yig‘gan ma’lumotlar</h2><p>Quyidagi raqamlar 2026-11-08 kuni tekshirilgan markaziy PostgreSQL reference bazasi inventarizatsiyasidan olingan.</p></div><span class="section-index">838,919 TOTAL ROWS</span></div>
+      <div class="section-head"><div><div class="eyebrow">02 / GLOBAL AGRICULTURE DATA</div><h2>Global agrar ma’lumotlar kutubxonasi</h2><p>Ochiq manbalardagi fazoviy ekin qatlamlari, hududiy chegaralar va tanlangan hududga tegishli iqlim ma’lumotlari.</p></div><span class="section-index">MAPSPAM · CROPGRIDS · WEATHER</span></div>
       <div class="archive-grid">
         <article class="panel dataset-card">
-          <div class="dataset-top"><small>FAO · FAOSTAT QCL</small><span class="data-type">ANNUAL STATISTICS</span></div>
-          <h3>Crops and Livestock Products</h3>
-          <p>Milliy ekin statistikasi: yig‘ib olingan maydon, ishlab chiqarish hajmi va hosildorlik. Har bir mamlakat/ekin uchun mavjud yillar farq qilishi mumkin.</p>
-          <div class="dataset-number">610,299 <span>records stored</span></div>
-          <div class="facts-grid"><div class="fact"><b>202</b><small>countries / areas</small></div><div class="fact"><b>169</b><small>item codes</small></div><div class="fact"><b>1961–2024</b><small>year range</small></div></div>
-          <div class="dataset-footer"><a href="https://www.fao.org/faostat/en/#data/QCL" target="_blank" rel="noopener">FAOSTAT QCL source ↗</a><span>National-level · annual</span></div>
+          <div class="dataset-top"><small>IFPRI · MAPSPAM 2020 v2r2</small><span class="data-type">SPATIAL CROP DATA</span></div>
+          <h3>Global crop production reference</h3>
+          <p>46 ekin bo‘yicha fizik maydon, yig‘ib olingan maydon, ishlab chiqarish va hosildorlikning 2020-yil fazoviy baholari.</p>
+          <div class="dataset-number" id="mapspam-count">228,620 <span>administrative summaries</span></div>
+          <div class="facts-grid"><div class="fact"><b id="country-count">153</b><small>countries</small></div><div class="fact"><b id="mapspam-crops">46</b><small>crop layers</small></div><div class="fact"><b>5′</b><small>grid resolution</small></div></div>
+          <div class="dataset-footer"><a href="https://cgiar-climate-data-hub.github.io/catalog/spam2020/" target="_blank" rel="noopener">MAPSPAM data hub ↗</a><span>Reference year · 2020</span></div>
         </article>
         <article class="panel dataset-card">
-          <div class="dataset-top"><small>IFPRI · MAPSPAM 2020 v2r2</small><span class="data-type">SPATIAL RASTER</span></div>
-          <h3>Global Spatially-Disaggregated Crop Production</h3>
-          <p>46 ekin uchun fizik maydon, yig‘ib olingan maydon, ishlab chiqarish va hosildorlik. Sug‘oriladigan, lalmikor va jami texnologiya qatlamlari mavjud.</p>
-          <div class="dataset-number">228,620 <span>admin summary rows</span></div>
-          <div class="facts-grid"><div class="fact"><b>153</b><small>countries</small></div><div class="fact"><b>46</b><small>crop layers</small></div><div class="fact"><b>5′</b><small>grid resolution</small></div></div>
-          <div class="dataset-footer"><a href="https://cgiar-climate-data-hub.github.io/catalog/spam2020/" target="_blank" rel="noopener">MAPSPAM data hub ↗</a><span>Reference year · 2020 only</span></div>
-        </article>
-        <article class="panel dataset-card">
-          <div class="dataset-top"><small>CROPGRIDS v1.08</small><span class="data-type">CATALOGED · NOT IMPORTED</span></div>
+          <div class="dataset-top"><small>CROPGRIDS v1.08</small><span class="data-type">SOURCE CATALOGUE</span></div>
           <h3>Global crop area maps</h3>
-          <p>Project source catalogue: 2020-yil uchun ekin fizik maydoni va yig‘ib olingan maydon qatlamlari. Bu ma’lumot markaziy bazaga import qilingan satrlar soniga kiritilmagan.</p>
+          <p>173 ekin uchun fizik va yig‘ib olingan maydon qatlamlari kataloglangan. Ushbu fayllar hozircha saytning prediction modeliga ulanmagan.</p>
           <div class="dataset-number">173 <span>crop layers in source</span></div>
           <div class="facts-grid"><div class="fact"><b>2020</b><small>reference year</small></div><div class="fact"><b>5.6 km</b><small>at equator</small></div><div class="fact"><b>2</b><small>area variables</small></div></div>
-          <div class="dataset-footer"><a href="https://doi.org/10.6084/m9.figshare.22491997.v9" target="_blank" rel="noopener">CROPGRIDS source ↗</a><span>Not included in DB row totals</span></div>
+          <div class="dataset-footer"><a href="https://doi.org/10.6084/m9.figshare.22491997.v9" target="_blank" rel="noopener">CROPGRIDS source ↗</a><span>Catalogued · not imported</span></div>
+        </article>
+        <article class="panel dataset-card">
+          <div class="dataset-top"><small>OPEN-METEO · COPERNICUS</small><span class="data-type">LIVE ENVIRONMENT</span></div>
+          <h3>Weather and satellite scene discovery</h3>
+          <p>Tanlangan hudud markazidan tarixiy ERA5-Land ob-havo qatori, qisqa muddatli prognoz va Sentinel-2 sahna metama’lumotlari olinadi.</p>
+          <div class="dataset-number">LIVE <span>area-based lookup</span></div>
+          <div class="facts-grid"><div class="fact"><b>ERA5-Land</b><small>weather history</small></div><div class="fact"><b>7 days</b><small>weather outlook</small></div><div class="fact"><b>Sentinel-2</b><small>scene catalogue</small></div></div>
+          <div class="dataset-footer"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo ↗</a><span>CDSE STAC · metadata only</span></div>
         </article>
       </div>
-      <div class="info-note"><b>Talqin qilish:</b> FAOSTAT QCL — milliy tarixiy statistika; u tuman ma’lumoti emas. MAPSPAM — 2020-yilga tegishli taxminiy gridded qatlam; joriy yil yoki dala o‘lchovi emas. Ikki dataset bir-birining o‘rnini bosmaydi, ular turli miqyosdagi manbalarni birlashtirish uchun ishlatiladi.</div>
+      <div class="info-note"><b>Ma’lumotni to‘g‘ri talqin qilish:</b> MAPSPAM 2020 — bitta reference yil uchun gridded estimate; u 2026-yil hosili, dala o‘lchovi yoki kelajak bashorati emas. 5 arc-minute grid ekvatorda taxminan 9.3 km. Open-Meteo tarixiy ob-havo va qisqa muddatli weather forecast beradi; Sentinel-2 ulanishi hozircha sahna metadata qidiruvi, NDVI raster hisob-kitobi emas.</div>
     </section>
 
     <section class="section" id="spatial">
@@ -347,13 +347,13 @@
         <article class="model-card"><div class="model-symbol">05 · ENSEMBLE</div><b>Extra Trees</b><small>Randomized tree ensemble</small></article>
         <article class="model-card"><div class="model-symbol">06 · BOOSTING</div><b>HistGradientBoosting</b><small>Histogram-based gradient boosting</small></article>
         <article class="model-card benchmark-card"><div class="model-symbol">BENCHMARK</div><b>Persistence</b><small>Oldingi hosil yilini benchmark sifatida ishlatish</small></article>
-        <article class="model-card benchmark-card"><div class="model-symbol">GLOBAL BASELINE</div><b>Ridge + Persistence</b><small>FAOSTAT milliy/global tarixiy trend ssenariysi</small></article>
+        <article class="model-card benchmark-card"><div class="model-symbol">GLOBAL BASELINE</div><b>Ridge + Persistence</b><small>Hududga tegishli real tarixiy kuzatuvlar talab qilinadi</small></article>
         <article class="model-card"><div class="model-symbol">VALIDATION</div><b>Expanding-window OOF</b><small>Vaqt tartibi saqlanadi; kelajak ma’lumoti train’ga o‘tmaydi</small></article>
       </div>
       <article class="panel pipeline">
         <h3>Data → feature → model → benchmark → scenario</h3>
         <div class="pipeline-steps">
-          <div class="pipe-step"><small>01 · INPUT</small><b>FAOSTAT / CSV</b><span>Yield, area, production</span></div>
+          <div class="pipe-step"><small>01 · INPUT</small><b>SIAT / CSV</b><span>Yield, area, production</span></div>
           <div class="pipe-step"><small>02 · ENRICH</small><b>Weather features</b><span>Temp, rain, GDD, hot/frost days</span></div>
           <div class="pipe-step"><small>03 · QA</small><b>Time validation</b><span>Missingness, aligned years, leakage checks</span></div>
           <div class="pipe-step"><small>04 · COMPARE</small><b>OOF MAE</b><span>Six estimators vs Persistence</span></div>
@@ -365,7 +365,7 @@
           <div class="rule"><b>OOF MAE</b><small>reported beside Persistence benchmark</small></div>
         </div>
       </article>
-      <div class="info-note"><b>Model status:</b> ML estimatorlari va FAOSTAT Ridge baseline kodi mavjud. Personal dataset modeli yetarli tarixiy yield va ob-havo feature'lari bo‘lsa ishlaydi. Bu hali barcha mamlakatlar/tumanlar uchun country-held-out va future-year testlardan o‘tgan universal global model emas. Kelajak ob-havosi mavjud bo‘lmasa, forecast so‘nggi 5 yillik ob-havo normasi bilan ssenariy sifatida belgilanadi.</div>
+      <div class="info-note"><b>Model status:</b> Ridge research modeli faqat tanlangan hudud va ekinga tegishli yetarli tarixiy hosildorlik kuzatuvlari hamda ob-havo feature'lari mavjud bo‘lsa ishlaydi. Bu hali barcha mamlakatlar/tumanlar uchun universal, mustaqil validatsiyadan o‘tgan global model emas. Kelajak ob-havosi mavjud bo‘lmasa, forecast so‘nggi 5 yillik ob-havo normasi bilan ssenariy sifatida belgilanadi.</div>
     </section>
 
     <section class="section" id="environment">
@@ -436,6 +436,8 @@ $("region-crop-select").addEventListener("change",()=>{
  syncCropSelection();
  updateYieldModelButton();
  if(!$("region-results").hidden&&selectedAOI)renderMapspamReference(selectedAOI,$("region-crop-select").value).catch(error=>{$("region-mapspam-result").textContent="MAPSPAM: "+error.message;});
+ const modelButton=$("region-run-model");
+ if(selectedAOI&&modelButton&&!modelButton.disabled)modelButton.click();
 });
 renderCropList("");
 syncCropSelection();
@@ -450,15 +452,13 @@ document.querySelectorAll(".crop-chip[data-code='whea']").forEach(x=>x.classList
 let catalog=null;
 fetch("./data/catalog.json").then(r=>{if(!r.ok)throw new Error("manifest "+r.status);return r.json();}).then(function(data){
  catalog=data;
- $("combined-records").innerHTML=comma(data.combined_record_count)+' <em>rows</em>';
- const faostat=data.datasets.find(x=>x.id==="FAOSTAT_QCL");
  const spam=data.datasets.find(x=>x.id==="mapspam-2020-v2r2");
- $("faostat-count").textContent=comma(faostat.records);
+ if(!spam)throw new Error("MAPSPAM dataset metadata missing");
+ $("combined-records").innerHTML=comma(data.combined_summary_rows||spam.records)+' <em>summaries</em>';
  $("mapspam-count").textContent=comma(spam.records);
- $("country-count").textContent=comma(faostat.countries_or_areas);
- $("faostat-crops").textContent=comma(faostat.crop_item_codes);
+ $("country-count").textContent=comma(spam.countries);
  $("mapspam-crops").textContent=comma(spam.crops);
-}).catch(function(error){console.warn("Data inventory manifest could not load",error);});
+}).catch(function(error){console.warn("Global data manifest could not load",error);});
 
 let map=null,features=[],selected=null;
 let regionSelectionActive=false,regionDrawing=false,regionDraftPoints=[],adminFeatures=[],selectedAOI=null;
@@ -598,9 +598,8 @@ if(window.maplibregl){
     $("region-center").textContent="—";
     $("region-analyze").disabled=true;
     $("region-results").hidden=true;
-    $("region-status").textContent=code==="UZB"
-     ?"O‘zbekiston tanlandi. Viloyat yoki tuman chegaralarini yuklang."
-     :code+" mamlakati tanlandi. Mavjud ADM1/ADM2 statik qatlamini yuklash uchun tugmani bosing.";
+    $("region-status").textContent=code+" tanlandi. Mavjud ma’muriy hududlar yuklanmoqda…";
+    if(/^[A-Z]{3}$/.test(code))loadRegionBoundaries();
    });
    map.on("mousemove","country-fill",()=>map.getCanvas().style.cursor="pointer");
    map.on("mouseleave","country-fill",()=>map.getCanvas().style.cursor="");
@@ -800,6 +799,11 @@ function selectRegionFeature(feature,sourceLabel){
   const bounds=regionBounds(feature);
   if(bounds)map.fitBounds(bounds,{padding:70,maxZoom:18,duration:850});
  }
+ $("region-status").textContent="Hudud tanlandi. Iqlim, sun’iy yo‘ldosh sahnalari va mavjud ekin ma’lumotlari avtomatik yuklanmoqda…";
+ const analyzeButton=$("region-analyze");
+ if(center&&analyzeButton)analyzeButton.click();
+ const modelButton=$("region-run-model");
+ if(center&&modelButton&&!modelButton.disabled)modelButton.click();
 }
 function updateRegionDraft(){
  if(!map||!map.getSource("region-draft"))return;
@@ -917,49 +921,101 @@ function regionFmt(value,digits){
  if(value===null||value===undefined||!Number.isFinite(Number(value)))return "—";
  return Number(value).toLocaleString("en-US",{minimumFractionDigits:digits||0,maximumFractionDigits:digits||0});
 }
-let mapspamReferenceCache=null;
+const mapspamReferenceCache=Object.create(null);
+async function loadPublicMapspamCountry(countryIso){
+ const iso=String(countryIso||"").trim().toUpperCase();
+ if(!/^[A-Z]{3}$/.test(iso))throw new Error("Tanlangan mamlakat ISO-3 kodi noto‘g‘ri.");
+ if(mapspamReferenceCache[iso])return mapspamReferenceCache[iso];
+ let response=await fetch("./data/mapspam/global/"+iso+".json.gz",{cache:"force-cache",headers:{Accept:"application/gzip, application/octet-stream"}});
+ let payload=null;
+ if(response.ok){
+  if(typeof DecompressionStream==="undefined")throw new Error("Brauzer gzip siqilgan ma’lumotni ochishni qo‘llamaydi. Yangilangan brauzerdan foydalaning.");
+  if(!response.body)throw new Error("MAPSPAM fayl oqimi bo‘sh.");
+  const stream=response.body.pipeThrough(new DecompressionStream("gzip"));
+  payload=await new Response(stream).json();
+ }else if(iso==="UZB"){
+  response=await fetch("./data/mapspam/UZB_MAPSPAM_2020_ADM1_ADM2.json",{cache:"force-cache",headers:{Accept:"application/json"}});
+  if(!response.ok)throw new Error("O‘zbekiston MAPSPAM paketi HTTP "+response.status);
+  payload=await response.json();
+ }else{
+  throw new Error(iso+" uchun public MAPSPAM 2020 paketi hali e’lon qilinmagan. Global eksport paketi qo‘shilgach shu hududlar avtomatik ochiladi.");
+ }
+ if(payload.country_iso3!==iso||payload.dataset_id!=="mapspam-2020-v2r2"||payload.source_year!==2020||payload.license!=="CC BY-SA 4.0")
+  throw new Error("MAPSPAM paketi mamlakat, yil yoki litsenziya tekshiruvidan o‘tmadi.");
+ mapspamReferenceCache[iso]=payload;
+ return payload;
+}
 async function renderMapspamReference(feature,cropCode){
  const output=$("region-mapspam-result");
  if(!output)return {status:"UNAVAILABLE"};
- if(!feature){output.textContent="Avval O‘zbekiston viloyati yoki tumanini tanlang.";return {status:"NO_AREA"};}
+ if(!feature){output.textContent="Avval xaritadan hudud tanlang.";return {status:"NO_AREA"};}
  const props=feature.properties||{};
- const level=String(props.shapeType||"").toUpperCase();
- const adminId=String(props.shapeID||"");
- const crop=cropList.find(item=>item[0]===cropCode);
- if(!["ADM1","ADM2"].includes(level)||!adminId){
-  output.textContent="MAPSPAM 2020 reference hozircha faqat O‘zbekistonning ADM1/ADM2 hududlari uchun mavjud. Qo‘lda chizilgan maydon uchun o‘zining tarixiy CSV qatori kerak.";
+ const level=String(props.shapeType||props.shape_type||"").toUpperCase();
+ if(!["ADM1","ADM2"].includes(level)){
+  output.textContent="Qo‘lda chizilgan maydon/dala uchun MAPSPAM ma’muriy xulosasi mos kelmaydi. Dala tahlilida ob-havo va Sentinel-2 sahnalari ko‘rsatiladi; hosildorlik AI ssenariysi uchun aynan shu maydonning tarixiy CSV qatori kerak.";
   return {status:"CUSTOM_AOI"};
  }
- output.innerHTML="<div class='region-empty'>MAPSPAM 2020 tarixiy ma’lumoti yuklanmoqda…</div>";
- if(!mapspamReferenceCache){
-  const response=await fetch("./data/mapspam/UZB_MAPSPAM_2020_ADM1_ADM2.json",{cache:"force-cache",headers:{Accept:"application/json"}});
-  if(!response.ok)throw new Error("MAPSPAM public JSON HTTP "+response.status);
-  const payload=await response.json();
-  if(payload.country_iso3!=="UZB"||payload.dataset_id!=="mapspam-2020-v2r2"||payload.source_year!==2020||payload.license!=="CC BY-SA 4.0"){
-   throw new Error("MAPSPAM JSON provenance yoki dataset metadata mos emas");
+ const countryField=$("region-iso3");
+ const countryIso=String(props.countryISO3||props.country_iso3||(countryField&&countryField.value)||"UZB").toUpperCase();
+ const adminId=String(props.shapeID||props.shape_id||"");
+ const crop=cropList.find(item=>item[0]===cropCode);
+ const cropName=crop?crop[1]:cropCode.toUpperCase();
+ const displayAreaName=regionFeatureName(feature);
+ output.innerHTML="<div class='region-empty'>"+regionEscape(countryIso)+" · MAPSPAM 2020 hududiy ma’lumoti yuklanmoqda…</div>";
+ let payload;
+ if(typeof loadPublicMapspamCountry==="function"){
+  payload=await loadPublicMapspamCountry(countryIso);
+ }else{
+  payload=mapspamReferenceCache&&mapspamReferenceCache.country_iso3===countryIso?mapspamReferenceCache:null;
+  if(!payload){
+   const response=await fetch("./data/mapspam/UZB_MAPSPAM_2020_ADM1_ADM2.json",{cache:"force-cache",headers:{Accept:"application/json"}});
+   if(!response.ok)throw new Error("MAPSPAM public JSON HTTP "+response.status);
+   payload=await response.json();
+   mapspamReferenceCache=payload;
   }
-  mapspamReferenceCache=payload;
  }
  if(selectedAOI!==feature||$("region-crop-select").value!==cropCode)return {status:"STALE_SELECTION"};
- const levelData=mapspamReferenceCache.levels&&mapspamReferenceCache.levels[level];
- const area=levelData&&levelData.areas&&levelData.areas[adminId];
- const record=area&&area.crops&&area.crops[cropCode];
- if(!record){
-  output.textContent="Tanlangan hudud va ekin uchun MAPSPAM 2020 qatori topilmadi. Hudud identifikatori va crop kodi mos emas.";
+ const levelData=payload.levels&&payload.levels[level];
+ const areas=levelData&&levelData.areas||{};
+ let area=adminId?areas[adminId]:null;
+ let matchedBy="shapeID";
+ if(!area){
+  const wanted=normalizeRegionSearch(displayAreaName);
+  const matches=Object.values(areas).filter(item=>normalizeRegionSearch(item.name)===wanted);
+  if(matches.length===1){area=matches[0];matchedBy="unique area name";}
+ }
+ if(!area){
+  output.textContent=countryIso+" · "+displayAreaName+" uchun MAPSPAM "+level+" yozuvi topilmadi. Chegara ID va manba vintage’i mosligini tekshirish kerak.";
   return {status:"NOT_FOUND"};
  }
- const cropName=crop?crop[1]:cropCode.toUpperCase();
- const displayAreaName=regionFeatureName(feature)||area.name;
+ const record=(area.crops||{})[cropCode]||null;
+ const entries=Object.entries(area.crops||{}).map(([code,value])=>{
+  const found=cropList.find(item=>item[0]===code);
+  return {code:code,name:found?found[1]:code.toUpperCase(),value:value};
+ }).filter(item=>item.value&&Number.isFinite(Number(item.value.production_t)))
+  .sort((a,b)=>Number(b.value.production_t)-Number(a.value.production_t));
+ const top=entries.slice(0,5);
+ const topTable=top.length
+  ?"<div class='region-mapspam-status'><b>Hududdagi yetakchi 5 ekin · ishlab chiqarish bo‘yicha</b></div><div class='region-table-wrap'><table><thead><tr><th>Ekin</th><th>Ishlab chiqarish</th><th>Yig‘im maydoni</th><th>Hosildorlik</th></tr></thead><tbody>"+
+   top.map(item=>"<tr><td>"+regionEscape(item.name)+"</td><td>"+regionFmt(item.value.production_t,0)+" t</td><td>"+regionFmt(item.value.harvested_area_ha,0)+" ha</td><td>"+(item.value.yield_t_ha===null?"—":regionFmt(item.value.yield_t_ha,2)+" t/ha")+"</td></tr>").join("")+
+   "</tbody></table></div>"
+  :"<div class='region-empty'>Ushbu hududda ishlab chiqarish qiymati mavjud bo‘lgan ekinlar topilmadi.</div>";
+ const areaYear=area.boundary_year||levelData.boundary_year||"manba metama’lumotida ko‘rsatilmagan";
+ if(!record){
+  output.innerHTML="<b>"+regionEscape(displayAreaName)+" · "+regionEscape(cropName)+"</b><div class='region-mapspam-status'>Tanlangan ekin uchun yozuv mavjud emas. Bu nol hosildorlik degani emas.</div>"+topTable+
+   "<div class='region-mapspam-status'>MAPSPAM 2020 · "+regionEscape(countryIso)+" · "+level+" · boundary vintage: "+regionEscape(String(areaYear))+".</div>";
+  return {status:"CROP_NOT_AVAILABLE",area:displayAreaName,crop:cropName};
+ }
  if(record.spatial_status==="NO_RASTER_CELLS"||record.yield_t_ha===null){
-  output.innerHTML="<b>"+regionEscape(displayAreaName)+" · "+regionEscape(cropName)+"</b><div class='region-mapspam-status'>Ushbu hudud/ekin kombinatsiyasida 2020-yil MAPSPAM rasteridan yaroqli katak topilmadi. Hosildorlik <b>NULL / mavjud emas</b> — bu 0 t/ha degani emas.</div><div class='region-mapspam-kpis'>"+
-   [["Valid raster kataklari","0"],["Hosildorlik","—"],["Ishlab chiqarish","—"],["Yig‘ib olingan maydon","—"],["Fizik maydon","—"],["Manba yili","2020"]].map(k=>"<div class='region-mapspam-kpi'><small>"+k[0]+"</small><strong>"+k[1]+"</strong></div>").join("")+
-   "</div><div class='region-mapspam-status'>Spatial status: NO_RASTER_CELLS. Qiymat yo‘q joyda nol hosildorlik yasalmaydi.</div>";
+  output.innerHTML="<b>"+regionEscape(displayAreaName)+" · "+regionEscape(cropName)+"</b><div class='region-mapspam-status'>Bu hudud/ekin kombinatsiyasida yaroqli raster katak topilmagan. Hosildorlik <b>NULL / mavjud emas</b> — bu 0 t/ha degani emas.</div><div class='region-mapspam-kpis'>"+
+   [["Valid raster kataklari","0"],["Hosildorlik","—"],["Ishlab chiqarish",regionFmt(record.production_t,0)+" t"],["Yig‘ib olingan maydon",regionFmt(record.harvested_area_ha,0)+" ha"],["Fizik maydon",regionFmt(record.physical_area_ha,0)+" ha"],["Manba yili","2020"]].map(k=>"<div class='region-mapspam-kpi'><small>"+k[0]+"</small><strong>"+k[1]+"</strong></div>").join("")+
+   "</div>"+topTable+"<div class='region-mapspam-status'>Spatial status: NO_RASTER_CELLS. Missing yield hech qachon nolga aylantirilmaydi.</div>";
   return {status:"NO_RASTER_CELLS",area:displayAreaName,crop:cropName};
  }
  output.innerHTML="<b>"+regionEscape(displayAreaName)+" · "+regionEscape(cropName)+"</b><div class='region-mapspam-kpis'>"+
-  [["Hosildorlik",regionFmt(record.yield_t_ha,2)+" t/ha"],["Ishlab chiqarish",regionFmt(record.production_t,1)+" t"],["Yig‘ib olingan maydon",regionFmt(record.harvested_area_ha,1)+" ha"],["Fizik maydon",regionFmt(record.physical_area_ha,1)+" ha"],["Valid raster kataklari",regionFmt(record.valid_cells,0)],["Manba yili","2020"]].map(k=>"<div class='region-mapspam-kpi'><small>"+k[0]+"</small><strong>"+k[1]+"</strong></div>").join("")+
-  "</div><div class='region-mapspam-status'>Spatial status: ESTIMATED · 5 arc-minute grid. Viloyat chegara vintage’i: "+regionEscape(String(mapspamReferenceCache.levels[level].boundary_year))+"; tuman vintage’i: "+regionEscape(String(mapspamReferenceCache.levels.ADM2.boundary_year))+". Bu tarixiy gridded estimate, kelajak bashorati emas.</div>";
- return {status:"ESTIMATED",area:displayAreaName,crop:cropName,yield:record.yield_t_ha};
+  [["Hosildorlik",regionFmt(record.yield_t_ha,2)+" t/ha"],["Ishlab chiqarish",regionFmt(record.production_t,0)+" t"],["Yig‘ib olingan maydon",regionFmt(record.harvested_area_ha,0)+" ha"],["Fizik maydon",regionFmt(record.physical_area_ha,0)+" ha"],["Valid raster kataklari",regionFmt(record.valid_cells,0)],["Manba yili","2020"]].map(k=>"<div class='region-mapspam-kpi'><small>"+k[0]+"</small><strong>"+k[1]+"</strong></div>").join("")+
+  "</div>"+topTable+"<div class='region-mapspam-status'>MAPSPAM 2020 · "+regionEscape(countryIso)+" · "+level+" · boundary vintage: "+regionEscape(String(areaYear))+" · moslashtirish: "+matchedBy+". 5 arc-minute grid (~9.3 km ekvatorda); dala o‘lchovi yoki kelajak bashorati emas. Manba: IFPRI MAPSPAM · CC BY-SA 4.0.</div>";
+ return {status:"ESTIMATED",area:displayAreaName,crop:cropName,yield:record.yield_t_ha,top_crops:top};
 }
 async function fetchRegionWeather(center){
  const today=new Date();
@@ -1258,8 +1314,10 @@ function runRegionRidge(series,targetYear,climateByYear){
 $("region-yield-file").addEventListener("change",()=>{
  updateYieldModelButton();
  $("region-model-result").textContent=$("region-yield-file").files.length
-  ?"CSV tanlandi. Yil/yield ustunlari va mavsum sanalarini tekshirib, iqlim bilan ML hisoblang."
+  ?"CSV tanlandi. Mos hudud/ekin qatori uchun AI ssenariysi avtomatik boshlanadi."
   :(canUseOfficialProvinceCrop()?"Rasmiy SIAT viloyat/ekin qatori tanlandi. CSV majburiy emas.":"CSV tanlanmagan.");
+ const modelButton=$("region-run-model");
+ if(selectedAOI&&modelButton&&!modelButton.disabled)modelButton.click();
 });
 async function loadOfficialProvinceCropSeries(){
  const selectedFeature=selectedAOI;
