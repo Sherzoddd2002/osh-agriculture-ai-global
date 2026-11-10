@@ -15,6 +15,20 @@ assert.ok(manifest.world_bank_fallback?.service_url,"World Bank feature service 
 assert.equal(manifest.world_bank_fallback?.catalog_updated,"2026-10-21");
 assert.ok(manifest.countries&&Object.keys(manifest.countries).length>100,
   "global manifest should include more than 100 countries/territories");
+assert.deepEqual(manifest.availability_catalog?.levels,["ADM0","ADM1","ADM2","ADM3","ADM4","ADM5"],
+  "the catalog must report country-specific ADM0–ADM5 availability");
+assert.ok(manifest.availability_catalog?.country_count>100,
+  "ADM availability catalog should cover more than 100 countries/territories");
+assert.ok(manifest.availability_catalog?.country_level_records>manifest.availability_catalog?.country_count,
+  "ADM availability catalog should contain multiple country-level records");
+for(const [iso,country] of Object.entries(manifest.countries)){
+ assert.ok(Array.isArray(country.available_levels),iso+" must expose available_levels");
+ assert.ok(country.availability_levels&&typeof country.availability_levels==="object",iso+" must expose availability_levels");
+ const sorted=country.available_levels.slice().sort((a,b)=>Number(a.slice(-1))-Number(b.slice(-1)));
+ assert.deepEqual(country.available_levels,sorted,iso+" ADM levels must be ordered");
+ assert.equal(country.max_available_level,country.available_levels.at(-1)||null,iso+" max ADM level must match its level list");
+ for(const level of country.available_levels)assert.match(level,/^ADM[0-5]$/,iso+" contains an unsupported ADM level");
+}
 for(const level of ["ADM1","ADM2"]){
  const summary=manifest.level_summary?.[level];
  assert.ok(summary?.country_count>=240,level+" country coverage is unexpectedly small after World Bank fallback");
