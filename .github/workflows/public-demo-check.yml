@@ -10,6 +10,7 @@ on:
       - "scripts/export_public_mapspam_global.py"
       - "scripts/verify_public_mapspam_export.py"
       - "ops/export-public-mapspam.ps1"
+      - "docs/PUBLIC_MAPSPAM_EXPORT.md"
       - ".github/workflows/public-demo-check.yml"
 
 permissions:
