@@ -128,9 +128,9 @@
     </section>
 
     <section class="view" id="view-forecast">
-      <div class="page-intro"><span class="eyebrow">YIELD FORECAST</span><h2>Hosildorlik prognozi</h2><p>Tanlangan dataset bo‘yicha tarixiy ob-havo feature'lari bilan vaqtli validatsiya va tadqiqot ssenariysi.</p></div>
+      <div class="page-intro"><span class="eyebrow">UZB · FIELD YIELD RESEARCH</span><h2>Tanlangan dala hosildorligi</h2><p>Prognoz tanlangan poligon, ekin va mavsumga biriktirilgan o‘z kuzatilgan hosil CSV’ingiz asosida baholanadi. SIAT viloyat statistikasi dala ma’lumoti o‘rnini bosa olmaydi.</p></div>
       <div class="panel forecast-form"><label>Dataset<select id="forecast-dataset"><option value="">Dataset yuklang</option></select></label><label>Maqsadli yil<input type="number" id="target-year" value="2027" min="1900" max="2200"></label><label>Model<select id="forecast-model"><option value="">Eng yaxshi OOF varianti</option><option value="LINEAR_REGRESSION">Linear Regression</option><option value="RIDGE">Ridge</option><option value="ELASTIC_NET">ElasticNet</option><option value="RANDOM_FOREST">Random Forest</option><option value="EXTRA_TREES">Extra Trees</option><option value="HIST_GRADIENT_BOOSTING">HistGradientBoosting</option></select></label><button id="run-prediction" class="primary-button">AI prognozini hisoblash</button></div>
-      <div id="prediction-result" class="panel result-panel"><div class="empty-state">Prognoz uchun datasetni tanlang va environmental processing tugaganini tekshiring.</div></div>
+      <div id="prediction-result" class="panel result-panel"><div class="empty-state">Avval shu O‘zbekiston dalasi va ekini uchun kuzatilgan hosildorlik CSV datasetini tanlang. Kamida 8 ta mos yil hamda yetarli iqlim qamrovi bo‘lmasa, model prognoz bermaydi.</div></div>
     </section>
 
     <section class="view" id="view-models">
@@ -139,7 +139,7 @@
     </section>
 
     <section class="view" id="view-environment">
-      <div class="page-intro"><span class="eyebrow">ENVIRONMENTAL DATA</span><h2>Iqlim va tuproq</h2><p>Har bir manbaning real ulanish holati, qamrovi va cheklovi ko‘rsatiladi.</p></div>
+      <div class="page-intro"><span class="eyebrow">O‘ZBEKISTON · ENVIRONMENTAL DATA</span><h2>O‘zbekiston iqlimi va tuproq</h2><p>NASA POWER, Open-Meteo, Sentinel-2, SMAP va SoilGrids manbalarining holati, qamrovi va fazoviy aniqligi alohida ko‘rsatiladi.</p></div>
       <div id="source-cards" class="source-grid"><div class="loading">Manbalar tekshirilmoqda…</div></div>
       <div class="toolbar panel environment-toolbar">
         <label>Saqlangan hudud<select id="environment-location-select"><option value="">Avval hududni saqlang</option></select></label>
