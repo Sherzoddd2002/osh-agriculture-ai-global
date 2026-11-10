@@ -580,9 +580,9 @@ async def main() -> None:
                 print(f"WARN WORLD BANK FALLBACK {level}: service query unavailable; retaining validated gbOpen packages: {exc}")
                 world_bank_fallback_summary[level] = {"country_count": 0, "feature_count": 0, "error": str(exc)}
 
-    availability_catalog, availability_failures = await build_availability_catalog(
-        client, semaphore, old_manifest
-    )
+        availability_catalog, availability_failures = await build_availability_catalog(
+            client, semaphore, old_manifest
+        )
 
     countries: dict[str, dict] = {}
     for level, packages in level_results.items():
