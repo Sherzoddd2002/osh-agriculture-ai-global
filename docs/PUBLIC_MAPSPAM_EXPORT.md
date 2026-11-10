@@ -6,7 +6,7 @@ This procedure publishes only the licensed MAPSPAM 2020 v2r2 aggregate summaries
 
 - The PostgreSQL 17.11 service is running locally on `127.0.0.1:5433`.
 - The database is `osh_agriculture_global`.
-- The read-only export connection uses the existing `osh_global_app` role and local PostgreSQL `pgpass.conf`.
+- The export uses the existing `osh_global_app` role and local PostgreSQL `pgpass.conf`; the exporter itself executes SELECT statements only.
 - Python has the repository requirements installed. The helper reuses `%LOCALAPPDATA%\OSH\AgricultureAI-Central\.venv` when it exists, or a project `.venv`, or Python on PATH.
 
 Do not put passwords, API keys, JWT secrets, or connection credentials into repository files or chat.
