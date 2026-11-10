@@ -99,6 +99,8 @@ def test_uzb_global_package_keeps_validated_199_districts(tmp_path):
     merged = merge_uzb_adm2_reference(payload, output_dir)
 
     assert merged["levels"]["ADM2"]["area_count"] == 199
+    assert merged["levels"]["ADM2"]["boundary_year"] == 2020
+    assert merged["levels"]["ADM2"]["boundary_year_varies"] is False
     assert set(merged["levels"]["ADM2"]["areas"]) == set(districts)
     assert {
         row["parent_admin_id"]
@@ -106,6 +108,22 @@ def test_uzb_global_package_keeps_validated_199_districts(tmp_path):
     } == set(provinces)
     assert merged["uzbekistan_adm2_reference"]["district_count"] == 199
     assert count_summary_rows(merged) == (1 + 14 + 199) * 46
+
+
+def test_uzb_adm2_boundary_vintage_is_derived_when_districts_vary(tmp_path):
+    output_dir, payload, _, _ = _fixture(tmp_path)
+    reference_path = output_dir.parent / "UZB_MAPSPAM_2020_ADM1_ADM2.json"
+    reference = json.loads(reference_path.read_text(encoding="utf-8"))
+    districts = reference["levels"]["ADM2"]["areas"]
+    first_two = list(districts.values())[:2]
+    first_two[0]["boundary_year"] = 2017
+    first_two[1]["boundary_year"] = 2020
+    reference_path.write_text(json.dumps(reference), encoding="utf-8")
+
+    merged = merge_uzb_adm2_reference(payload, output_dir)
+
+    assert merged["levels"]["ADM2"]["boundary_year"] is None
+    assert merged["levels"]["ADM2"]["boundary_year_varies"] is True
 
 
 def test_uzb_global_package_rejects_unknown_district_parent(tmp_path):
