@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="OSH Agriculture AI Global — FAOSTAT va MAPSPAM tarixiy ma'lumotlari, 3D globus, iqlim manbalari va ML model laboratoriyasi.">
+<meta name="description" content="OSH Agriculture AI Global — global xarita, ekinlar va hududga asoslangan agrar AI tahlili.">
 <meta name="theme-color" content="#07131f">
 <title>OSH Agriculture AI Global — Data Intelligence</title>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.css">
@@ -365,7 +365,7 @@
           <div class="rule"><b>OOF MAE</b><small>reported beside Persistence benchmark</small></div>
         </div>
       </article>
-      <div class="info-note"><b>Model status:</b> ML estimatorlari va FAOSTAT Ridge baseline kodi mavjud. Personal dataset modeli yetarli tarixiy yield va ob-havo feature'lari bo‘lsa ishlaydi. Bu hali barcha mamlakatlar/tumanlar uchun country-held-out va future-year testlardan o‘tgan universal global model emas. Kelajak ob-havosi mavjud bo‘lmasa, forecast so‘nggi 5 yillik ob-havo normasi bilan ssenariy sifatida belgilanadi.</div>
+      <div class="info-note"><b>Model status:</b> Ridge research modeli faqat tanlangan hudud va ekinga tegishli yetarli tarixiy hosildorlik kuzatuvlari hamda ob-havo feature'lari mavjud bo‘lsa ishlaydi. Bu hali barcha mamlakatlar/tumanlar uchun universal, mustaqil validatsiyadan o‘tgan global model emas. Kelajak ob-havosi mavjud bo‘lmasa, forecast so‘nggi 5 yillik ob-havo normasi bilan ssenariy sifatida belgilanadi.</div>
     </section>
 
     <section class="section" id="environment">
@@ -450,15 +450,13 @@ document.querySelectorAll(".crop-chip[data-code='whea']").forEach(x=>x.classList
 let catalog=null;
 fetch("./data/catalog.json").then(r=>{if(!r.ok)throw new Error("manifest "+r.status);return r.json();}).then(function(data){
  catalog=data;
- $("combined-records").innerHTML=comma(data.combined_record_count)+' <em>rows</em>';
- const faostat=data.datasets.find(x=>x.id==="FAOSTAT_QCL");
  const spam=data.datasets.find(x=>x.id==="mapspam-2020-v2r2");
- $("faostat-count").textContent=comma(faostat.records);
+ if(!spam)throw new Error("MAPSPAM dataset metadata missing");
+ $("combined-records").innerHTML=comma(data.combined_summary_rows||spam.records)+' <em>summaries</em>';
  $("mapspam-count").textContent=comma(spam.records);
- $("country-count").textContent=comma(faostat.countries_or_areas);
- $("faostat-crops").textContent=comma(faostat.crop_item_codes);
+ $("country-count").textContent=comma(spam.countries);
  $("mapspam-crops").textContent=comma(spam.crops);
-}).catch(function(error){console.warn("Data inventory manifest could not load",error);});
+}).catch(function(error){console.warn("Global data manifest could not load",error);});
 
 let map=null,features=[],selected=null;
 let regionSelectionActive=false,regionDrawing=false,regionDraftPoints=[],adminFeatures=[],selectedAOI=null;
