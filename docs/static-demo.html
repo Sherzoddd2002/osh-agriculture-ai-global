@@ -948,7 +948,7 @@ async function renderMapspamReference(feature,cropCode){
  const props=feature.properties||{};
  const level=String(props.shapeType||props.shape_type||"").toUpperCase();
  if(!["ADM1","ADM2"].includes(level)){
-  output.textContent="Qo‘lda chizilgan dala uchun MAPSPAM ma’muriy xulosasi mos kelmaydi. Dala tahlilida ob-havo va Sentinel-2 sahnalari ko‘rsatiladi; hosildorlik AI ssenariysi uchun aynan shu maydonning tarixiy CSV qatori kerak.";
+  output.textContent="Qo‘lda chizilgan maydon/dala uchun MAPSPAM ma’muriy xulosasi mos kelmaydi. Dala tahlilida ob-havo va Sentinel-2 sahnalari ko‘rsatiladi; hosildorlik AI ssenariysi uchun aynan shu maydonning tarixiy CSV qatori kerak.";
   return {status:"CUSTOM_AOI"};
  }
  const countryField=$("region-iso3");
