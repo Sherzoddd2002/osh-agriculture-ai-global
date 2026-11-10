@@ -8,6 +8,8 @@ on:
       - "scripts/assemble_public_frontend.py"
       - "scripts/test_public_static_demo.mjs"
       - "scripts/export_public_mapspam_global.py"
+      - "scripts/verify_public_mapspam_export.py"
+      - "ops/export-public-mapspam.ps1"
       - ".github/workflows/public-demo-check.yml"
 
 permissions:
@@ -32,5 +34,5 @@ jobs:
         run: python scripts/assemble_public_frontend.py
       - name: Verify browser JavaScript and public controls
         run: node scripts/test_public_static_demo.mjs
-      - name: Compile local MAPSPAM publisher
-        run: python -m py_compile scripts/export_public_mapspam_global.py
+      - name: Compile local MAPSPAM publisher and verifier
+        run: python -m py_compile scripts/export_public_mapspam_global.py scripts/verify_public_mapspam_export.py
