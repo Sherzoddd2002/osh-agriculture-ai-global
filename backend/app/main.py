@@ -417,7 +417,7 @@ class GlobalRasterSummaryRequest(BaseModel):
     crop_code: str = Field(min_length=4, max_length=4, pattern="^[a-zA-Z]{4}$")
     technology: str = Field(default="all", pattern="^(all|irrigated|rainfed)$")
     location_name: Optional[str] = Field(default=None, max_length=250)
-    admin_level: Optional[str] = Field(default=None, pattern="^ADM[0-5]$")
+    admin_level: Optional[str] = Field(default=None, pattern="^(ADM[0-5]|CUSTOM)$")
 
 
 @app.get("/api/v1/global-raster-catalog")
@@ -484,8 +484,12 @@ def global_raster_status():
 @app.post("/api/v1/global-raster-summary/mapspam")
 def global_raster_mapspam_summary(
     payload: GlobalRasterSummaryRequest,
-    user: User = Depends(current_user),
 ):
+    """Public, read-only MAPSPAM zonal summary for one bounded AOI.
+
+    Persistent locations, private yield datasets and model jobs still require
+    an account. This endpoint only reads the public 2020 MAPSPAM rasters.
+    """
     from .services.global_raster_catalog import (
         MAPSPAM,
         MAPSPAM_CROPS,
@@ -509,6 +513,34 @@ def global_raster_mapspam_summary(
             raise ValueError("GeoJSON geometry is empty or invalid")
         if geom.geom_type not in {"Polygon", "MultiPolygon"}:
             raise ValueError("Only Polygon or MultiPolygon geometries are supported")
+
+        # The endpoint is public because MAPSPAM is an open reference dataset.
+        # Bound request complexity so anonymous users cannot submit huge AOIs
+        # that trigger unbounded raster-window reads.
+        min_lon, min_lat, max_lon, max_lat = geom.bounds
+        if (
+            min_lon < -180 or max_lon > 180
+            or min_lat < -90 or max_lat > 90
+        ):
+            raise ValueError("AOI coordinates must be WGS84 longitude/latitude")
+        if (max_lon - min_lon) > 2.5 or (max_lat - min_lat) > 2.5:
+            raise HTTPException(
+                413,
+                "Public field analysis is limited to AOIs no wider than 2.5 degrees "
+                "in either direction. Select a smaller field polygon.",
+            )
+        polygons = [geom] if geom.geom_type == "Polygon" else list(geom.geoms)
+        vertex_count = sum(
+            len(polygon.exterior.coords)
+            + sum(len(ring.coords) for ring in polygon.interiors)
+            for polygon in polygons
+        )
+        if vertex_count > 5000:
+            raise HTTPException(
+                413,
+                "AOI contains too many vertices (maximum 5,000). Simplify the field boundary.",
+            )
+
         result = aggregate_mapspam_zone(
             geometry=mapping(geom),
             crop_band=list(crop_lookup).index(crop_code) + 1,
