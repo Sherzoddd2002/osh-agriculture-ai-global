@@ -1,34 +1,13 @@
 {
   "project": "OSH Agriculture AI Global",
-  "snapshot_date": "2026-11-08",
-  "snapshot_scope": "Verified inventory counts from the maintainer's central PostgreSQL reference database; this manifest exposes metadata only, not raw private database rows.",
-  "combined_record_count": 838919,
+  "snapshot_date": "2026-11-10",
+  "snapshot_scope": "Public demo catalogue for open spatial crop and environmental reference data. No FAOSTAT data rows or national time-series output are included in this public catalogue.",
+  "combined_summary_rows": 228620,
   "datasets": [
-    {
-      "id": "FAOSTAT_QCL",
-      "name": "FAOSTAT QCL — Crops and Livestock Products",
-      "status": "IMPORTED_TO_CENTRAL_POSTGRESQL",
-      "records": 610299,
-      "years": {
-        "first": 1961,
-        "last": 2024
-      },
-      "countries_or_areas": 202,
-      "crop_item_codes": 169,
-      "granularity": "Annual national statistical records",
-      "indicators": [
-        "Harvested area (ha)",
-        "Production (t)",
-        "Yield (t/ha)"
-      ],
-      "source": "FAO FAOSTAT",
-      "source_url": "https://www.fao.org/faostat/en/#data/QCL",
-      "caveat": "Coverage varies by country, item and year. This source is national-level history, not district-level observation."
-    },
     {
       "id": "mapspam-2020-v2r2",
       "name": "IFPRI MAPSPAM 2020 v2r2",
-      "status": "IMPORTED_AND_SUMMARIZED_IN_CENTRAL_POSTGRESQL",
+      "status": "CENTRAL_REFERENCE_ARCHIVE",
       "records": 228620,
       "reference_year": 2020,
       "countries": 153,
@@ -36,10 +15,12 @@
       "resolution_arc_minutes": 5,
       "approx_km_at_equator": 9.3,
       "variables": [
-        "physical_area",
-        "harvested_area",
-        "production",
-        "yield"
+        "physical_area_ha",
+        "harvested_area_ha",
+        "production_t",
+        "yield_t_ha_area_weighted",
+        "valid_cells",
+        "spatial_status"
       ],
       "production_systems": [
         "all",
@@ -55,18 +36,19 @@
       "source_url": "https://doi.org/10.7910/DVN/SWPENT",
       "catalog_url": "https://cgiar-climate-data-hub.github.io/catalog/spam2020/",
       "license": "CC BY-SA 4.0",
+      "attribution": "IFPRI, Global Spatially-Disaggregated Crop Production Statistics (MAPSPAM) 2020 v2r2; CC BY-SA 4.0.",
       "caveats": [
-        "2020 is a single reference year, not an annual time series or current-year measurement.",
+        "2020 is a single reference year, not an annual time series, current-year measurement or future forecast.",
         "Grid cells are approximately 9.3 km at the equator; this is not field-scale data.",
-        "Yield must be aggregated as a harvested-area-weighted mean, never by summing yield values.",
+        "Yield is a harvested-area-weighted estimate and must not be summed.",
         "ADM0, ADM1 and ADM2 are separate hierarchy summaries and must not be added as if they were mutually exclusive areas.",
-        "Boundary-vintage or parent-child reconciliation warnings must be preserved; missing raster coverage is NULL, not zero."
+        "Missing raster coverage is NULL, not zero."
       ]
     },
     {
       "id": "CROPGRIDS-2020-v1.08",
       "name": "CROPGRIDS v1.08",
-      "status": "CATALOGED_NOT_IMPORTED_TO_REFERENCE_DATABASE",
+      "status": "CATALOGUED_NOT_IMPORTED",
       "reference_year": 2020,
       "crop_count": 173,
       "resolution_km_at_equator": 5.6,
@@ -76,63 +58,70 @@
       ],
       "source_url": "https://doi.org/10.6084/m9.figshare.22491997.v9",
       "license": "CC BY 4.0",
-      "caveat": "Project catalog entry only; its files are not counted in the 838,919 imported rows."
+      "caveat": "Source catalogue only; these layers are not part of the public prediction pipeline."
     }
   ],
-  "admin_level_rows": {
-    "ADM0": 6578,
-    "ADM1": 107962,
-    "ADM2": 114080
+  "boundaries": {
+    "source": "geoBoundaries gbOpen with World Bank Official Boundaries fallback where needed",
+    "country_or_territory_codes": 245,
+    "static_admin_levels": [
+      "ADM1",
+      "ADM2"
+    ],
+    "availability_note": "The country-specific static boundary catalogue is checked in GitHub Actions. Higher ADM levels are not fabricated; their availability depends on the country source."
   },
   "models": {
-    "dataset_specific_estimators": [
-      "Linear Regression",
-      "Ridge",
-      "ElasticNet",
-      "Random Forest",
-      "Extra Trees",
-      "HistGradientBoosting"
-    ],
+    "public_browser_model": "Ridge regression research scenario",
     "baseline": "Persistence",
-    "global_faostat_baseline": "Ridge with expanding-window validation, compared against Persistence",
+    "validation": "Expanding-window out-of-fold validation",
     "requirements": {
       "minimum_yield_observations": 8,
       "minimum_usable_weather_features": 2
     },
-    "status": "Implemented research algorithms; not a validated universal global crop model."
+    "automatic_official_series": {
+      "country_iso3": "UZB",
+      "admin_level": "ADM1",
+      "crop_codes": [
+        "whea",
+        "pota",
+        "cott"
+      ],
+      "source": "SIAT official statistics, 2010–2024",
+      "note": "Production divided by sown area; not a district or field measurement."
+    },
+    "status": "Research-only. MAPSPAM 2020 is one reference year and cannot, by itself, train a temporal yield forecast. Other area/crop forecasts require the matching observed yield history."
   },
   "environmental_sources": [
     {
-      "id": "NASA_POWER",
+      "id": "OPEN_METEO_ARCHIVE",
       "status": "ACTIVE",
-      "scope": "Historical daily weather at a representative point of the selected polygon"
+      "scope": "ERA5-Land historical daily weather at the selected polygon representative point"
     },
     {
       "id": "OPEN_METEO_FORECAST",
       "status": "ACTIVE",
-      "scope": "Current weather and up to 16-day point forecast"
+      "scope": "Current weather and seven-day point forecast in the selected area workflow"
     },
     {
-      "id": "SENTINEL2_NDVI",
-      "status": "CATALOG_AVAILABLE",
-      "scope": "CDSE STAC AOI/date/cloud-filtered scene metadata; NDVI pixels not yet computed"
+      "id": "SENTINEL2_STAC",
+      "status": "ACTIVE_METADATA_ONLY",
+      "scope": "Copernicus Data Space STAC scene search by polygon, date range and cloud threshold; NDVI pixels are not computed"
     },
     {
       "id": "NASA_SMAP",
-      "status": "DATASET_AVAILABLE_AUTH_REQUIRED",
-      "scope": "NSIDC SPL3SMP_E v6 daily 9 km product; Earthdata Login and raster zonal adapter required"
+      "status": "NOT_CONNECTED",
+      "scope": "Dataset identified; Earthdata authentication and raster zonal adapter still required"
     },
     {
       "id": "SOILGRIDS",
-      "status": "WCS_AVAILABLE_REST_PAUSED",
-      "scope": "ISRIC 250 m WCS/WebDAV access route; project AOI raster adapter not connected"
+      "status": "NOT_CONNECTED",
+      "scope": "Global soil data identified; AOI raster and zonal statistics adapter still required"
     }
   ],
-  "private_data_note": "The public GitHub Pages site displays this aggregate inventory snapshot. It does not expose the central PostgreSQL records or authenticated user uploads. Full country/item series and MAPSPAM rows need the protected FastAPI/PostgreSQL service.",
   "public_static_subsets": [
     {
       "id": "UZB_MAPSPAM_2020_ADM1_ADM2",
-      "name": "Uzbekistan MAPSPAM 2020 v2r2 public district/province reference",
+      "name": "Uzbekistan MAPSPAM 2020 district/province reference",
       "status": "PUBLISHED_VIA_GITHUB_PAGES",
       "file": "mapspam/UZB_MAPSPAM_2020_ADM1_ADM2.json",
       "records": 9798,
@@ -142,87 +131,21 @@
       },
       "crops": 46,
       "source_year": 2020,
-      "resolution_arc_minutes": 5,
-      "approx_km_at_equator": 9.3,
-      "variables": [
-        "physical_area_ha",
-        "harvested_area_ha",
-        "production_t",
-        "yield_t_ha",
-        "valid_cells",
-        "spatial_status"
-      ],
-      "boundary_vintages": {
-        "ADM1": 2017,
-        "ADM2": 2020
-      },
-      "join_key": "geoBoundaries shapeID",
-      "source": "IFPRI MAPSPAM 2020 v2r2",
-      "source_url": "https://doi.org/10.7910/DVN/SWPENT",
       "license": "CC BY-SA 4.0",
+      "join_key": "geoBoundaries shapeID",
       "caveats": [
-        "This is a 2020 gridded estimate, not a current-year observation, field measurement or future forecast.",
-        "The 5 arc-minute grid is approximately 9.3 km at the equator and is not field-scale data.",
-        "NO_RASTER_CELLS rows retain NULL yield; NULL is not zero.",
-        "The ADM1 and ADM2 summaries use different boundary vintages and must not be summed as if their rows were disjoint.",
-        "The public subset is separate from the central PostgreSQL inventory count above."
-      ]
-    },
-    {
-      "id": "UZB_SIAT_ADM1_2010_2024_THREE_CROPS",
-      "name": "Uzbekistan official SIAT province production-to-sown-area series",
-      "status": "PUBLISHED_VIA_GITHUB_PAGES",
-      "files": [
-        "official-yield/UZB_ADM1_WHEA_2010_2024.json",
-        "official-yield/UZB_ADM1_CROPS_2010_2024.json"
-      ],
-      "admin_level": "ADM1",
-      "region_count": 13,
-      "crops": [
-        {
-          "code": "whea",
-          "name": "Wheat",
-          "records": 195,
-          "production_indicator": "1.03.03.0010",
-          "area_indicator": "1.03.03.0084"
-        },
-        {
-          "code": "pota",
-          "name": "Potato",
-          "records": 195,
-          "production_indicator": "1.03.03.0031",
-          "area_indicator": "1.03.03.0070"
-        },
-        {
-          "code": "cott",
-          "name": "Raw cotton",
-          "records": 195,
-          "production_indicator": "1.03.03.0073",
-          "area_indicator": "1.03.03.0069"
-        }
-      ],
-      "years": {
-        "first": 2010,
-        "last": 2024
-      },
-      "records": 585,
-      "method": "Annual production (thousand tonnes) * 1000 / planted area (hectares)",
-      "unit": "tonnes per planted hectare",
-      "license": "CC BY 4.0",
-      "sources": [
-        "https://siat.stat.uz/data/1458/?lang=en",
-        "https://siat.stat.uz/data/2761/?lang=en",
-        "https://siat.stat.uz/data/323/?lang=en",
-        "https://siat.stat.uz/data/2040/?lang=en",
-        "https://siat.stat.uz/data/2389/?lang=en",
-        "https://siat.stat.uz/data/2039/?lang=en"
-      ],
-      "caveats": [
-        "The ratio uses planted area, not harvested area, and is labelled as production-to-sown-area rather than field-measured yield.",
-        "Statistics are province-level only; no district or custom-field yield is inferred from the parent province.",
-        "Tashkent city is excluded; 13 agricultural ADM1 regions are included.",
-        "These are historical observations and AI research scenarios, not validated universal future forecasts."
+        "Historical gridded estimate, not field measurement or future forecast.",
+        "NO_RASTER_CELLS retains NULL yield.",
+        "ADM1 and ADM2 have different boundary vintages."
       ]
     }
-  ]
+  ],
+  "global_mapspam_static_export": {
+    "status": "EXPORT_TOOL_ADDED",
+    "script": "scripts/export_public_mapspam_global.py",
+    "output_directory": "docs/data/mapspam/global",
+    "format": "one gzip-compressed JSON file per country plus manifest.json",
+    "database_access": "local read-only query against the maintainer's PostgreSQL reference archive",
+    "note": "Other-country MAPSPAM files are not public until the maintainer runs the exporter, reviews the result and commits the generated packages."
+  }
 }
