@@ -31,7 +31,7 @@ ATTRIBUTION = (
     "IFPRI, Global Spatially-Disaggregated Crop Production Statistics "
     "(MAPSPAM) 2020 v2r2; licensed under CC BY-SA 4.0."
 )
-LEVELS = ("ADM1", "ADM2")
+LEVELS = ("ADM0", "ADM1", "ADM2")
 CROP_CODES = {code for code, _ in MAPSPAM_CROPS}
 DEFAULT_OUTPUT = Path(__file__).resolve().parents[1] / "docs" / "data" / "mapspam" / "global"
 
@@ -255,8 +255,8 @@ def main() -> None:
         "total_compressed_bytes": total_bytes,
         "countries": countries,
         "notes": [
-            "Only verified MAPSPAM ADM1/ADM2 administrative summaries are included.",
-            "MAPSPAM 2020 is a single reference-year gridded estimate, not a future forecast.",
+            "Only verified MAPSPAM ADM0 country, ADM1 province and ADM2 district summaries are included.",
+            "MAPSPAM 2020 is a single reference-year gridded estimate, not a future forecast. ADM0, ADM1 and ADM2 are separate hierarchy levels and must not be added together.",
             "NO_RASTER_CELLS retains NULL yield; it is never converted to zero.",
             "Use the displayed attribution and retain the CC BY-SA 4.0 licence.",
         ],
