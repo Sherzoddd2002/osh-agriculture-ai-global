@@ -183,8 +183,7 @@ function initMap(){
         'line-opacity':1
       }
     });
-    restorePendingAOI();
-    if(!selectedFeature) loadBoundaries();
+    loadBoundaries().then(()=>restorePendingAOI()).catch(error=>toast($('boundary-status'),error.message));
   });
 
   map.on('click','admin-fill',(event) => {
@@ -356,6 +355,7 @@ function populateUzbAdminSelector(){
   const currentIndex=boundaryFeatures.indexOf(selectedFeature);
   select.innerHTML='<option value="">Hududni tanlang…</option>';
   boundaryFeatures.forEach((feature,index)=>{
+    if(feature.properties?.__custom_aoi)return;
     const name=uzbekAdminName(feature);
     if(filter&&!name.toLocaleLowerCase('uz').includes(filter))return;
     const option=document.createElement('option');
