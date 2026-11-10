@@ -146,7 +146,7 @@
       <a href="#environment" title="Iqlim manbalari" aria-label="Iqlim manbalari"><span class="nav-icon">☁</span><span class="nav-text">Iqlim manbalari</span></a>
     </nav>
   </div>
-  <div class="side-card"><small>REFERENCE DATA SNAPSHOT</small><b>838,919 ta yozuv</b><p>FAOSTAT QCL + MAPSPAM · 08 Nov 2026</p></div>
+  <div class="side-card"><small>GLOBAL MAPSPAM REFERENCE</small><b>228,620 xulosa</b><p>IFPRI MAPSPAM · 2020 · 46 ekin</p></div>
   <div class="side-foot">Research workspace · v1.0</div>
 </aside>
 
@@ -165,19 +165,19 @@
         <div class="hero-actions"><a class="btn-primary" href="#archive">Data arxivini ko‘rish <b>→</b></a><a class="btn-secondary" href="#models">Model laboratoriyasi <span>↗</span></a></div>
       </div>
       <div class="hero-panel">
-        <small>REFERENCE DATA INVENTORY · 08 NOV 2026</small>
-        <strong id="combined-records">838,919 <em>rows</em></strong>
-        <p>Bu ikki manba bo‘yicha inventarizatsiya soni. Public dashboard individual xom qatorlarni yuklamaydi; raqam faqat mavjud ma’lumotlar qamrovini ko‘rsatadi.</p>
+        <small>MAPSPAM ADMINISTRATIVE REFERENCE · 2020</small>
+        <strong id="combined-records">228,620 <em>summaries</em></strong>
+        <p>153 mamlakat, 46 ekin va bir necha ma’muriy daraja bo‘yicha tarixiy fazoviy xulosalar. Har bir hududda barcha ekinlar uchun yaroqli raster katagi mavjud bo‘lavermaydi.</p>
       </div>
     </section>
 
     <div class="metrics">
-      <article class="metric green"><div class="label">FAOSTAT QCL</div><strong id="faostat-count">610,299</strong><span>reference inventory · 1961–2024</span></article>
-      <article class="metric"><div class="label">MAPSPAM summaries</div><strong id="mapspam-count">228,620</strong><span>reference inventory · 2020</span></article>
-      <article class="metric gold"><div class="label">FAOSTAT coverage</div><strong id="country-count">202</strong><span>countries / reporting areas</span></article>
-      <article class="metric"><div class="label">Crop catalogue</div><strong><span id="faostat-crops" style="font-size:29px;color:var(--text)">169</span> + <span id="mapspam-crops" style="font-size:29px;color:var(--mint)">46</span></strong><span>FAOSTAT item codes + MAPSPAM crop layers</span></article>
+      <article class="metric green"><div class="label">Global ADM boundaries</div><strong>245</strong><span>countries / areas · ADM1 + ADM2 catalog</span></article>
+      <article class="metric"><div class="label">MAPSPAM summaries</div><strong id="mapspam-count">228,620</strong><span>historical administrative estimates · 2020</span></article>
+      <article class="metric gold"><div class="label">MAPSPAM coverage</div><strong id="country-count">153</strong><span>countries in the reference archive</span></article>
+      <article class="metric"><div class="label">Crop catalogue</div><strong><span id="mapspam-crops" style="font-size:29px;color:var(--mint)">46</span></strong><span>crop layers · physical area, harvest, production and yield</span></article>
     </div>
-    <div class="info-note"><b>Public demo:</b> butun sayt GitHub Pages statik fayllari orqali ishlaydi; foydalanuvchi brauzeri hech qanday Fly/FastAPI serveriga ulanmaydi. Viloyat va tuman poligonlari GitHub Actions orqali tekshirilib, saytga GeoJSON sifatida joylanadi. Tanlangan hududning ob-havosi Open-Meteo’dan olinadi; Sentinel-2 sahnalari CDSE katalogidan qidiriladi; haqiqiy hosildorlik CSV fayli brauzerda Ridge ML ssenariysiga uzatiladi va serverga yuklanmaydi. Markaziy 838,919 yozuvning maxfiy xom qatorlari public saytga chiqarilmaydi. NDVI rasteri, SMAP va SoilGrids hali model feature’lariga ulanmagan.</div>
+    <div class="info-note"><b>Public demo:</b> butun sayt GitHub Pages statik fayllari orqali ishlaydi; foydalanuvchi brauzeri hech qanday Fly/FastAPI serveriga ulanmaydi. Viloyat va tuman poligonlari GitHub Actions orqali tekshirilib, saytga GeoJSON sifatida joylanadi. Tanlangan hududning ob-havosi Open-Meteo’dan olinadi; Sentinel-2 sahnalari CDSE katalogidan qidiriladi; haqiqiy hosildorlik CSV fayli brauzerda Ridge ML ssenariysiga uzatiladi va serverga yuklanmaydi. Sayt faqat e’lon qilishga ruxsat berilgan, manbasi ko‘rsatilgan statik ma’lumot paketlarini oladi. NDVI rasteri, SMAP va SoilGrids hali model feature’lariga ulanmagan.</div>
 
     <section class="section" id="globe">
       <div class="section-head"><div><div class="eyebrow">01 / GEOSPATIAL WORKSPACE</div><h2>Global 3D xarita</h2><p>Globusda mamlakatni tanlang, keyin O‘zbekistonning barcha viloyat (ADM1) yoki tuman (ADM2) poligonlarini xaritada oching. Zarur bo‘lsa, dala chegarasini o‘zingiz chizing.</p></div><span class="section-index">COUNTRY SELECTION</span></div>
@@ -189,16 +189,16 @@
         </article>
         <aside class="panel selection">
           <div><div class="eyebrow">SELECTED COUNTRY</div><h3 id="country-name">O‘zbekiston</h3><p>Tanlangan mamlakat bo‘yicha manbalar va dataset qamrovi haqida ma’lumot.</p></div>
-          <div class="selection-box"><small>COUNTRY ISO-3</small><strong id="country-code">UZB</strong><span>FAOSTAT QCL archive · annual national data</span></div>
+          <div class="selection-box"><small>COUNTRY ISO-3</small><strong id="country-code">UZB</strong><span>Global ADM boundary · MAPSPAM 2020 reference</span></div>
           <div class="mini-facts">
-            <div class="mini-fact"><small>FAOSTAT countries</small><b>202</b></div>
-            <div class="mini-fact"><small>Archive period</small><b>1961–2024</b></div>
+            <div class="mini-fact"><small>Global ADM coverage</small><b>245</b></div>
+            <div class="mini-fact"><small>MAPSPAM countries</small><b>153</b></div>
             <div class="mini-fact"><small>MAPSPAM snapshot</small><b>2020</b></div>
             <div class="mini-fact"><small>MAPSPAM countries</small><b>153</b></div>
           </div>
           <div class="field"><label for="crop-select">MAPSPAM crop layer · barcha 46 ta ekin</label><select id="crop-select"><option value="whea">Wheat</option></select></div>
           <div class="selection-actions"><a class="btn-primary" href="#spatial">46 ta ekin qatlamini ko‘rish →</a><a class="btn-secondary" href="#archive">Dataset qamroviga o‘tish ↗</a></div>
-          <div class="hint">Muhim: FAOSTAT tarixiy qatorlari milliy darajadagi statistikadir. MAPSPAM 2020 rasteridan hisoblangan admin xulosalari esa alohida fazoviy qatlam; xaritadagi mamlakat tanlovi o‘z-o‘zidan tuman bo‘yicha aniq qiymatni anglatmaydi.</div>
+          <div class="hint">Muhim: MAPSPAM 2020 tarixiy fazoviy bahodir. Mamlakatni bosish ma’muriy chegaralarni yuklaydi; keyin viloyat yoki tumanni tanlasangiz shu hududning mavjud ma’lumotlari ochiladi.</div>
         </aside>
       </div>
     </section>
@@ -286,34 +286,34 @@
     </section>
 
     <section class="section" id="archive">
-      <div class="section-head"><div><div class="eyebrow">02 / HISTORICAL DATA LIBRARY</div><h2>Biz yig‘gan ma’lumotlar</h2><p>Quyidagi raqamlar 2026-11-08 kuni tekshirilgan markaziy PostgreSQL reference bazasi inventarizatsiyasidan olingan.</p></div><span class="section-index">838,919 TOTAL ROWS</span></div>
+      <div class="section-head"><div><div class="eyebrow">02 / GLOBAL AGRICULTURE DATA</div><h2>Global agrar ma’lumotlar kutubxonasi</h2><p>Ochiq manbalardagi fazoviy ekin qatlamlari, hududiy chegaralar va tanlangan hududga tegishli iqlim ma’lumotlari.</p></div><span class="section-index">MAPSPAM · CROPGRIDS · WEATHER</span></div>
       <div class="archive-grid">
         <article class="panel dataset-card">
-          <div class="dataset-top"><small>FAO · FAOSTAT QCL</small><span class="data-type">ANNUAL STATISTICS</span></div>
-          <h3>Crops and Livestock Products</h3>
-          <p>Milliy ekin statistikasi: yig‘ib olingan maydon, ishlab chiqarish hajmi va hosildorlik. Har bir mamlakat/ekin uchun mavjud yillar farq qilishi mumkin.</p>
-          <div class="dataset-number">610,299 <span>records stored</span></div>
-          <div class="facts-grid"><div class="fact"><b>202</b><small>countries / areas</small></div><div class="fact"><b>169</b><small>item codes</small></div><div class="fact"><b>1961–2024</b><small>year range</small></div></div>
-          <div class="dataset-footer"><a href="https://www.fao.org/faostat/en/#data/QCL" target="_blank" rel="noopener">FAOSTAT QCL source ↗</a><span>National-level · annual</span></div>
+          <div class="dataset-top"><small>IFPRI · MAPSPAM 2020 v2r2</small><span class="data-type">SPATIAL CROP DATA</span></div>
+          <h3>Global crop production reference</h3>
+          <p>46 ekin bo‘yicha fizik maydon, yig‘ib olingan maydon, ishlab chiqarish va hosildorlikning 2020-yil fazoviy baholari.</p>
+          <div class="dataset-number" id="mapspam-count">228,620 <span>administrative summaries</span></div>
+          <div class="facts-grid"><div class="fact"><b id="country-count">153</b><small>countries</small></div><div class="fact"><b id="mapspam-crops">46</b><small>crop layers</small></div><div class="fact"><b>5′</b><small>grid resolution</small></div></div>
+          <div class="dataset-footer"><a href="https://cgiar-climate-data-hub.github.io/catalog/spam2020/" target="_blank" rel="noopener">MAPSPAM data hub ↗</a><span>Reference year · 2020</span></div>
         </article>
         <article class="panel dataset-card">
-          <div class="dataset-top"><small>IFPRI · MAPSPAM 2020 v2r2</small><span class="data-type">SPATIAL RASTER</span></div>
-          <h3>Global Spatially-Disaggregated Crop Production</h3>
-          <p>46 ekin uchun fizik maydon, yig‘ib olingan maydon, ishlab chiqarish va hosildorlik. Sug‘oriladigan, lalmikor va jami texnologiya qatlamlari mavjud.</p>
-          <div class="dataset-number">228,620 <span>admin summary rows</span></div>
-          <div class="facts-grid"><div class="fact"><b>153</b><small>countries</small></div><div class="fact"><b>46</b><small>crop layers</small></div><div class="fact"><b>5′</b><small>grid resolution</small></div></div>
-          <div class="dataset-footer"><a href="https://cgiar-climate-data-hub.github.io/catalog/spam2020/" target="_blank" rel="noopener">MAPSPAM data hub ↗</a><span>Reference year · 2020 only</span></div>
-        </article>
-        <article class="panel dataset-card">
-          <div class="dataset-top"><small>CROPGRIDS v1.08</small><span class="data-type">CATALOGED · NOT IMPORTED</span></div>
+          <div class="dataset-top"><small>CROPGRIDS v1.08</small><span class="data-type">SOURCE CATALOGUE</span></div>
           <h3>Global crop area maps</h3>
-          <p>Project source catalogue: 2020-yil uchun ekin fizik maydoni va yig‘ib olingan maydon qatlamlari. Bu ma’lumot markaziy bazaga import qilingan satrlar soniga kiritilmagan.</p>
+          <p>173 ekin uchun fizik va yig‘ib olingan maydon qatlamlari kataloglangan. Ushbu fayllar hozircha saytning prediction modeliga ulanmagan.</p>
           <div class="dataset-number">173 <span>crop layers in source</span></div>
           <div class="facts-grid"><div class="fact"><b>2020</b><small>reference year</small></div><div class="fact"><b>5.6 km</b><small>at equator</small></div><div class="fact"><b>2</b><small>area variables</small></div></div>
-          <div class="dataset-footer"><a href="https://doi.org/10.6084/m9.figshare.22491997.v9" target="_blank" rel="noopener">CROPGRIDS source ↗</a><span>Not included in DB row totals</span></div>
+          <div class="dataset-footer"><a href="https://doi.org/10.6084/m9.figshare.22491997.v9" target="_blank" rel="noopener">CROPGRIDS source ↗</a><span>Catalogued · not imported</span></div>
+        </article>
+        <article class="panel dataset-card">
+          <div class="dataset-top"><small>OPEN-METEO · COPERNICUS</small><span class="data-type">LIVE ENVIRONMENT</span></div>
+          <h3>Weather and satellite scene discovery</h3>
+          <p>Tanlangan hudud markazidan tarixiy ERA5-Land ob-havo qatori, qisqa muddatli prognoz va Sentinel-2 sahna metama’lumotlari olinadi.</p>
+          <div class="dataset-number">LIVE <span>area-based lookup</span></div>
+          <div class="facts-grid"><div class="fact"><b>ERA5-Land</b><small>weather history</small></div><div class="fact"><b>7 days</b><small>weather outlook</small></div><div class="fact"><b>Sentinel-2</b><small>scene catalogue</small></div></div>
+          <div class="dataset-footer"><a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo ↗</a><span>CDSE STAC · metadata only</span></div>
         </article>
       </div>
-      <div class="info-note"><b>Talqin qilish:</b> FAOSTAT QCL — milliy tarixiy statistika; u tuman ma’lumoti emas. MAPSPAM — 2020-yilga tegishli taxminiy gridded qatlam; joriy yil yoki dala o‘lchovi emas. Ikki dataset bir-birining o‘rnini bosmaydi, ular turli miqyosdagi manbalarni birlashtirish uchun ishlatiladi.</div>
+      <div class="info-note"><b>Ma’lumotni to‘g‘ri talqin qilish:</b> MAPSPAM 2020 — bitta reference yil uchun gridded estimate; u 2026-yil hosili, dala o‘lchovi yoki kelajak bashorati emas. 5 arc-minute grid ekvatorda taxminan 9.3 km. Open-Meteo tarixiy ob-havo va qisqa muddatli weather forecast beradi; Sentinel-2 ulanishi hozircha sahna metadata qidiruvi, NDVI raster hisob-kitobi emas.</div>
     </section>
 
     <section class="section" id="spatial">
@@ -347,13 +347,13 @@
         <article class="model-card"><div class="model-symbol">05 · ENSEMBLE</div><b>Extra Trees</b><small>Randomized tree ensemble</small></article>
         <article class="model-card"><div class="model-symbol">06 · BOOSTING</div><b>HistGradientBoosting</b><small>Histogram-based gradient boosting</small></article>
         <article class="model-card benchmark-card"><div class="model-symbol">BENCHMARK</div><b>Persistence</b><small>Oldingi hosil yilini benchmark sifatida ishlatish</small></article>
-        <article class="model-card benchmark-card"><div class="model-symbol">GLOBAL BASELINE</div><b>Ridge + Persistence</b><small>FAOSTAT milliy/global tarixiy trend ssenariysi</small></article>
+        <article class="model-card benchmark-card"><div class="model-symbol">GLOBAL BASELINE</div><b>Ridge + Persistence</b><small>Hududga tegishli real tarixiy kuzatuvlar talab qilinadi</small></article>
         <article class="model-card"><div class="model-symbol">VALIDATION</div><b>Expanding-window OOF</b><small>Vaqt tartibi saqlanadi; kelajak ma’lumoti train’ga o‘tmaydi</small></article>
       </div>
       <article class="panel pipeline">
         <h3>Data → feature → model → benchmark → scenario</h3>
         <div class="pipeline-steps">
-          <div class="pipe-step"><small>01 · INPUT</small><b>FAOSTAT / CSV</b><span>Yield, area, production</span></div>
+          <div class="pipe-step"><small>01 · INPUT</small><b>SIAT / CSV</b><span>Yield, area, production</span></div>
           <div class="pipe-step"><small>02 · ENRICH</small><b>Weather features</b><span>Temp, rain, GDD, hot/frost days</span></div>
           <div class="pipe-step"><small>03 · QA</small><b>Time validation</b><span>Missingness, aligned years, leakage checks</span></div>
           <div class="pipe-step"><small>04 · COMPARE</small><b>OOF MAE</b><span>Six estimators vs Persistence</span></div>
@@ -799,6 +799,9 @@ function selectRegionFeature(feature,sourceLabel){
   const bounds=regionBounds(feature);
   if(bounds)map.fitBounds(bounds,{padding:70,maxZoom:18,duration:850});
  }
+ $("region-status").textContent="Hudud tanlandi. Iqlim, sun’iy yo‘ldosh sahnalari va mavjud ekin ma’lumotlari avtomatik yuklanmoqda…";
+ const analyzeButton=$("region-analyze");
+ if(center&&analyzeButton)analyzeButton.click();
 }
 function updateRegionDraft(){
  if(!map||!map.getSource("region-draft"))return;
