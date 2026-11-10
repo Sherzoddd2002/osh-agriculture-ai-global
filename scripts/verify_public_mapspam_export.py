@@ -80,6 +80,27 @@ def verify_package(path: Path, iso: str, metadata: dict) -> tuple[int, int]:
     require(int(metadata.get("row_count", -1)) == total_rows,
             f"{iso}: manifest row_count mismatch")
     require(total_rows > 0, f"{iso}: no summary rows")
+    if iso == "UZB":
+        adm1 = levels.get("ADM1") or {}
+        adm2 = levels.get("ADM2") or {}
+        provinces = adm1.get("areas") or {}
+        districts = adm2.get("areas") or {}
+        require(len(provinces) == 14, "UZB: ADM1 must contain all 14 provinces")
+        require(len(districts) == 199, "UZB: ADM2 must contain all 199 districts")
+        require(int(adm2.get("area_count", -1)) == 199, "UZB: ADM2 manifest area_count mismatch")
+        require(int(adm2.get("crop_count", -1)) == 46, "UZB: ADM2 must declare 46 crop layers")
+        parent_ids = {
+            str(area.get("parent_admin_id") or "").strip()
+            for area in districts.values()
+        }
+        require("" not in parent_ids, "UZB: one or more districts lack an ADM1 parent ID")
+        require(parent_ids == set(provinces),
+                "UZB: district parent IDs must match exactly the 14 ADM1 provinces")
+        require(
+            payload.get("uzbekistan_adm2_reference", {}).get("district_count") == 199,
+            "UZB: package does not record the validated 199-district reference merge",
+        )
+
     return total_areas, total_rows
 
 

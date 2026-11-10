@@ -11,6 +11,8 @@ on:
       - "scripts/test_public_static_demo.mjs"
       - "scripts/export_public_mapspam_global.py"
       - "scripts/verify_public_mapspam_export.py"
+      - "tests/test_public_mapspam_export.py"
+      - ".github/workflows/installer-validation.yml"
       - "ops/export-public-mapspam.ps1"
       - "docs/PUBLIC_MAPSPAM_EXPORT.md"
       - ".github/workflows/public-demo-check.yml"
@@ -39,3 +41,7 @@ jobs:
         run: node scripts/test_public_static_demo.mjs
       - name: Compile local MAPSPAM publisher and verifier
         run: python -m py_compile scripts/export_public_mapspam_global.py scripts/verify_public_mapspam_export.py
+      - name: Install regression-test dependencies
+        run: python -m pip install -r requirements.txt pytest
+      - name: Test Uzbekistan ADM2 preservation
+        run: python -m pytest -q tests/test_public_mapspam_export.py

@@ -38,6 +38,10 @@ The exporter creates:
 
 The verifier checks the source year, country identity, MAPSPAM licence, all 46 crop entries for each area, summary counts, physical/harvested area, production, valid raster cells, and the `NO_RASTER_CELLS` rule (`yield_t_ha` must remain NULL, not zero).
 
+### Uzbekistan ADM2 preservation
+
+The central global archive currently supplies Uzbekistan's ADM0 and 14 ADM1 summaries, while the already-published and independently validated `UZB_MAPSPAM_2020_ADM1_ADM2.json` contains all 199 ADM2 districts. The exporter merges that validated ADM2 level into `UZB.json.gz`, after verifying the MAPSPAM dataset metadata, 46 crop rows per district, all 199 districts, and exact parent-ID coverage across the 14 ADM1 provinces. The verifier fails closed if any of those checks do not pass. This prevents the compact global package from accidentally hiding the existing Uzbekistan district data.
+
 ## Review before publishing
 
 Review the manifest, package count and compressed size. Confirm that only `docs/data/mapspam/global/` is being staged:
