@@ -1,0 +1,39 @@
+name: Public dashboard pull-request QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/static-demo.html"
+      - "scripts/assemble_public_frontend.py"
+      - "scripts/test_public_static_demo.mjs"
+      - "scripts/export_public_mapspam_global.py"
+      - "scripts/verify_public_mapspam_export.py"
+      - "ops/export-public-mapspam.ps1"
+      - "docs/PUBLIC_MAPSPAM_EXPORT.md"
+      - ".github/workflows/public-demo-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  static-dashboard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Assemble GitHub Pages homepage
+        run: python scripts/assemble_public_frontend.py
+      - name: Verify browser JavaScript and public controls
+        run: node scripts/test_public_static_demo.mjs
+      - name: Compile local MAPSPAM publisher and verifier
+        run: python -m py_compile scripts/export_public_mapspam_global.py scripts/verify_public_mapspam_export.py

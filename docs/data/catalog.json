@@ -141,11 +141,16 @@
     }
   ],
   "global_mapspam_static_export": {
-    "status": "EXPORT_TOOL_ADDED",
+    "status": "READY_FOR_LOCAL_EXPORT",
     "script": "scripts/export_public_mapspam_global.py",
     "output_directory": "docs/data/mapspam/global",
     "format": "one gzip-compressed JSON file per country plus manifest.json",
     "database_access": "local read-only query against the maintainer's PostgreSQL reference archive",
-    "note": "Other-country MAPSPAM files are not public until the maintainer runs the exporter, reviews the result and commits the generated packages."
+    "note": "The exporter creates a separate gzip JSON package and manifest from the maintainer's local PostgreSQL reference archive. Packages become public only after local validation and commit; FAOSTAT rows, user uploads, credentials and raw raster pixels are not exported.",
+    "levels": [
+      "ADM0",
+      "ADM1",
+      "ADM2"
+    ]
   }
 }
