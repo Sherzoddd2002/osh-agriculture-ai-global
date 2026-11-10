@@ -53,6 +53,9 @@ jobs:
           node --check frontend/i18n.js
           node bin/cli.js --help
 
+      - name: Validate Uzbekistan public frontend contract
+        run: node scripts/test_public_frontend.mjs
+
       - name: Validate central PowerShell scripts
         if: runner.os == 'Windows'
         shell: pwsh
