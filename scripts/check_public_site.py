@@ -293,4 +293,4 @@ if global_manifest.is_file():
 else:
     print("INFO: global ADM catalog test is deferred; no build artifact exists in this minimal QA checkout.")
 
-print("PASS: dashboard IDs, Pages-only API wiring, 46 crops, localized ADM names, polygon centroids and JavaScript syntax")
+print("PASS: static Pages dashboard, 46 crops, localized ADM names, polygon centroids and JavaScript syntax")
