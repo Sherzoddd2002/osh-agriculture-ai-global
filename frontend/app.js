@@ -58,7 +58,7 @@ async function api(path, options={}){
   return body;
 }
 function toast(el,msg){if(el)el.textContent=msg;}
-function openView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===`view-${name}`));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===name));const labels={overview:'Bosh sahifa',regions:'Hududiy tahlil',forecast:'Hosildorlik prognozi',models:'Model laboratoriyasi',environment:'Iqlim va tuproq',data:'Ma’lumotlar va hisobotlar'};$('page-title').textContent=labels[name]||'OSH Global';if(name==='regions'&&map)setTimeout(()=>map.resize(),100);if(name==='environment'){loadSources();if(token&&selectedLocationId)loadClimate(selectedLocationId);}if(name==='data'){loadDatasets();loadGlobalCropCatalog();}if(name==='forecast')loadDatasets();}
+function openView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===`view-${name}`));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===name));const labels={overview:'Bosh sahifa',regions:'Hududiy tahlil',forecast:'Hosildorlik prognozi',models:'Model laboratoriyasi',environment:'Iqlim va tuproq',data:'Ma’lumotlar va hisobotlar'};$('page-title').textContent=labels[name]||'OSH Global';if(name==='regions'&&map)setTimeout(()=>map.resize(),100);if(name==='environment'){loadSources();if(token&&selectedLocationId)loadClimate(selectedLocationId);}if(name==='data'){loadDatasets();loadGlobalCropCatalog();loadUzbekOfficialYield();}if(name==='forecast')loadDatasets();}
 
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>openView(b.dataset.view)));
 document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>openView(b.dataset.goto)));
@@ -827,6 +827,87 @@ async function loadSources(){try{
 }catch(e){$('source-cards').textContent=e.message;}}
 
 
+
+let uzbOfficialYieldCache = null;
+const UZB_SIAT_SOURCES = {
+  whea: [
+    ["Bug‘doy yalpi hosili", "https://siat.stat.uz/data/1458/"],
+    ["Bug‘doy ekilgan maydoni", "https://siat.stat.uz/data/2761/"]
+  ],
+  pota: [
+    ["Kartoshka yalpi hosili", "https://siat.stat.uz/data/323/"],
+    ["Kartoshka ekilgan maydoni", "https://siat.stat.uz/data/2040/"]
+  ],
+  cott: [
+    ["Xom paxta yalpi hosili", "https://siat.stat.uz/data/2389/"],
+    ["Paxta ekilgan maydoni", "https://siat.stat.uz/data/2039/"]
+  ]
+};
+async function loadUzbekOfficialYield(){
+  const status=$('uzb-official-yield-status');
+  if(uzbOfficialYieldCache){populateUzbekOfficialYieldControls();return;}
+  try{
+    toast(status,'SIAT rasmiy statistik qatorlari yuklanmoqda…');
+    const [wheatResponse,cropsResponse]=await Promise.all([
+      fetch('./data/official-yield/UZB_ADM1_WHEA_2010_2024.json',{cache:'no-cache'}),
+      fetch('./data/official-yield/UZB_ADM1_CROPS_2010_2024.json',{cache:'no-cache'})
+    ]);
+    if(!wheatResponse.ok||!cropsResponse.ok)throw new Error('SIAT public snapshot fayllari topilmadi');
+    const wheat=await wheatResponse.json();
+    const crops=await cropsResponse.json();
+    if(wheat.country_iso3!=='UZB'||wheat.admin_level!=='ADM1'||wheat.crop_code!=='whea'||!Array.isArray(wheat.regions))throw new Error('SIAT bug‘doy snapshot identifikatsiyasi noto‘g‘ri');
+    if(crops.country_iso3!=='UZB'||crops.admin_level!=='ADM1'||!crops.crops)throw new Error('SIAT ekin snapshot identifikatsiyasi noto‘g‘ri');
+    uzbOfficialYieldCache={
+      years:wheat.years||[2010,2024],
+      geographic_coverage:wheat.geographic_coverage||crops.geographic_coverage||'13 ta qishloq xo‘jaligi hududi',
+      crops:{
+        whea:{...wheat,crop_code:'whea',crop_name_uz:wheat.crop_name_uz||'Bug‘doy'},
+        ...(crops.crops||{})
+      }
+    };
+    populateUzbekOfficialYieldControls();
+  }catch(error){
+    toast(status,'SIAT viloyat snapshoti hozircha yuklanmadi. Rasmiy manba havolalari orqali tekshiring: '+error.message);
+    $('uzb-official-yield-table').innerHTML='<div class="empty-state">SIAT fayllari GitHub Pages build paketida mavjud bo‘lganda bu yerda rasmiy viloyat qatori ko‘rsatiladi. Yuqoridagi rasmiy SIAT havolalari ochiq.</div>';
+  }
+}
+function populateUzbekOfficialYieldControls(){
+  if(!uzbOfficialYieldCache)return;
+  const cropSelect=$('uzb-official-crop');
+  const regionSelect=$('uzb-official-region');
+  const cropCode=cropSelect.value||'whea';
+  const crop=uzbOfficialYieldCache.crops[cropCode]||uzbOfficialYieldCache.crops.whea;
+  const previousRegion=regionSelect.value;
+  const regions=(crop.regions||[]).slice().sort((a,b)=>String(a.name_uz).localeCompare(String(b.name_uz),'uz'));
+  regionSelect.innerHTML=regions.map(region=>'<option value="'+escapeHtml(region.admin_code)+'">'+escapeHtml(region.name_uz)+'</option>').join('');
+  if(regions.some(region=>String(region.admin_code)===previousRegion))regionSelect.value=previousRegion;
+  renderUzbekOfficialYield();
+}
+function renderUzbekOfficialYield(){
+  if(!uzbOfficialYieldCache)return;
+  const cropCode=$('uzb-official-crop').value||'whea';
+  const regionCode=$('uzb-official-region').value;
+  const crop=uzbOfficialYieldCache.crops[cropCode];
+  const region=(crop?.regions||[]).find(item=>String(item.admin_code)===regionCode);
+  const status=$('uzb-official-yield-status');
+  const table=$('uzb-official-yield-table');
+  if(!crop||!region){
+    toast(status,'Tanlangan ekin va viloyat uchun SIAT qatori topilmadi.');
+    table.innerHTML='';
+    return;
+  }
+  const rows=(region.records||[]).slice().sort((a,b)=>Number(a.year)-Number(b.year));
+  const fmt=(value,digits=2)=>value===null||value===undefined||!Number.isFinite(Number(value))?'—':Number(value).toLocaleString('uz-UZ',{minimumFractionDigits:digits,maximumFractionDigits:digits});
+  table.innerHTML=rows.length
+    ?'<table><thead><tr><th>Yil</th><th>Hosildorlik (t/ga)</th><th>Yalpi hosil (t)</th><th>Ekilgan maydon (ga)</th></tr></thead><tbody>'+
+      rows.map(row=>'<tr><td>'+escapeHtml(row.year)+'</td><td>'+fmt(row.yield,3)+'</td><td>'+fmt(row.production_t,0)+'</td><td>'+fmt(row.sown_area_ha,0)+'</td></tr>').join('')+
+      '</tbody></table>'
+    :'<div class="empty-state">Bu viloyat uchun kuzatuv topilmadi.</div>';
+  const sourceLinks=(UZB_SIAT_SOURCES[cropCode]||[]).map(([label,url])=>'<a href="'+url+'" target="_blank" rel="noopener">'+escapeHtml(label)+'</a>').join(' · ');
+  toast(status,`SIAT · O‘zbekiston · ${region.name_uz} · ${crop.crop_name_uz||cropCode} · ${rows.length} yillik kuzatuv · ${uzbOfficialYieldCache.geographic_coverage}. ${sourceLinks}`);
+}
+$('uzb-official-crop').addEventListener('change',populateUzbekOfficialYieldControls);
+$('uzb-official-region').addEventListener('change',renderUzbekOfficialYield);
 
 let globalCropCatalogLoaded = false;
 
