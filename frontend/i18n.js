@@ -8,6 +8,36 @@
     ["Model laboratoriyasi", "Model laboratory", "Лаборатория моделей"],
     ["Iqlim va tuproq", "Climate & soil", "Климат и почва"],
     ["Ma’lumotlar va hisobotlar", "Data & reports", "Данные и отчёты"],
+    ["O‘zbekiston xaritasi", "Uzbekistan map", "Карта Узбекистана"],
+    ["O‘zbekiston · viloyatdan dalagacha", "Uzbekistan · from province to field", "Узбекистан · от области до поля"],
+    ["Viloyat, tuman yoki o‘z dalangizni tanlang", "Choose a province, district, or your own field", "Выберите область, район или своё поле"],
+    ["O‘zbekiston Respublikasi", "Republic of Uzbekistan", "Республика Узбекистан"],
+    ["Viloyat / tuman qidirish", "Search province / district", "Поиск области / района"],
+    ["Hududni ro‘yxatdan tanlang", "Choose an area from the list", "Выберите территорию из списка"],
+    ["Viloyat / respublika / Toshkent shahri", "Province / republic / Tashkent city", "Область / республика / город Ташкент"],
+    ["Tuman va shahar", "District and city", "Район и город"],
+    ["O‘zbekiston ADM1/ADM2 chegaralari tekshirilmoqda…", "Checking Uzbekistan ADM1/ADM2 boundaries…", "Проверка границ ADM1/ADM2 Узбекистана…"],
+    ["SIAT · RASMIY STATISTIKA", "SIAT · OFFICIAL STATISTICS", "SIAT · ОФИЦИАЛЬНАЯ СТАТИСТИКА"],
+    ["Viloyatlar bo‘yicha rasmiy hosildorlik manbalari", "Official provincial yield sources", "Официальные источники урожайности по областям"],
+    ["Bug‘doy", "Wheat", "Пшеница"],
+    ["Kartoshka", "Potato", "Картофель"],
+    ["Xom paxta", "Seed cotton", "Хлопок-сырец"],
+    ["O‘zbekistonning mahalliy geoma’lumot manbalari", "Uzbekistan local geospatial data sources", "Местные геоданные Узбекистана"],
+    ["Vazirlik geoaxborot tizimi", "Ministry geospatial portal", "Геоинформационный портал министерства"],
+    ["Ochiq ma’lumotlar reyestri", "Open data registry", "Реестр открытых данных"],
+    ["Rasmiy statistika va dala ma’lumotlari", "Official statistics and field data", "Официальная статистика и полевые данные"],
+    ["O‘zbekiston · FAOSTAT tarixiy qatori", "Uzbekistan · FAOSTAT historical series", "Узбекистан · исторический ряд FAOSTAT"],
+    ["Rasmiy SIAT viloyat qatori yuklanmoqda…", "Loading official SIAT provincial series…", "Загрузка официальных областных рядов SIAT…"],
+    ["SIAT viloyat snapshoti hozircha yuklanmadi.", "The SIAT provincial snapshot is not available yet.", "Областной снимок SIAT пока недоступен."],
+    ["Ekin", "Crop", "Культура"],
+    ["Yil", "Year", "Год"],
+    ["Hosildorlik (t/ga)", "Yield (t/ha)", "Урожайность (т/га)"],
+    ["Yalpi hosil (t)", "Gross production (t)", "Валовой сбор (т)"],
+    ["Ekilgan maydon (ga)", "Sown area (ha)", "Посевная площадь (га)"],
+    ["Bu viloyat statistik nisbati, dala o‘lchovi emas.", "This is a provincial statistical ratio, not a field measurement.", "Это областной статистический показатель, а не измерение на поле."],
+    ["Dala konturini O‘zbekiston ichida chizing.", "Draw the field boundary inside Uzbekistan.", "Нарисуйте контур поля внутри Узбекистана."],
+    ["O‘zbekiston bazaviy xaritasi", "Uzbekistan base map", "Базовая карта Узбекистана"],
+    ["O‘zbekiston xaritasini ochish", "Open Uzbekistan map", "Открыть карту Узбекистана"],
     ["Global qishloq xo‘jaligi", "Global agriculture", "Глобальное сельское хозяйство"],
     ["Ma’lumotga asoslangan qarorlar", "Data-driven decisions", "Решения на основе данных"],
     ["Server tekshirilmoqda", "Checking server", "Проверка сервера"],
@@ -283,10 +313,10 @@
     try { localStorage.setItem("osh_language", language); } catch (_) {}
     document.documentElement.lang = language;
     document.title = language === "uz"
-      ? "OSH Agriculture AI — Global"
+      ? "OSH Agriculture AI — O‘zbekiston"
       : language === "en"
-        ? "OSH Agriculture AI — Global"
-        : "OSH Agriculture AI — Глобальная платформа";
+        ? "OSH Agriculture AI — Uzbekistan"
+        : "OSH Agriculture AI — Узбекистан";
     const selector = document.getElementById("language-select");
     if (selector && selector.value !== language) selector.value = language;
     walk(document);
