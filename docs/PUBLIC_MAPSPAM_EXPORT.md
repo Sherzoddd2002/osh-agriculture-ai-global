@@ -50,14 +50,15 @@ git status --short
 
 The global packages are public once committed to the public repository. Do not add a `.env`, database dump, FAOSTAT extracts, user CSV, password, or raw raster files.
 
-After reviewing the generated files, commit and push them to the dashboard PR branch:
+After reviewing the generated files, create a separate data-publication branch and push only the packages:
 
 ```powershell
+git switch -c global-mapspam-data
 git commit -m "Publish verified global MAPSPAM 2020 aggregates"
-git push origin global-dashboard-ux-v1
+git push -u origin global-mapspam-data
 ```
 
-After merge, GitHub Pages publishes the static packages. The browser fetches only the selected country package; no Fly service, public PostgreSQL, or runtime database connection is introduced.
+Open a pull request from `global-mapspam-data` into `main`. Review the package list and size before merging; GitHub Pages then publishes the static packages. The browser fetches only the selected country package; no Fly service, public PostgreSQL, or runtime database connection is introduced.
 
 ## Interpretation
 
