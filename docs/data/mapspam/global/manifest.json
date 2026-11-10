@@ -1,0 +1,3147 @@
+{
+  "dataset_id": "mapspam-2020-v2r2",
+  "source_year": 2020,
+  "technology": "all",
+  "license": "CC BY-SA 4.0",
+  "attribution": "IFPRI, Global Spatially-Disaggregated Crop Production Statistics (MAPSPAM) 2020 v2r2; licensed under CC BY-SA 4.0.",
+  "source_url": "https://doi.org/10.7910/DVN/SWPENT",
+  "generated_at_utc": "2026-11-10T16:18:02.772181Z",
+  "country_count": 153,
+  "total_summary_rows": 237774,
+  "total_compressed_bytes": 4677966,
+  "countries": {
+    "AFG": {
+      "file": "AFG.json.gz",
+      "country_name": "Afghanistan",
+      "row_count": 19872,
+      "levels": {
+        "ADM1": {
+          "area_count": 34,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 398,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 320892
+    },
+    "AGO": {
+      "file": "AGO.json.gz",
+      "country_name": "Angola",
+      "row_count": 8142,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 18,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 158,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 208480
+    },
+    "ALB": {
+      "file": "ALB.json.gz",
+      "country_name": "Albania",
+      "row_count": 2254,
+      "levels": {
+        "ADM1": {
+          "area_count": 12,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 37,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 40867
+    },
+    "AND": {
+      "file": "AND.json.gz",
+      "country_name": "Andorra",
+      "row_count": 368,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 7,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 2831
+    },
+    "ARG": {
+      "file": "ARG.json.gz",
+      "country_name": "Argentina",
+      "row_count": 1104,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 23,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 30934
+    },
+    "ARM": {
+      "file": "ARM.json.gz",
+      "country_name": "Armenia",
+      "row_count": 2346,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 11,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 39,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 45014
+    },
+    "ATG": {
+      "file": "ATG.json.gz",
+      "country_name": "Antigua and Barbuda",
+      "row_count": 414,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 8,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 4629
+    },
+    "AUS": {
+      "file": "AUS.json.gz",
+      "country_name": "Australia",
+      "row_count": 25622,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 9,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 547,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 358768
+    },
+    "AUT": {
+      "file": "AUT.json.gz",
+      "country_name": "Austria",
+      "row_count": 4784,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 9,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 94,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 90601
+    },
+    "AZE": {
+      "file": "AZE.json.gz",
+      "country_name": "Azerbaijan",
+      "row_count": 3726,
+      "levels": {
+        "ADM1": {
+          "area_count": 2,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 79,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 71863
+    },
+    "BDI": {
+      "file": "BDI.json.gz",
+      "country_name": "Burundi",
+      "row_count": 6302,
+      "levels": {
+        "ADM1": {
+          "area_count": 18,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 119,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 111509
+    },
+    "BEL": {
+      "file": "BEL.json.gz",
+      "country_name": "Belgium",
+      "row_count": 644,
+      "levels": {
+        "ADM1": {
+          "area_count": 3,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 11,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 11758
+    },
+    "BEN": {
+      "file": "BEN.json.gz",
+      "country_name": "Benin",
+      "row_count": 4094,
+      "levels": {
+        "ADM1": {
+          "area_count": 12,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 77,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 87558
+    },
+    "BFA": {
+      "file": "BFA.json.gz",
+      "country_name": "Burkina Faso",
+      "row_count": 2714,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 13,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 45,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 71548
+    },
+    "BGD": {
+      "file": "BGD.json.gz",
+      "country_name": "Bangladesh",
+      "row_count": 3358,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 8,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 64,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 107121
+    },
+    "BGR": {
+      "file": "BGR.json.gz",
+      "country_name": "Bulgaria",
+      "row_count": 13524,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 28,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 265,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 259192
+    },
+    "BHR": {
+      "file": "BHR.json.gz",
+      "country_name": "Bahrain",
+      "row_count": 230,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 4,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 2834
+    },
+    "BHS": {
+      "file": "BHS.json.gz",
+      "country_name": "Bahamas",
+      "row_count": 3036,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 32,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 33,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 8836
+    },
+    "BIH": {
+      "file": "BIH.json.gz",
+      "country_name": "Bosnia and Herzegovina",
+      "row_count": 736,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 3,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 12,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 16334
+    },
+    "BLR": {
+      "file": "BLR.json.gz",
+      "country_name": "Belarus",
+      "row_count": 5750,
+      "levels": {
+        "ADM1": {
+          "area_count": 7,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 118,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 114796
+    },
+    "BLZ": {
+      "file": "BLZ.json.gz",
+      "country_name": "Belize",
+      "row_count": 1702,
+      "levels": {
+        "ADM1": {
+          "area_count": 6,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 31,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 23664
+    },
+    "BOL": {
+      "file": "BOL.json.gz",
+      "country_name": "Bolivia, Plurinational State of",
+      "row_count": 5520,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 9,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 110,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 124659
+    },
+    "BRB": {
+      "file": "BRB.json.gz",
+      "country_name": "Barbados",
+      "row_count": 552,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 11,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 6358
+    },
+    "BRN": {
+      "file": "BRN.json.gz",
+      "country_name": "Brunei Darussalam",
+      "row_count": 1932,
+      "levels": {
+        "ADM1": {
+          "area_count": 4,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 38,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 9694
+    },
+    "BTN": {
+      "file": "BTN.json.gz",
+      "country_name": "Bhutan",
+      "row_count": 10350,
+      "levels": {
+        "ADM1": {
+          "area_count": 20,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 205,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 142425
+    },
+    "BWA": {
+      "file": "BWA.json.gz",
+      "country_name": "Botswana",
+      "row_count": 506,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 10,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 11037
+    },
+    "CAF": {
+      "file": "CAF.json.gz",
+      "country_name": "Central African Republic",
+      "row_count": 828,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 17,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 27181
+    },
+    "CHE": {
+      "file": "CHE.json.gz",
+      "country_name": "Switzerland",
+      "row_count": 1242,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 26,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 16446
+    },
+    "CMR": {
+      "file": "CMR.json.gz",
+      "country_name": "Cameroon",
+      "row_count": 506,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 10,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 17209
+    },
+    "COD": {
+      "file": "COD.json.gz",
+      "country_name": "Congo, The Democratic Republic of the",
+      "row_count": 1242,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 26,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 51132
+    },
+    "COG": {
+      "file": "COG.json.gz",
+      "country_name": "Congo",
+      "row_count": 598,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 12,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 20041
+    },
+    "COM": {
+      "file": "COM.json.gz",
+      "country_name": "Comoros",
+      "row_count": 184,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 3,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 1156
+    },
+    "CPV": {
+      "file": "CPV.json.gz",
+      "country_name": "Cabo Verde",
+      "row_count": 1058,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 22,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 2739
+    },
+    "CRI": {
+      "file": "CRI.json.gz",
+      "country_name": "Costa Rica",
+      "row_count": 368,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 7,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 10672
+    },
+    "CUB": {
+      "file": "CUB.json.gz",
+      "country_name": "Cuba",
+      "row_count": 782,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 16,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 23898
+    },
+    "CYP": {
+      "file": "CYP.json.gz",
+      "country_name": "Cyprus",
+      "row_count": 322,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 6,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 5282
+    },
+    "CZE": {
+      "file": "CZE.json.gz",
+      "country_name": "Czechia",
+      "row_count": 690,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 14,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 15397
+    },
+    "DEU": {
+      "file": "DEU.json.gz",
+      "country_name": "Germany",
+      "row_count": 782,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 16,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 16930
+    },
+    "DJI": {
+      "file": "DJI.json.gz",
+      "country_name": "Djibouti",
+      "row_count": 322,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 6,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 4022
+    },
+    "DMA": {
+      "file": "DMA.json.gz",
+      "country_name": "Dominica",
+      "row_count": 506,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 10,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 8054
+    },
+    "DNK": {
+      "file": "DNK.json.gz",
+      "country_name": "Denmark",
+      "row_count": 276,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 5,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 4638
+    },
+    "DZA": {
+      "file": "DZA.json.gz",
+      "country_name": "Algeria",
+      "row_count": 2254,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 48,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 57036
+    },
+    "ECU": {
+      "file": "ECU.json.gz",
+      "country_name": "Ecuador",
+      "row_count": 1150,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 24,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 42561
+    },
+    "EGY": {
+      "file": "EGY.json.gz",
+      "country_name": "Egypt",
+      "row_count": 1288,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 27,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 42070
+    },
+    "ERI": {
+      "file": "ERI.json.gz",
+      "country_name": "Eritrea",
+      "row_count": 322,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 6,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 7334
+    },
+    "ESP": {
+      "file": "ESP.json.gz",
+      "country_name": "Spain",
+      "row_count": 920,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 19,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 24616
+    },
+    "EST": {
+      "file": "EST.json.gz",
+      "country_name": "Estonia",
+      "row_count": 736,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 15,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 10647
+    },
+    "ETH": {
+      "file": "ETH.json.gz",
+      "country_name": "Ethiopia",
+      "row_count": 552,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 11,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 18748
+    },
+    "FIN": {
+      "file": "FIN.json.gz",
+      "country_name": "Finland",
+      "row_count": 920,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 19,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 12773
+    },
+    "FSM": {
+      "file": "FSM.json.gz",
+      "country_name": "Micronesia, Federated States of",
+      "row_count": 230,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 4,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 1245
+    },
+    "GAB": {
+      "file": "GAB.json.gz",
+      "country_name": "Gabon",
+      "row_count": 460,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 9,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 12400
+    },
+    "GBR": {
+      "file": "GBR.json.gz",
+      "country_name": "United Kingdom",
+      "row_count": 230,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 4,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 4773
+    },
+    "GMB": {
+      "file": "GMB.json.gz",
+      "country_name": "Gambia",
+      "row_count": 414,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 8,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 8012
+    },
+    "GNB": {
+      "file": "GNB.json.gz",
+      "country_name": "Guinea-Bissau",
+      "row_count": 460,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 9,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 12486
+    },
+    "GNQ": {
+      "file": "GNQ.json.gz",
+      "country_name": "Equatorial Guinea",
+      "row_count": 368,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 7,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 5323
+    },
+    "GRC": {
+      "file": "GRC.json.gz",
+      "country_name": "Greece",
+      "row_count": 414,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 8,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 11558
+    },
+    "GRD": {
+      "file": "GRD.json.gz",
+      "country_name": "Grenada",
+      "row_count": 368,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 7,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 4915
+    },
+    "GRL": {
+      "file": "GRL.json.gz",
+      "country_name": "Greenland",
+      "row_count": 322,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 6,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 1420
+    },
+    "GTM": {
+      "file": "GTM.json.gz",
+      "country_name": "Guatemala",
+      "row_count": 1058,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 22,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 31787
+    },
+    "HND": {
+      "file": "HND.json.gz",
+      "country_name": "Honduras",
+      "row_count": 874,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 18,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 26590
+    },
+    "HRV": {
+      "file": "HRV.json.gz",
+      "country_name": "Croatia",
+      "row_count": 1012,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 21,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 23465
+    },
+    "HTI": {
+      "file": "HTI.json.gz",
+      "country_name": "Haiti",
+      "row_count": 506,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 10,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 17157
+    },
+    "HUN": {
+      "file": "HUN.json.gz",
+      "country_name": "Hungary",
+      "row_count": 920,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 19,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 23346
+    },
+    "IDN": {
+      "file": "IDN.json.gz",
+      "country_name": "Indonesia",
+      "row_count": 1610,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 34,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 50994
+    },
+    "IND": {
+      "file": "IND.json.gz",
+      "country_name": "India",
+      "row_count": 1702,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 36,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 62671
+    },
+    "IRL": {
+      "file": "IRL.json.gz",
+      "country_name": "Ireland",
+      "row_count": 230,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 4,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 3943
+    },
+    "ITA": {
+      "file": "ITA.json.gz",
+      "country_name": "Italy",
+      "row_count": 276,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 5,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 8593
+    },
+    "JAM": {
+      "file": "JAM.json.gz",
+      "country_name": "Jamaica",
+      "row_count": 690,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 14,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 18666
+    },
+    "JOR": {
+      "file": "JOR.json.gz",
+      "country_name": "Jordan",
+      "row_count": 598,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 12,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 11784
+    },
+    "JPN": {
+      "file": "JPN.json.gz",
+      "country_name": "Japan",
+      "row_count": 2208,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 47,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 58227
+    },
+    "KAZ": {
+      "file": "KAZ.json.gz",
+      "country_name": "Kazakhstan",
+      "row_count": 782,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 16,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 23446
+    },
+    "KEN": {
+      "file": "KEN.json.gz",
+      "country_name": "Kenya",
+      "row_count": 2208,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 47,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 67328
+    },
+    "KGZ": {
+      "file": "KGZ.json.gz",
+      "country_name": "Kyrgyzstan",
+      "row_count": 368,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 7,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 11798
+    },
+    "KHM": {
+      "file": "KHM.json.gz",
+      "country_name": "Cambodia",
+      "row_count": 1196,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 25,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 31078
+    },
+    "KIR": {
+      "file": "KIR.json.gz",
+      "country_name": "Kiribati",
+      "row_count": 184,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 3,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 1160
+    },
+    "KNA": {
+      "file": "KNA.json.gz",
+      "country_name": "Saint Kitts and Nevis",
+      "row_count": 690,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 14,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 4463
+    },
+    "KOR": {
+      "file": "KOR.json.gz",
+      "country_name": "Korea, Republic of",
+      "row_count": 828,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 17,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 23505
+    },
+    "KWT": {
+      "file": "KWT.json.gz",
+      "country_name": "Kuwait",
+      "row_count": 322,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 6,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 3877
+    },
+    "LAO": {
+      "file": "LAO.json.gz",
+      "country_name": "Lao People's Democratic Republic",
+      "row_count": 874,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 18,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 27414
+    },
+    "LBN": {
+      "file": "LBN.json.gz",
+      "country_name": "Lebanon",
+      "row_count": 460,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 9,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 11782
+    },
+    "LBR": {
+      "file": "LBR.json.gz",
+      "country_name": "Liberia",
+      "row_count": 736,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 15,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 19969
+    },
+    "LBY": {
+      "file": "LBY.json.gz",
+      "country_name": "Libya",
+      "row_count": 1058,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 22,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 21615
+    },
+    "LCA": {
+      "file": "LCA.json.gz",
+      "country_name": "Saint Lucia",
+      "row_count": 506,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 10,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 5747
+    },
+    "LIE": {
+      "file": "LIE.json.gz",
+      "country_name": "Liechtenstein",
+      "row_count": 552,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 11,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 1803
+    },
+    "LKA": {
+      "file": "LKA.json.gz",
+      "country_name": "Sri Lanka",
+      "row_count": 460,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 9,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 15696
+    },
+    "LSO": {
+      "file": "LSO.json.gz",
+      "country_name": "Lesotho",
+      "row_count": 506,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 10,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 7419
+    },
+    "LTU": {
+      "file": "LTU.json.gz",
+      "country_name": "Lithuania",
+      "row_count": 506,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 10,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 10843
+    },
+    "LUX": {
+      "file": "LUX.json.gz",
+      "country_name": "Luxembourg",
+      "row_count": 598,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 12,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 6585
+    },
+    "LVA": {
+      "file": "LVA.json.gz",
+      "country_name": "Latvia",
+      "row_count": 2024,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 43,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 28492
+    },
+    "MAR": {
+      "file": "MAR.json.gz",
+      "country_name": "Morocco",
+      "row_count": 598,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 12,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 19928
+    },
+    "MCO": {
+      "file": "MCO.json.gz",
+      "country_name": "Monaco",
+      "row_count": 92,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 954
+    },
+    "MDG": {
+      "file": "MDG.json.gz",
+      "country_name": "Madagascar",
+      "row_count": 1058,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 22,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 36776
+    },
+    "MDV": {
+      "file": "MDV.json.gz",
+      "country_name": "Maldives",
+      "row_count": 1012,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 21,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 2571
+    },
+    "MEX": {
+      "file": "MEX.json.gz",
+      "country_name": "Mexico",
+      "row_count": 1518,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 32,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 41600
+    },
+    "MHL": {
+      "file": "MHL.json.gz",
+      "country_name": "Marshall Islands",
+      "row_count": 1150,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 24,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 2788
+    },
+    "MLI": {
+      "file": "MLI.json.gz",
+      "country_name": "Mali",
+      "row_count": 460,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 9,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 15646
+    },
+    "MLT": {
+      "file": "MLT.json.gz",
+      "country_name": "Malta",
+      "row_count": 3174,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 68,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 6917
+    },
+    "MMR": {
+      "file": "MMR.json.gz",
+      "country_name": "Myanmar",
+      "row_count": 690,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 14,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 26914
+    },
+    "MNE": {
+      "file": "MNE.json.gz",
+      "country_name": "Montenegro",
+      "row_count": 1104,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 23,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 7657
+    },
+    "MNG": {
+      "file": "MNG.json.gz",
+      "country_name": "Mongolia",
+      "row_count": 1058,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 22,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 12446
+    },
+    "MOZ": {
+      "file": "MOZ.json.gz",
+      "country_name": "Mozambique",
+      "row_count": 506,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 10,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 20397
+    },
+    "MUS": {
+      "file": "MUS.json.gz",
+      "country_name": "Mauritius",
+      "row_count": 598,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 12,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 10231
+    },
+    "MWI": {
+      "file": "MWI.json.gz",
+      "country_name": "Malawi",
+      "row_count": 184,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 3,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 8716
+    },
+    "MYS": {
+      "file": "MYS.json.gz",
+      "country_name": "Malaysia",
+      "row_count": 782,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 16,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 18081
+    },
+    "NGA": {
+      "file": "NGA.json.gz",
+      "country_name": "Nigeria",
+      "row_count": 1748,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 37,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 65413
+    },
+    "NIU": {
+      "file": "NIU.json.gz",
+      "country_name": "Niue",
+      "row_count": 690,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 14,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 2032
+    },
+    "NLD": {
+      "file": "NLD.json.gz",
+      "country_name": "Netherlands",
+      "row_count": 598,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 12,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 10461
+    },
+    "NOR": {
+      "file": "NOR.json.gz",
+      "country_name": "Norway",
+      "row_count": 552,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 11,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 7018
+    },
+    "NRU": {
+      "file": "NRU.json.gz",
+      "country_name": "Nauru",
+      "row_count": 690,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 14,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 2009
+    },
+    "NZL": {
+      "file": "NZL.json.gz",
+      "country_name": "New Zealand",
+      "row_count": 828,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 17,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 11850
+    },
+    "OMN": {
+      "file": "OMN.json.gz",
+      "country_name": "Oman",
+      "row_count": 368,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 7,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 7304
+    },
+    "PER": {
+      "file": "PER.json.gz",
+      "country_name": "Peru",
+      "row_count": 1242,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 26,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 43161
+    },
+    "PLW": {
+      "file": "PLW.json.gz",
+      "country_name": "Palau",
+      "row_count": 782,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 16,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 2186
+    },
+    "PRK": {
+      "file": "PRK.json.gz",
+      "country_name": "Korea, Democratic People's Republic of",
+      "row_count": 552,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 11,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 14572
+    },
+    "PRT": {
+      "file": "PRT.json.gz",
+      "country_name": "Portugal",
+      "row_count": 966,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 20,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 20055
+    },
+    "PRY": {
+      "file": "PRY.json.gz",
+      "country_name": "Paraguay",
+      "row_count": 874,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 18,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 27670
+    },
+    "PSE": {
+      "file": "PSE.json.gz",
+      "country_name": "Palestine, State of",
+      "row_count": 138,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 2,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 1070
+    },
+    "QAT": {
+      "file": "QAT.json.gz",
+      "country_name": "Qatar",
+      "row_count": 414,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 8,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 6490
+    },
+    "SAU": {
+      "file": "SAU.json.gz",
+      "country_name": "Saudi Arabia",
+      "row_count": 644,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 13,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 11246
+    },
+    "SDN": {
+      "file": "SDN.json.gz",
+      "country_name": "Sudan",
+      "row_count": 920,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 19,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 24935
+    },
+    "SEN": {
+      "file": "SEN.json.gz",
+      "country_name": "Senegal",
+      "row_count": 690,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 14,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 15747
+    },
+    "SGP": {
+      "file": "SGP.json.gz",
+      "country_name": "Singapore",
+      "row_count": 276,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 5,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 1325
+    },
+    "SLB": {
+      "file": "SLB.json.gz",
+      "country_name": "Solomon Islands",
+      "row_count": 506,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 10,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 9034
+    },
+    "SLE": {
+      "file": "SLE.json.gz",
+      "country_name": "Sierra Leone",
+      "row_count": 230,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 4,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 9047
+    },
+    "SLV": {
+      "file": "SLV.json.gz",
+      "country_name": "El Salvador",
+      "row_count": 690,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 14,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 21306
+    },
+    "SMR": {
+      "file": "SMR.json.gz",
+      "country_name": "San Marino",
+      "row_count": 460,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 9,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 1663
+    },
+    "SRB": {
+      "file": "SRB.json.gz",
+      "country_name": "Serbia",
+      "row_count": 1196,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 25,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 30752
+    },
+    "SSD": {
+      "file": "SSD.json.gz",
+      "country_name": "South Sudan",
+      "row_count": 506,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 10,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 12210
+    },
+    "STP": {
+      "file": "STP.json.gz",
+      "country_name": "Sao Tome and Principe",
+      "row_count": 138,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 2,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 3398
+    },
+    "SUR": {
+      "file": "SUR.json.gz",
+      "country_name": "Suriname",
+      "row_count": 506,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 10,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 9143
+    },
+    "SVK": {
+      "file": "SVK.json.gz",
+      "country_name": "Slovakia",
+      "row_count": 414,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 8,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 10487
+    },
+    "SWZ": {
+      "file": "SWZ.json.gz",
+      "country_name": "Eswatini",
+      "row_count": 230,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 4,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 7284
+    },
+    "SYC": {
+      "file": "SYC.json.gz",
+      "country_name": "Seychelles",
+      "row_count": 1242,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 26,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 3012
+    },
+    "TCD": {
+      "file": "TCD.json.gz",
+      "country_name": "Chad",
+      "row_count": 1104,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 23,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 28577
+    },
+    "TGO": {
+      "file": "TGO.json.gz",
+      "country_name": "Togo",
+      "row_count": 276,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 5,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 10545
+    },
+    "THA": {
+      "file": "THA.json.gz",
+      "country_name": "Thailand",
+      "row_count": 3588,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 77,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 71290
+    },
+    "TJK": {
+      "file": "TJK.json.gz",
+      "country_name": "Tajikistan",
+      "row_count": 276,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 5,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 9602
+    },
+    "TKM": {
+      "file": "TKM.json.gz",
+      "country_name": "Turkmenistan",
+      "row_count": 276,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 5,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 8190
+    },
+    "TLS": {
+      "file": "TLS.json.gz",
+      "country_name": "Timor-Leste",
+      "row_count": 644,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 13,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 12686
+    },
+    "TON": {
+      "file": "TON.json.gz",
+      "country_name": "Tonga",
+      "row_count": 276,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 5,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 1312
+    },
+    "TTO": {
+      "file": "TTO.json.gz",
+      "country_name": "Trinidad and Tobago",
+      "row_count": 690,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 14,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 14311
+    },
+    "TUN": {
+      "file": "TUN.json.gz",
+      "country_name": "Tunisia",
+      "row_count": 1150,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 24,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 29775
+    },
+    "TUR": {
+      "file": "TUR.json.gz",
+      "country_name": "Türkiye",
+      "row_count": 3772,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 81,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 103476
+    },
+    "TUV": {
+      "file": "TUV.json.gz",
+      "country_name": "Tuvalu",
+      "row_count": 414,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 8,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 1552
+    },
+    "UGA": {
+      "file": "UGA.json.gz",
+      "country_name": "Uganda",
+      "row_count": 230,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 4,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 11009
+    },
+    "UKR": {
+      "file": "UKR.json.gz",
+      "country_name": "Ukraine",
+      "row_count": 1288,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 27,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 36747
+    },
+    "URY": {
+      "file": "URY.json.gz",
+      "country_name": "Uruguay",
+      "row_count": 920,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 19,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 24729
+    },
+    "UZB": {
+      "file": "UZB.json.gz",
+      "country_name": "Uzbekistan",
+      "row_count": 9844,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 14,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM2": {
+          "area_count": 199,
+          "crop_count": 46,
+          "boundary_year": 2020,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 192347
+    },
+    "VCT": {
+      "file": "VCT.json.gz",
+      "country_name": "Saint Vincent and the Grenadines",
+      "row_count": 322,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 6,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 3980
+    },
+    "VUT": {
+      "file": "VUT.json.gz",
+      "country_name": "Vanuatu",
+      "row_count": 322,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 6,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 5545
+    },
+    "WSM": {
+      "file": "WSM.json.gz",
+      "country_name": "Samoa",
+      "row_count": 552,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 11,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 1817
+    },
+    "YEM": {
+      "file": "YEM.json.gz",
+      "country_name": "Yemen",
+      "row_count": 1058,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 22,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 23732
+    },
+    "ZAF": {
+      "file": "ZAF.json.gz",
+      "country_name": "South Africa",
+      "row_count": 460,
+      "levels": {
+        "ADM0": {
+          "area_count": 1,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        },
+        "ADM1": {
+          "area_count": 9,
+          "crop_count": 46,
+          "boundary_year": null,
+          "boundary_year_varies": false
+        }
+      },
+      "size_bytes": 15083
+    }
+  },
+  "notes": [
+    "Only verified MAPSPAM ADM0 country, ADM1 province and ADM2 district summaries are included.",
+    "Uzbekistan ADM2 includes the previously validated 199-district public snapshot, merged only after exact linkage to all 14 ADM1 province IDs.",
+    "MAPSPAM 2020 is a single reference-year gridded estimate, not a future forecast. ADM0, ADM1 and ADM2 are separate hierarchy levels and must not be added together.",
+    "NO_RASTER_CELLS retains NULL yield; it is never converted to zero.",
+    "Use the displayed attribution and retain the CC BY-SA 4.0 licence."
+  ]
+}
