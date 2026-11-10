@@ -4,11 +4,19 @@ const $ = (id) => document.getElementById(id);
 let token = localStorage.getItem('osh_global_token') || '';
 let map = null, boundaryFeatures = [], selectedFeature = null, selectedLocationId = null, currentDatasetId = null, currentJobId = null, currentClimateJobId = null;
 let drawingAOI = false, drawingPoints = [];
+let boundaryManifest = null;
+let pendingLocationSave = localStorage.getItem('osh_pending_aoi_save') === '1';
+let pendingAOIRasterAnalysis = false;
+const AOI_STORAGE_KEY = 'osh_pending_aoi_v1';
 const locations = [];
 
 function authHeaders(json=true){const h={};if(json)h['Content-Type']='application/json';if(token)h.Authorization=`Bearer ${token}`;return h;}
 async function api(path, options={}){
-  const res=await fetch(API+path,options);
+  let res;
+  try { res=await fetch(API+path,options); }
+  catch(error) {
+    throw new Error('Server API bilan aloqa yo‘q ('+(API_BASE||'API server')+'). Public xarita ochiq, lekin hisob, saqlash va model uchun backend server ishga tushgan bo‘lishi kerak.');
+  }
   const body=await res.json().catch(()=>({detail:res.statusText}));
   if(!res.ok){
     const message=body.detail||`HTTP ${res.status}`;
@@ -147,6 +155,7 @@ function initMap(){
         'line-opacity':1
       }
     });
+    restorePendingAOI();
   });
 
   map.on('click','admin-fill',(event) => {
@@ -244,10 +253,11 @@ function finishAOIDrawing(){
   updateAOIDraft();
   setDrawingControls(false);
   $('admin-level').value='ADM2';
+  persistPendingAOI(customFeature);
   selectFeature(customFeature);
   $('selected-level').textContent='CUSTOM AOI';
-  $('selected-area-help').textContent='Foydalanuvchi chizgan poligon. U ma’muriy chegara emas; rastr ma’lumotlari pixel resolution va qamroviga qarab baholanadi.';
-  toast($('boundary-status'),'Maydon tanlandi. Endi hisobga kirib, “Hududni saqlash va tahlil qilish” tugmasini bosing.');
+  $('selected-area-help').textContent='Chizilgan dala poligoni. Kontur brauzerda saqlandi; hisobga kirgach aynan shu geometriya serverga yuboriladi.';
+  toast($('boundary-status'),'Maydon tanlandi va brauzerda saqlandi. Endi “Hududni saqlash va tahlil qilish”ni bosing.');
 }
 $('draw-aoi-start').addEventListener('click',startAOIDrawing);
 $('draw-aoi-finish').addEventListener('click',finishAOIDrawing);
@@ -256,13 +266,111 @@ $('draw-aoi-cancel').addEventListener('click',cancelAOIDrawing);
 function featureName(f){const p=f?.properties||{};return p.shapeName||p.shape_name||p.shapeNameEn||p.NAME_1||p.NAME_2||p.name||p.NAME||p.admin||'Tanlangan hudud';}
 function coordsCenter(geom){let x=0,y=0,n=0;const walk=v=>{if(Array.isArray(v)&&typeof v[0]==='number'&&typeof v[1]==='number'){x+=v[0];y+=v[1];n++;}else if(Array.isArray(v))v.forEach(walk);};walk(geom.coordinates);return n?{lat:y/n,lon:x/n}:null;}
 function featureBounds(features){let minX=180,minY=90,maxX=-180,maxY=-90;const walk=v=>{if(Array.isArray(v)&&typeof v[0]==='number'&&typeof v[1]==='number'){minX=Math.min(minX,v[0]);maxX=Math.max(maxX,v[0]);minY=Math.min(minY,v[1]);maxY=Math.max(maxY,v[1]);}else if(Array.isArray(v))v.forEach(walk);};features.forEach(f=>walk(f.geometry?.coordinates));return minX<=maxX?[[minX,minY],[maxX,maxY]]:null;}
+
+function ringAreaSqm(ring){
+  if(!Array.isArray(ring)||ring.length<4)return 0;
+  const radius=6371008.8, rad=Math.PI/180;
+  let sum=0;
+  for(let i=0;i<ring.length-1;i++){
+    const a=ring[i], b=ring[i+1];
+    sum+=(b[0]-a[0])*rad*(2+Math.sin(a[1]*rad)+Math.sin(b[1]*rad));
+  }
+  return Math.abs(sum)*radius*radius/2;
+}
+function geometryAreaSqm(geometry){
+  if(!geometry)return 0;
+  const polygons=geometry.type==='Polygon'?[geometry.coordinates]:geometry.type==='MultiPolygon'?geometry.coordinates:[];
+  return polygons.reduce((total,rings)=>{
+    if(!rings?.length)return total;
+    const holes=rings.slice(1).reduce((sum,ring)=>sum+ringAreaSqm(ring),0);
+    return total+Math.max(0,ringAreaSqm(rings[0])-holes);
+  },0);
+}
+function geometryVertexCount(geometry){
+  const polygons=geometry?.type==='Polygon'?[geometry.coordinates]:geometry?.type==='MultiPolygon'?geometry.coordinates:[];
+  return polygons.reduce((sum,rings)=>sum+rings.reduce((n,ring)=>n+Math.max(0,(ring?.length||0)-1),0),0);
+}
+function updateAOIProfile(feature){
+  const target=$('aoi-profile');
+  if(!target)return;
+  if(!feature){target.textContent='Hudud tanlanmagan';return;}
+  const sqm=geometryAreaSqm(feature.geometry), ha=sqm/10000, vertices=geometryVertexCount(feature.geometry);
+  const area=ha>=100?ha.toLocaleString('uz-UZ',{maximumFractionDigits:1})+' ga':sqm.toLocaleString('uz-UZ',{maximumFractionDigits:0})+' m²';
+  target.textContent='Maydon: '+area+' · Kontur nuqtalari: '+vertices+' · '+(feature.geometry?.type||'—');
+}
+async function loadBoundaryManifest(){
+  if(boundaryManifest)return boundaryManifest;
+  const response=await fetch('./data/boundaries/global/manifest.json',{cache:'no-cache'});
+  if(!response.ok)throw new Error('ADM katalog manifesti yuklanmadi');
+  boundaryManifest=await response.json();
+  return boundaryManifest;
+}
+async function refreshBoundaryAvailability(){
+  const code=$('country-iso3').value.trim().toUpperCase(), select=$('admin-level'), status=$('boundary-level-status');
+  if(!/^[A-Z]{3}$/.test(code)){toast(status,'3 harfli ISO-3 kodini kiriting (masalan UZB, KAZ, DEU).');return;}
+  try{
+    const manifest=await loadBoundaryManifest(), country=manifest.countries?.[code];
+    const levels=country?.availability_levels||{};
+    const available=country?.available_levels||Object.keys(levels).filter(key=>levels[key]?.available);
+    const previous=select.value;
+    select.innerHTML='';
+    for(let i=0;i<=5;i++){
+      const level='ADM'+i, meta=levels[level], exists=available.includes(level), option=document.createElement('option');
+      option.value=level;
+      if(exists){
+        const year=meta?.boundary_year?' · '+meta.boundary_year:'';
+        const source=meta?.static_package?' · lokal paket':' · server API';
+        option.textContent=level+year+source;
+      }else{option.textContent=level+' · mavjud emas';option.disabled=true;}
+      select.appendChild(option);
+    }
+    const chosen=available.includes(previous)?previous:(available.includes('ADM2')?'ADM2':available[0]);
+    if(chosen)select.value=chosen;
+    const levelsText=available.length?available.join(', '):'metama’lumot topilmadi';
+    const max=country?.max_available_level||'—';
+    const count=manifest.availability_catalog?.country_count||Object.keys(manifest.countries||{}).length;
+    toast(status,(country?.name||code)+' ('+code+') · mavjud: '+levelsText+' · eng chuqur: '+max+' · katalog: '+count+' mamlakat/hudud');
+  }catch(error){
+    const previous=select.value||'ADM1';
+    select.innerHTML='';
+    for(let i=0;i<=5;i++){const option=document.createElement('option');option.value='ADM'+i;option.textContent='ADM'+i+' · API orqali tekshiriladi';select.appendChild(option);}
+    select.value=previous;
+    toast(status,'ADM katalogi hozircha yuklanmadi. Tanlangan daraja server API orqali tekshiriladi.');
+  }
+}
+function persistPendingAOI(feature=selectedFeature){
+  if(!feature?.properties?.__custom_aoi)return;
+  const record={country_iso3:$('country-iso3').value.trim().toUpperCase(),admin_level:'CUSTOM',name:featureName(feature),geojson:feature,updated_at:new Date().toISOString()};
+  try{localStorage.setItem(AOI_STORAGE_KEY,JSON.stringify(record));}
+  catch(error){toast($('saved-location-status'),'Maydon chizildi, lekin brauzerda saqlanmadi: '+error.message);}
+}
+function restorePendingAOI(){
+  if(!map?.getSource('admin-boundaries'))return;
+  let record=null;
+  try{record=JSON.parse(localStorage.getItem(AOI_STORAGE_KEY)||'null');}catch(_){}
+  if(!record?.geojson?.geometry)return;
+  $('country-iso3').value=record.country_iso3||'UZB';
+  $('admin-level').value='ADM2';
+  selectedFeature=record.geojson;
+  selectedFeature.properties={...(selectedFeature.properties||{}),__custom_aoi:true,boundaryLevel:'CUSTOM'};
+  boundaryFeatures=boundaryFeatures.filter(item=>!item.properties?.__custom_aoi);
+  boundaryFeatures.push(selectedFeature);
+  selectFeature(selectedFeature);
+  $('selected-level').textContent='CUSTOM AOI';
+  $('selected-area-help').textContent='Oldin chizilgan dala konturi tiklandi. Hisobga kirgach serverga saqlash mumkin.';
+  toast($('boundary-status'),'Oldin chizilgan maydon tiklandi · '+featureName(selectedFeature));
+  if(token&&pendingLocationSave)saveSelectedLocation();
+}
 function selectFeature(f){
   if(!f) return;
   selectedFeature=f;
   $('selected-area-name').textContent=featureName(f);
-  $('selected-area-help').textContent='Tanlangan chegara geoBoundaries GeoJSON polygonidan olindi.';
+  const isCustom=Boolean(f.properties?.__custom_aoi);
+  $('selected-area-help').textContent=isCustom?'Foydalanuvchi chizgan aniq poligon. Tahlil faqat shu GeoJSON geometriyasiga yuboriladi.':'Tanlangan ma’muriy birlik. Tahlil shu hudud chegarasiga bog‘langan.';
   $('selected-country').textContent=$('country-iso3').value.toUpperCase();
-  $('selected-level').textContent=$('admin-level').value;
+  $('selected-level').textContent=isCustom?'CUSTOM AOI':$('admin-level').value;
+  updateAOIProfile(f);
+  if(isCustom)persistPendingAOI(f);
   const center=coordsCenter(f.geometry);
   $('selected-center').textContent=center? `${center.lat.toFixed(4)}, ${center.lon.toFixed(4)}` : '—';
   $('save-location').disabled=!selectedFeature;
@@ -359,6 +467,9 @@ async function loadBoundaries(){
   }
 }
 $('load-boundaries').addEventListener('click',loadBoundaries);
+$('country-iso3').addEventListener('change',refreshBoundaryAvailability);
+$('country-iso3').addEventListener('blur',refreshBoundaryAvailability);
+refreshBoundaryAvailability();
 
 let mapspamRequestSequence = 0;
 
@@ -395,9 +506,10 @@ async function loadMapspamSummaries() {
   const countryCode = $('country-iso3').value.trim().toUpperCase();
   const level = $('admin-level').value;
   if(selectedFeature.properties?.__custom_aoi){
-    toast(status,'Bu maxsus chizilgan dala poligoni. MAPSPAM faqat bazada oldindan bog‘langan ADM0–ADM2 hududlari uchun mavjud; dala darajasidagi tahlil uchun Sentinel-2 10 m zonal statistikasi kerak.');
-    $('mapspam-context').textContent=countryCode+' · '+featureName(selectedFeature)+' · CUSTOM AOI';
+    $('mapspam-context').textContent=countryCode+' · '+featureName(selectedFeature)+' · CUSTOM AOI · faqat tanlangan poligon';
+    if(token)return analyzeCustomAOI();
     table.innerHTML='';
+    toast(status,'Chizilgan poligon saqlandi. Shu geometriya bo‘yicha raster ma’lumotlarini olish uchun hisobga kiring.');
     return;
   }
   const adminId = mapspamSelectedAdminId(selectedFeature, countryCode, level);
