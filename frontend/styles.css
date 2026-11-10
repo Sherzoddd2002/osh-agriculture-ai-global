@@ -266,3 +266,29 @@ input::placeholder{color:#71899b}
 .sentinel2-controls label{display:grid;gap:5px;font-size:11px;color:var(--muted)}
 .sentinel2-controls input{min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
 @media(max-width:760px){.sentinel2-controls{grid-template-columns:1fr 1fr}.sentinel2-controls button{grid-column:1/-1}}
+
+
+/* Uzbekistan-first workspace */
+.uzb-context{
+  display:grid;gap:2px;min-width:190px;padding:9px 13px;border:1px solid #d6e9dc;
+  border-radius:10px;background:#f2f8f3;color:var(--green)
+}
+.uzb-context b{font-size:13px}
+.uzb-context small{font-size:10px;color:var(--muted)}
+.toolbar .admin-filter-label input{width:190px;min-width:170px;text-transform:none}
+.toolbar #uzb-admin-unit{min-width:220px;max-width:300px}
+.toolbar #admin-level{min-width:225px}
+.uzb-official-panel{margin-top:16px}
+.uzb-official-panel>p{font-size:12px;color:var(--muted);margin:8px 0 14px}
+.uzb-official-panel .source-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.uzb-official-panel .source-card a{color:var(--green2);font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.uzb-official-panel .source-card{min-width:0}
+@media(max-width:1100px){
+  .uzb-official-panel .source-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .toolbar #uzb-admin-unit{min-width:180px}
+}
+@media(max-width:760px){
+  .toolbar .admin-filter-label,.toolbar #uzb-admin-unit{width:100%}
+  .toolbar .admin-filter-label input,.toolbar #uzb-admin-unit{min-width:0;max-width:none;width:100%}
+  .uzb-official-panel .source-grid{grid-template-columns:1fr}
+}

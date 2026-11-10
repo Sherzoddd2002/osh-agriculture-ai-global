@@ -4,9 +4,51 @@ const $ = (id) => document.getElementById(id);
 let token = localStorage.getItem('osh_global_token') || '';
 let map = null, boundaryFeatures = [], selectedFeature = null, selectedLocationId = null, currentDatasetId = null, currentJobId = null, currentClimateJobId = null;
 let drawingAOI = false, drawingPoints = [];
-let boundaryManifest = null;
+const UZB_COUNTRY = "UZB";
+const UZB_ADMIN_LEVELS = {
+  ADM1: { count: 14, label: "Viloyat / respublika / Toshkent shahri", vintage: "2017" },
+  ADM2: { count: 199, label: "Tuman va shahar", vintage: "2020" }
+};
+const UZB_ADMIN_NAMES = {
+  "Karakalpakstan": "Qoraqalpog‘iston Respublikasi",
+  "Republic of Karakalpakstan": "Qoraqalpog‘iston Respublikasi",
+  "Andijan": "Andijon viloyati", "Andijan region": "Andijon viloyati",
+  "Bukhara": "Buxoro viloyati", "Bukhara region": "Buxoro viloyati",
+  "Jizzakh": "Jizzax viloyati", "Jizzakh region": "Jizzax viloyati",
+  "Kashkadarya": "Qashqadaryo viloyati", "Kashkadarya region": "Qashqadaryo viloyati",
+  "Navoi": "Navoiy viloyati", "Navoi region": "Navoiy viloyati",
+  "Namangan": "Namangan viloyati", "Namangan region": "Namangan viloyati",
+  "Samarkand": "Samarqand viloyati", "Samarkand region": "Samarqand viloyati",
+  "Surkhandarya": "Surxondaryo viloyati", "Surkhandarya region": "Surxondaryo viloyati",
+  "Syrdarya": "Sirdaryo viloyati", "Syrdarya region": "Sirdaryo viloyati",
+  "Tashkent": "Toshkent viloyati", "Tashkent region": "Toshkent viloyati",
+  "Fergana": "Farg‘ona viloyati", "Fergana region": "Farg‘ona viloyati",
+  "Khorezm": "Xorazm viloyati", "Khorezm region": "Xorazm viloyati",
+  "Tashkent City": "Toshkent shahri",
+  "tashkent city": "Toshkent shahri",
+  "andijan region": "Andijon viloyati",
+  "bukhara region": "Buxoro viloyati",
+  "jizzakh region": "Jizzax viloyati",
+  "kashkadarya region": "Qashqadaryo viloyati",
+  "navoi region": "Navoiy viloyati",
+  "namangan region": "Namangan viloyati",
+  "samarkand region": "Samarqand viloyati",
+  "surkhandarya region": "Surxondaryo viloyati",
+  "syrdarya region": "Sirdaryo viloyati",
+  "tashkent region": "Toshkent viloyati",
+  "ferghana region": "Farg‘ona viloyati",
+  "fergana region": "Farg‘ona viloyati",
+  "khorezm region": "Xorazm viloyati",
+  "karakalpakstan republic": "Qoraqalpog‘iston Respublikasi"
+};
+const UZB_CROP_SEASONS = {
+  WHEAT:["10-01","06-30"], BARLEY:["10-01","06-15"], COTTON:["04-01","09-30"],
+  RICE:["05-01","09-30"], MAIZE:["04-01","09-30"], SORGHUM:["04-01","09-30"],
+  POTATO:["03-01","08-31"], TOMATO:["03-01","09-30"], ONION:["10-01","07-31"],
+  CUCUMBER:["03-01","08-31"], GRAPES:["03-01","10-31"], MELON:["03-01","08-31"],
+  APPLE:["03-01","10-31"], VEGETABLES:["03-01","09-30"]
+};
 let pendingLocationSave = localStorage.getItem('osh_pending_aoi_save') === '1';
-let pendingAOIRasterAnalysis = false;
 let savingLocationInProgress = false;
 const AOI_STORAGE_KEY = 'osh_pending_aoi_v1';
 const locations = [];
@@ -31,7 +73,7 @@ async function api(path, options={}){
   return body;
 }
 function toast(el,msg){if(el)el.textContent=msg;}
-function openView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===`view-${name}`));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===name));const labels={overview:'Bosh sahifa',regions:'Hududiy tahlil',forecast:'Hosildorlik prognozi',models:'Model laboratoriyasi',environment:'Iqlim va tuproq',data:'Ma’lumotlar va hisobotlar'};$('page-title').textContent=labels[name]||'OSH Global';if(name==='regions'&&map)setTimeout(()=>map.resize(),100);if(name==='environment'){loadSources();if(token&&selectedLocationId)loadClimate(selectedLocationId);}if(name==='data'){loadDatasets();loadGlobalCropCatalog();}if(name==='forecast')loadDatasets();}
+function openView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===`view-${name}`));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===name));const labels={overview:'Bosh sahifa',regions:'O‘zbekiston xaritasi',forecast:'Hosildorlik prognozi',models:'Model laboratoriyasi',environment:'O‘zbekiston iqlimi va tuproq',data:'O‘zbekiston ma’lumotlari'};$('page-title').textContent=labels[name]||'OSH Global';if(name==='regions'&&map)setTimeout(()=>map.resize(),100);if(name==='environment'){loadSources();if(token&&selectedLocationId)loadClimate(selectedLocationId);}if(name==='data'){loadDatasets();loadGlobalCropCatalog();loadUzbekOfficialYield();}if(name==='forecast')loadDatasets();}
 
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>openView(b.dataset.view)));
 document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>openView(b.dataset.goto)));
@@ -46,9 +88,9 @@ function initMap(){
   map = new maplibregl.Map({
     container: 'global-map',
     style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-    center: [18, 18],
-    zoom: 1.12,
-    minZoom: 0.85,
+    center: [64.5, 41.3],
+    zoom: 4.2,
+    minZoom: 3.6,
     maxZoom: 18,
     renderWorldCopies: false,
     attributionControl: false,
@@ -156,7 +198,7 @@ function initMap(){
         'line-opacity':1
       }
     });
-    restorePendingAOI();
+    loadBoundaries().then(()=>restorePendingAOI()).catch(error=>toast($('boundary-status'),error.message));
   });
 
   map.on('click','admin-fill',(event) => {
@@ -171,7 +213,12 @@ function initMap(){
 
   map.on('click',(event) => {
     if(!drawingAOI) return;
-    drawingPoints.push([Number(event.lngLat.lng.toFixed(7)),Number(event.lngLat.lat.toFixed(7))]);
+    const point=[Number(event.lngLat.lng.toFixed(7)),Number(event.lngLat.lat.toFixed(7))];
+    if(!boundaryFeatures.length || !boundaryFeatures.some(feature=>pointInGeometry(point,feature.geometry))){
+      toast($('boundary-status'),'Nuqta O‘zbekiston chegarasidan tashqarida. Dala konturini mamlakat ichida chizing.');
+      return;
+    }
+    drawingPoints.push(point);
     updateAOIDraft();
     toast($('boundary-status'),`Maydon chizilmoqda · ${drawingPoints.length} ta nuqta · kamida 3 ta kerak`);
   });
@@ -257,14 +304,20 @@ function finishAOIDrawing(){
   persistPendingAOI(customFeature);
   selectFeature(customFeature);
   $('selected-level').textContent='CUSTOM AOI';
-  $('selected-area-help').textContent='Chizilgan dala poligoni. Kontur brauzerda saqlandi; hisobga kirgach aynan shu geometriya serverga yuboriladi.';
-  toast($('boundary-status'),'Maydon tanlandi va brauzerda saqlandi. Endi “Hududni saqlash va tahlil qilish”ni bosing.');
+  $('selected-area-help').textContent='Dala poligoni tanlandi. Ochiq MAPSPAM 2020 raster tahlili avtomatik boshlanadi; maydonni keyinroq saqlash va shaxsiy hosil datasetini ulash uchun hisobga kiring.';
+  toast($('boundary-status'),'Maydon tanlandi va brauzerda saqlandi. Ochiq raster tahlili avtomatik boshlandi; serverda saqlash ixtiyoriy.');
 }
 $('draw-aoi-start').addEventListener('click',startAOIDrawing);
 $('draw-aoi-finish').addEventListener('click',finishAOIDrawing);
 $('draw-aoi-cancel').addEventListener('click',cancelAOIDrawing);
 
-function featureName(f){const p=f?.properties||{};return p.shapeName||p.shape_name||p.shapeNameEn||p.NAME_1||p.NAME_2||p.name||p.NAME||p.admin||'Tanlangan hudud';}
+function featureName(f){
+  if(f?.properties?.__custom_aoi){
+    const p=f.properties||{};
+    return p.name_uz||p.shapeName||p.name||'Foydalanuvchi chizgan dala';
+  }
+  return uzbekAdminName(f);
+}
 function coordsCenter(geom){let x=0,y=0,n=0;const walk=v=>{if(Array.isArray(v)&&typeof v[0]==='number'&&typeof v[1]==='number'){x+=v[0];y+=v[1];n++;}else if(Array.isArray(v))v.forEach(walk);};walk(geom.coordinates);return n?{lat:y/n,lon:x/n}:null;}
 function featureBounds(features){let minX=180,minY=90,maxX=-180,maxY=-90;const walk=v=>{if(Array.isArray(v)&&typeof v[0]==='number'&&typeof v[1]==='number'){minX=Math.min(minX,v[0]);maxX=Math.max(maxX,v[0]);minY=Math.min(minY,v[1]);maxY=Math.max(maxY,v[1]);}else if(Array.isArray(v))v.forEach(walk);};features.forEach(f=>walk(f.geometry?.coordinates));return minX<=maxX?[[minX,minY],[maxX,maxY]]:null;}
 
@@ -299,49 +352,67 @@ function updateAOIProfile(feature){
   const area=ha>=100?ha.toLocaleString('uz-UZ',{maximumFractionDigits:1})+' ga':sqm.toLocaleString('uz-UZ',{maximumFractionDigits:0})+' m²';
   target.textContent='Maydon: '+area+' · Kontur nuqtalari: '+vertices+' · '+(feature.geometry?.type||'—');
 }
-async function loadBoundaryManifest(){
-  if(boundaryManifest)return boundaryManifest;
-  const response=await fetch('./data/boundaries/global/manifest.json',{cache:'no-cache'});
-  if(!response.ok)throw new Error('ADM katalog manifesti yuklanmadi');
-  boundaryManifest=await response.json();
-  return boundaryManifest;
-}
-async function refreshBoundaryAvailability(){
-  const code=$('country-iso3').value.trim().toUpperCase(), select=$('admin-level'), status=$('boundary-level-status');
-  if(!/^[A-Z]{3}$/.test(code)){toast(status,'3 harfli ISO-3 kodini kiriting (masalan UZB, KAZ, DEU).');return;}
-  try{
-    const manifest=await loadBoundaryManifest(), country=manifest.countries?.[code];
-    const levels=country?.availability_levels||{};
-    const available=country?.available_levels||Object.keys(levels).filter(key=>levels[key]?.available);
-    const previous=select.value;
-    select.innerHTML='';
-    for(let i=0;i<=5;i++){
-      const level='ADM'+i, meta=levels[level], exists=available.includes(level), option=document.createElement('option');
-      option.value=level;
-      if(exists){
-        const year=meta?.boundary_year?' · '+meta.boundary_year:'';
-        const source=meta?.static_package?' · lokal paket':' · server API';
-        option.textContent=level+year+source;
-      }else{option.textContent=level+' · mavjud emas';option.disabled=true;}
-      select.appendChild(option);
-    }
-    const chosen=available.includes(previous)?previous:(available.includes('ADM2')?'ADM2':available[0]);
-    if(chosen)select.value=chosen;
-    const levelsText=available.length?available.join(', '):'metama’lumot topilmadi';
-    const max=country?.max_available_level||'—';
-    const count=manifest.availability_catalog?.country_count||Object.keys(manifest.countries||{}).length;
-    toast(status,(country?.name||code)+' ('+code+') · mavjud: '+levelsText+' · eng chuqur: '+max+' · katalog: '+count+' mamlakat/hudud');
-  }catch(error){
-    const previous=select.value||'ADM1';
-    select.innerHTML='';
-    for(let i=0;i<=5;i++){const option=document.createElement('option');option.value='ADM'+i;option.textContent='ADM'+i+' · API orqali tekshiriladi';select.appendChild(option);}
-    select.value=previous;
-    toast(status,'ADM katalogi hozircha yuklanmadi. Tanlangan daraja server API orqali tekshiriladi.');
+function refreshBoundaryAvailability(){
+  const select=$('admin-level'), previous=select.value||'ADM2';
+  select.innerHTML='';
+  for(const level of ['ADM1','ADM2']){
+    const meta=UZB_ADMIN_LEVELS[level], option=document.createElement('option');
+    option.value=level;
+    option.textContent=`${level} · ${meta.label} · ${meta.count} ta · chegara ${meta.vintage}`;
+    select.appendChild(option);
   }
+  select.value=previous==='ADM1'?'ADM1':'ADM2';
+  $('country-iso3').value=UZB_COUNTRY;
+  toast($('boundary-level-status'),'O‘zbekiston · UZB · ADM1: 14 ta hudud (2017) · ADM2: 199 ta tuman/shahar (2020). Chuqurroq darajalar tekshirilmaguncha tanlovda ko‘rsatilmaydi.');
+}
+function uzbekAdminName(feature){
+  const props=feature?.properties||{};
+  const raw=String(props.name_uz||props.shapeName_uz||props.NAME_UZ||props.shapeName||props.name||props.NAME||'Tanlangan hudud').trim();
+  const normalized=raw.toLocaleLowerCase('en').replace(/\\s+/g,' ').trim();
+  return UZB_ADMIN_NAMES[raw]||UZB_ADMIN_NAMES[normalized]||raw;
+}
+function populateUzbAdminSelector(){
+  const select=$('uzb-admin-unit'), filter=($('uzb-admin-filter')?.value||'').trim().toLocaleLowerCase('uz');
+  if(!select)return;
+  const currentIndex=boundaryFeatures.indexOf(selectedFeature);
+  select.innerHTML='<option value="">Hududni tanlang…</option>';
+  boundaryFeatures.forEach((feature,index)=>{
+    if(feature.properties?.__custom_aoi)return;
+    const name=uzbekAdminName(feature);
+    if(filter&&!name.toLocaleLowerCase('uz').includes(filter))return;
+    const option=document.createElement('option');
+    option.value=String(index);
+    option.textContent=name;
+    select.appendChild(option);
+  });
+  if(currentIndex>=0 && Array.from(select.options).some(option=>option.value===String(currentIndex))){
+    select.value=String(currentIndex);
+  }
+}
+function pointInRing(point,ring){
+  let inside=false;
+  for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+    const xi=ring[i][0], yi=ring[i][1], xj=ring[j][0], yj=ring[j][1];
+    const crosses=((yi>point[1])!==(yj>point[1])) &&
+      (point[0]<(xj-xi)*(point[1]-yi)/(yj-yi||1e-15)+xi);
+    if(crosses)inside=!inside;
+  }
+  return inside;
+}
+function pointInPolygon(point,coordinates){
+  if(!coordinates?.length||!pointInRing(point,coordinates[0]))return false;
+  for(let i=1;i<coordinates.length;i++)if(pointInRing(point,coordinates[i]))return false;
+  return true;
+}
+function pointInGeometry(point,geometry){
+  if(!geometry)return false;
+  if(geometry.type==='Polygon')return pointInPolygon(point,geometry.coordinates);
+  if(geometry.type==='MultiPolygon')return geometry.coordinates.some(poly=>pointInPolygon(point,poly));
+  return false;
 }
 function persistPendingAOI(feature=selectedFeature){
   if(!feature?.properties?.__custom_aoi)return;
-  const record={country_iso3:$('country-iso3').value.trim().toUpperCase(),admin_level:'CUSTOM',name:featureName(feature),geojson:feature,updated_at:new Date().toISOString()};
+  const record={country_iso3:UZB_COUNTRY,admin_level:'CUSTOM',name:featureName(feature),geojson:feature,updated_at:new Date().toISOString()};
   try{localStorage.setItem(AOI_STORAGE_KEY,JSON.stringify(record));}
   catch(error){toast($('saved-location-status'),'Maydon chizildi, lekin brauzerda saqlanmadi: '+error.message);}
 }
@@ -350,7 +421,8 @@ function restorePendingAOI(){
   let record=null;
   try{record=JSON.parse(localStorage.getItem(AOI_STORAGE_KEY)||'null');}catch(_){}
   if(!record?.geojson?.geometry)return;
-  $('country-iso3').value=record.country_iso3||'UZB';
+  if(record.country_iso3&&record.country_iso3!=='UZB')return;
+  $('country-iso3').value=UZB_COUNTRY;
   $('admin-level').value='ADM2';
   selectedFeature=record.geojson;
   selectedFeature.properties={...(selectedFeature.properties||{}),__custom_aoi:true,boundaryLevel:'CUSTOM'};
@@ -358,7 +430,7 @@ function restorePendingAOI(){
   boundaryFeatures.push(selectedFeature);
   selectFeature(selectedFeature);
   $('selected-level').textContent='CUSTOM AOI';
-  $('selected-area-help').textContent='Oldin chizilgan dala konturi tiklandi. Hisobga kirgach serverga saqlash mumkin.';
+  $('selected-area-help').textContent='Oldin chizilgan dala konturi tiklandi. Ochiq MAPSPAM tahlili avtomatik yangilanadi; serverda saqlash uchun hisobga kiring.';
   toast($('boundary-status'),'Oldin chizilgan maydon tiklandi · '+featureName(selectedFeature));
   if(token&&pendingLocationSave)saveSelectedLocation();
 }
@@ -368,14 +440,15 @@ function selectFeature(f){
   $('selected-area-name').textContent=featureName(f);
   const isCustom=Boolean(f.properties?.__custom_aoi);
   $('selected-area-help').textContent=isCustom?'Foydalanuvchi chizgan aniq poligon. Tahlil faqat shu GeoJSON geometriyasiga yuboriladi.':'Tanlangan ma’muriy birlik. Tahlil shu hudud chegarasiga bog‘langan.';
-  $('selected-country').textContent=$('country-iso3').value.toUpperCase();
+  $('selected-country').textContent='O‘zbekiston · UZB';
   $('selected-level').textContent=isCustom?'CUSTOM AOI':$('admin-level').value;
   updateAOIProfile(f);
   if(isCustom)persistPendingAOI(f);
   const center=coordsCenter(f.geometry);
   $('selected-center').textContent=center? `${center.lat.toFixed(4)}, ${center.lon.toFixed(4)}` : '—';
   $('save-location').disabled=!selectedFeature;
-  $('save-location').textContent=token?'Hududni saqlash va tahlil qilish':'Kirish va hududni saqlash';
+  $('save-location').textContent=token?'Maydonni saqlash va dataset ulash':'Kirish va maydonni saqlash';
+  if(!isCustom)populateUzbAdminSelector();
 
   const selectedIndex=boundaryFeatures.indexOf(f);
   const collection={
@@ -414,7 +487,8 @@ function selectFeature(f){
 }
 
 async function loadBoundaries(){
-  const code=$('country-iso3').value.trim().toUpperCase();
+  const code=UZB_COUNTRY;
+  $('country-iso3').value=UZB_COUNTRY;
   const level=$('admin-level').value;
   const status=$('boundary-status');
   if(!/^[A-Z]{3}$/.test(code)){
@@ -426,9 +500,7 @@ async function loadBoundaries(){
     let data=null;
     let boundarySource='geoBoundaries API';
     if(level==='ADM1'||level==='ADM2'){
-      const staticPath=code==='UZB'
-        ?`./data/boundaries/${code}_${level}.geojson`
-        :`./data/boundaries/global/${code}_${level}.geojson`;
+      const staticPath=`./data/boundaries/${code}_${level}.geojson`;
       try{
         const response=await fetch(staticPath,{cache:'no-cache',headers:{Accept:'application/geo+json, application/json'}});
         if(response.ok){
@@ -448,6 +520,7 @@ async function loadBoundaries(){
     }
     boundaryFeatures=(data.features||[]).filter(f=>f&&f.geometry&&['Polygon','MultiPolygon'].includes(f.geometry.type));
     selectedFeature=null;
+    populateUzbAdminSelector();
     loadMapspamSummaries();
     $('selected-area-name').textContent='Hududni tanlang';
     $('selected-country').textContent=code;
@@ -462,14 +535,25 @@ async function loadBoundaries(){
       const bounds=featureBounds(boundaryFeatures);
       if(bounds)map.fitBounds(bounds,{padding:42,maxZoom:level==='ADM0'?4:7,duration:900});
     }
-    toast(status,`${boundaryFeatures.length} ta chegara yuklandi · ${boundarySource}`);
+    populateUzbAdminSelector();
+    const expected=UZB_ADMIN_LEVELS[level].count;
+    toast(status,`${boundaryFeatures.length}/${expected} ta O‘zbekiston ${level} chegarasi yuklandi · ${boundarySource}`);
   }catch(e){
     toast(status,e.message);
   }
 }
 $('load-boundaries').addEventListener('click',loadBoundaries);
-$('country-iso3').addEventListener('change',refreshBoundaryAvailability);
-$('country-iso3').addEventListener('blur',refreshBoundaryAvailability);
+$('admin-level').addEventListener('change',()=>{
+  selectedFeature=null;
+  $('selected-area-name').textContent='Hududni tanlang';
+  $('selected-level').textContent=$('admin-level').value;
+  loadBoundaries();
+});
+$('uzb-admin-filter').addEventListener('input',populateUzbAdminSelector);
+$('uzb-admin-unit').addEventListener('change',()=>{
+  const index=Number($('uzb-admin-unit').value);
+  if(Number.isInteger(index)&&boundaryFeatures[index])selectFeature(boundaryFeatures[index]);
+});
 refreshBoundaryAvailability();
 
 let mapspamRequestSequence = 0;
@@ -508,10 +592,7 @@ async function loadMapspamSummaries() {
   const level = $('admin-level').value;
   if(selectedFeature.properties?.__custom_aoi){
     $('mapspam-context').textContent=countryCode+' · '+featureName(selectedFeature)+' · CUSTOM AOI · faqat tanlangan poligon';
-    if(token)return analyzeCustomAOI();
-    table.innerHTML='';
-    toast(status,'Chizilgan poligon saqlandi. Shu geometriya bo‘yicha raster ma’lumotlarini olish uchun hisobga kiring.');
-    return;
+    return analyzeCustomAOI();
   }
   const adminId = mapspamSelectedAdminId(selectedFeature, countryCode, level);
   if (!adminId) {
@@ -593,12 +674,6 @@ async function analyzeCustomAOI(){
     toast($('mapspam-summary-status'),'Avval xaritada maydon chizing.');
     return;
   }
-  if(!token){
-    pendingAOIRasterAnalysis=true;
-    toast($('mapspam-summary-status'),'Tanlangan poligon bo‘yicha raster hisobi uchun hisobga kiring.');
-    openAuth();
-    return;
-  }
   const status=$('mapspam-summary-status'), table=$('mapspam-summary-table');
   const cropCode=$('aoi-crop-code')?.value||'whea';
   const technology=$('mapspam-technology').value||'all';
@@ -639,7 +714,7 @@ async function analyzeCustomAOI(){
   }
 }
 $('analyze-aoi-mapspam')?.addEventListener('click',analyzeCustomAOI);
-$('aoi-crop-code')?.addEventListener('change',()=>{if(selectedFeature?.properties?.__custom_aoi&&token)analyzeCustomAOI();});
+$('aoi-crop-code')?.addEventListener('change',()=>{if(selectedFeature?.properties?.__custom_aoi)analyzeCustomAOI();});
 
 $('country-iso3').addEventListener('keydown',e=>{if(e.key==='Enter')loadBoundaries();});
 
@@ -651,13 +726,13 @@ async function saveSelectedLocation(){
     pendingLocationSave=true;
     localStorage.setItem('osh_pending_aoi_save','1');
     persistPendingAOI(selectedFeature);
-    toast($('saved-location-status'),'Poligon brauzerda saqlandi. Hisobga kirgach aynan shu kontur serverga yuboriladi.');
+    toast($('saved-location-status'),'Poligon brauzerda saqlandi. Ochiq raster tahlili guest rejimida ishlaydi; hisobga kirgach aynan shu kontur serverga saqlanadi.');
     openAuth();
     return;
   }
   savingLocationInProgress=true;
   try{
-    const code=$('country-iso3').value.toUpperCase();
+    const code=UZB_COUNTRY;
     const level=selectedFeature.properties?.__custom_aoi?'CUSTOM':$('admin-level').value;
     const payload={
       country_iso3:code,
@@ -705,10 +780,6 @@ async function authAction(mode){
     await loadLocations();
     await loadDatasets();
     if(pendingLocationSave&&selectedFeature)await saveSelectedLocation();
-    else if(selectedFeature?.properties?.__custom_aoi){
-      pendingAOIRasterAnalysis=false;
-      await analyzeCustomAOI();
-    }
   }catch(e){toast($('auth-message'),e.message);}
 }
 $('register-button').addEventListener('click',()=>authAction('register'));
@@ -717,7 +788,7 @@ function setAuthUI(user){
   $('user-label').textContent=user?.email||'Mehmon rejimi';
   $('auth-open').textContent=user?'Chiqish':'Kirish';
   $('save-location').disabled=!selectedFeature;
-  $('save-location').textContent=user?'Hududni saqlash va tahlil qilish':'Kirish va hududni saqlash';
+  $('save-location').textContent=user?'Maydonni saqlash va dataset ulash':'Kirish va maydonni saqlash';
 }
 function logout(reason='Hisobdan chiqildi.'){token='';selectedLocationId=null;currentDatasetId=null;currentJobId=null;currentClimateJobId=null;localStorage.removeItem('osh_global_token');setAuthUI(null);locations.length=0;$('dataset-list').textContent='Hisobga kiring va dataset yuklang.';$('forecast-dataset').innerHTML='<option value="">Dataset yuklang</option>';$('process-dataset').disabled=true;$('location-select').innerHTML='<option value="">Avval xaritada hududni saqlang</option>';$('environment-location-select').innerHTML='<option value="">Avval hududni saqlang</option>';$('location-climate-results').hidden=true;toast($('saved-location-status'),reason);toast($('environment-status'),reason);}
 
@@ -779,6 +850,86 @@ async function loadSources(){try{
 
 
 
+let uzbOfficialYieldCache = null;
+const UZB_SIAT_SOURCES = {
+  whea: [
+    ["Bug‘doy yalpi hosili", "https://siat.stat.uz/data/1458/"],
+    ["Bug‘doy ekilgan maydoni", "https://siat.stat.uz/data/2761/"]
+  ],
+  pota: [
+    ["Kartoshka yalpi hosili", "https://siat.stat.uz/data/323/"],
+    ["Kartoshka ekilgan maydoni", "https://siat.stat.uz/data/2040/"]
+  ],
+  cott: [
+    ["Xom paxta yalpi hosili", "https://siat.stat.uz/data/2389/"],
+    ["Paxta ekilgan maydoni", "https://siat.stat.uz/data/2039/"]
+  ]
+};
+async function loadUzbekOfficialYield(){
+  const status=$('uzb-official-yield-status');
+  if(uzbOfficialYieldCache){populateUzbekOfficialYieldControls();return;}
+  try{
+    toast(status,'SIAT rasmiy statistik qatorlari yuklanmoqda…');
+    const [wheatResponse,cropsResponse]=await Promise.all([
+      fetch('./data/official-yield/UZB_ADM1_WHEA_2010_2024.json',{cache:'no-cache'}),
+      fetch('./data/official-yield/UZB_ADM1_CROPS_2010_2024.json',{cache:'no-cache'})
+    ]);
+    if(!wheatResponse.ok||!cropsResponse.ok)throw new Error('SIAT public snapshot fayllari topilmadi');
+    const wheat=await wheatResponse.json();
+    const crops=await cropsResponse.json();
+    if(wheat.country_iso3!=='UZB'||wheat.admin_level!=='ADM1'||wheat.crop_code!=='whea'||!Array.isArray(wheat.regions))throw new Error('SIAT bug‘doy snapshot identifikatsiyasi noto‘g‘ri');
+    if(crops.country_iso3!=='UZB'||crops.admin_level!=='ADM1'||!crops.crops)throw new Error('SIAT ekin snapshot identifikatsiyasi noto‘g‘ri');
+    uzbOfficialYieldCache={
+      years:wheat.years||[2010,2024],
+      geographic_coverage:wheat.geographic_coverage||crops.geographic_coverage||'13 ta qishloq xo‘jaligi hududi',
+      crops:{
+        whea:{...wheat,crop_code:'whea',crop_name_uz:wheat.crop_name_uz||'Bug‘doy'},
+        ...(crops.crops||{})
+      }
+    };
+    populateUzbekOfficialYieldControls();
+  }catch(error){
+    toast(status,'SIAT viloyat snapshoti hozircha yuklanmadi. Rasmiy manba havolalari orqali tekshiring: '+error.message);
+    $('uzb-official-yield-table').innerHTML='<div class="empty-state">SIAT fayllari GitHub Pages build paketida mavjud bo‘lganda bu yerda rasmiy viloyat qatori ko‘rsatiladi. Yuqoridagi rasmiy SIAT havolalari ochiq.</div>';
+  }
+}
+function populateUzbekOfficialYieldControls(){
+  if(!uzbOfficialYieldCache)return;
+  const cropSelect=$('uzb-official-crop');
+  const regionSelect=$('uzb-official-region');
+  const cropCode=cropSelect.value||'whea';
+  const crop=uzbOfficialYieldCache.crops[cropCode]||uzbOfficialYieldCache.crops.whea;
+  const previousRegion=regionSelect.value;
+  const regions=(crop.regions||[]).slice().sort((a,b)=>String(a.name_uz).localeCompare(String(b.name_uz),'uz'));
+  regionSelect.innerHTML=regions.map(region=>'<option value="'+escapeHtml(region.admin_code)+'">'+escapeHtml(region.name_uz)+'</option>').join('');
+  if(regions.some(region=>String(region.admin_code)===previousRegion))regionSelect.value=previousRegion;
+  renderUzbekOfficialYield();
+}
+function renderUzbekOfficialYield(){
+  if(!uzbOfficialYieldCache)return;
+  const cropCode=$('uzb-official-crop').value||'whea';
+  const regionCode=$('uzb-official-region').value;
+  const crop=uzbOfficialYieldCache.crops[cropCode];
+  const region=(crop?.regions||[]).find(item=>String(item.admin_code)===regionCode);
+  const status=$('uzb-official-yield-status');
+  const table=$('uzb-official-yield-table');
+  if(!crop||!region){
+    toast(status,'Tanlangan ekin va viloyat uchun SIAT qatori topilmadi.');
+    table.innerHTML='';
+    return;
+  }
+  const rows=(region.records||[]).slice().sort((a,b)=>Number(a.year)-Number(b.year));
+  const fmt=(value,digits=2)=>value===null||value===undefined||!Number.isFinite(Number(value))?'—':Number(value).toLocaleString('uz-UZ',{minimumFractionDigits:digits,maximumFractionDigits:digits});
+  table.innerHTML=rows.length
+    ?'<table><thead><tr><th>Yil</th><th>Hosildorlik (t/ga)</th><th>Yalpi hosil (t)</th><th>Ekilgan maydon (ga)</th></tr></thead><tbody>'+
+      rows.map(row=>'<tr><td>'+escapeHtml(row.year)+'</td><td>'+fmt(row.yield,3)+'</td><td>'+fmt(row.production_t,0)+'</td><td>'+fmt(row.sown_area_ha,0)+'</td></tr>').join('')+
+      '</tbody></table>'
+    :'<div class="empty-state">Bu viloyat uchun kuzatuv topilmadi.</div>';
+  toast(status,`SIAT · CC BY 4.0 · O‘zbekiston · ${region.name_uz} · ${crop.crop_name_uz||cropCode} · ${rows.length} yillik kuzatuv · ${uzbOfficialYieldCache.geographic_coverage}. Bu viloyat statistik nisbati, dala o‘lchovi emas.`);
+}
+$('uzb-official-crop').addEventListener('change',populateUzbekOfficialYieldControls);
+$('uzb-official-region').addEventListener('change',renderUzbekOfficialYield);
+
 let globalCropCatalogLoaded = false;
 
 async function loadGlobalCropCatalog(){
@@ -795,13 +946,16 @@ async function loadGlobalCropCatalog(){
     const countrySelect=$('global-country');
     cropSelect.innerHTML=(catalog.crops||[]).map(x=>`<option value="${escapeHtml(x.crop_code)}" data-item-type="${escapeHtml(x.item_type)}">${escapeHtml(x.crop_name)} · ${escapeHtml(x.item_type_label)} · ${escapeHtml(x.crop_code)}</option>`).join('');
     if((catalog.crops||[]).some(x=>x.crop_code===previousCrop))cropSelect.value=previousCrop;
-    countrySelect.innerHTML=(countries.countries||[]).map(x=>`<option value="${escapeHtml(x.country_iso3)}">${escapeHtml(x.area_name)} · ${escapeHtml(x.country_iso3)}</option>`).join('');
-    $('global-start-year').value='1961';
+    const uzbRecord=(countries.countries||[]).find(x=>x.country_iso3==='UZB');
+    countrySelect.innerHTML='<option value="UZB">O‘zbekiston · UZB</option>';
+    countrySelect.value='UZB';
+    $('global-start-year').value='1992';
     $('global-end-year').value='2024';
     globalCropCatalogLoaded=true;
     const counts=catalog.item_type_counts||{};
     toast(status,`FAOSTAT katalogi tayyor · ${catalog.total_item_count||0} item · ${counts.CROP||0} alohida ekin · ${counts.AGGREGATE||0} agregat · ${counts.PRODUCT_FORM||0} mahsulot shakli · ${(countries.countries||[]).length} hudud`);
     if(cropSelect.value&&countrySelect.value)await loadGlobalSeries();
+    if(!uzbRecord)toast(status,'FAOSTAT bazasida UZB qatori topilmadi. Rasmiy SIAT havolalari ma’lumotlar bo‘limida mavjud.');
   }catch(e){toast(status,`FAOSTAT katalogi yuklanmadi: ${e.message}`);}
 }
 
@@ -851,6 +1005,15 @@ $('global-item-type').addEventListener('change',()=>{globalCropCatalogLoaded=fal
 $('refresh-global-crops').addEventListener('click',()=>{globalCropCatalogLoaded=false;loadGlobalCropCatalog();});
 $('load-global-series').addEventListener('click',loadGlobalSeries);
 $('global-yield-forecast').addEventListener('click',runGlobalYieldForecast);
+
+function applyUzbekCropSeason(){
+  const code=String($('crop-code').value||'').trim().toUpperCase();
+  const season=UZB_CROP_SEASONS[code];
+  if(!season)return;
+  $('season-start').value=season[0];
+  $('season-end').value=season[1];
+}
+$('crop-code').addEventListener('change',applyUzbekCropSeason);
 
 async function boot(){try{
   const h=await api('/health');

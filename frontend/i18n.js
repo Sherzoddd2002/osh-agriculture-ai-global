@@ -8,6 +8,53 @@
     ["Model laboratoriyasi", "Model laboratory", "Лаборатория моделей"],
     ["Iqlim va tuproq", "Climate & soil", "Климат и почва"],
     ["Ma’lumotlar va hisobotlar", "Data & reports", "Данные и отчёты"],
+    ["O‘zbekiston xaritasi", "Uzbekistan map", "Карта Узбекистана"],
+    ["O‘zbekiston iqlimi va tuproq", "Uzbekistan climate & soil", "Климат и почва Узбекистана"],
+    ["O‘zbekiston ma’lumotlari", "Uzbekistan data", "Данные Узбекистана"],
+    ["Tanlangan dala hosildorligi", "Selected field yield", "Урожайность выбранного поля"],
+    ["UZB · FIELD YIELD RESEARCH", "UZB · FIELD YIELD RESEARCH", "УЗБ · ИССЛЕДОВАНИЕ УРОЖАЙНОСТИ ПОЛЯ"],
+    ["O‘ZBEKISTON · ENVIRONMENTAL DATA", "UZBEKISTAN · ENVIRONMENTAL DATA", "УЗБЕКИСТАН · ЭКОЛОГИЧЕСКИЕ ДАННЫЕ"],
+    ["Avval shu O‘zbekiston dalasi va ekini uchun kuzatilgan hosildorlik CSV datasetini tanlang. Kamida 8 ta mos yil hamda yetarli iqlim qamrovi bo‘lmasa, model prognoz bermaydi.", "First select an observed-yield CSV dataset for this Uzbekistan field and crop. The model will not forecast without at least 8 matching years and sufficient climate coverage.", "Сначала выберите CSV с наблюдаемой урожайностью для этого поля и культуры в Узбекистане. Без как минимум 8 подходящих лет и достаточного охвата климатических данных модель не выдаст прогноз."],
+    ["Prognoz tanlangan poligon, ekin va mavsumga biriktirilgan o‘z kuzatilgan hosil CSV’ingiz asosida baholanadi. SIAT viloyat statistikasi dala ma’lumoti o‘rnini bosa olmaydi.", "The forecast is evaluated using your own observed-yield CSV linked to the selected polygon, crop and season. SIAT provincial statistics cannot replace field data.", "Прогноз оценивается по вашему CSV с наблюдаемой урожайностью, привязанному к выбранному полигону, культуре и сезону. Областная статистика SIAT не заменяет полевые данные."],
+    ["O‘zbekiston · viloyatdan dalagacha", "Uzbekistan · from province to field", "Узбекистан · от области до поля"],
+    ["Viloyat, tuman yoki o‘z dalangizni tanlang", "Choose a province, district, or your own field", "Выберите область, район или своё поле"],
+    ["O‘zbekiston Respublikasi", "Republic of Uzbekistan", "Республика Узбекистан"],
+    ["Viloyat / tuman qidirish", "Search province / district", "Поиск области / района"],
+    ["Hududni ro‘yxatdan tanlang", "Choose an area from the list", "Выберите территорию из списка"],
+    ["Viloyat / respublika / Toshkent shahri", "Province / republic / Tashkent city", "Область / республика / город Ташкент"],
+    ["Tuman va shahar", "District and city", "Район и город"],
+    ["O‘zbekiston ADM1/ADM2 chegaralari tekshirilmoqda…", "Checking Uzbekistan ADM1/ADM2 boundaries…", "Проверка границ ADM1/ADM2 Узбекистана…"],
+    ["SIAT · RASMIY STATISTIKA", "SIAT · OFFICIAL STATISTICS", "SIAT · ОФИЦИАЛЬНАЯ СТАТИСТИКА"],
+    ["Viloyatlar bo‘yicha rasmiy hosildorlik manbalari", "Official provincial yield sources", "Официальные источники урожайности по областям"],
+    ["Bug‘doy", "Wheat", "Пшеница"],
+    ["Kartoshka", "Potato", "Картофель"],
+    ["Xom paxta", "Seed cotton", "Хлопок-сырец"],
+    ["O‘zbekistonning mahalliy geoma’lumot manbalari", "Uzbekistan local geospatial data sources", "Местные геоданные Узбекистана"],
+    ["Vazirlik geoaxborot tizimi", "Ministry geospatial portal", "Геоинформационный портал министерства"],
+    ["Ochiq ma’lumotlar reyestri", "Open data registry", "Реестр открытых данных"],
+    ["Rasmiy statistika va dala ma’lumotlari", "Official statistics and field data", "Официальная статистика и полевые данные"],
+    ["O‘zbekiston · FAOSTAT tarixiy qatori", "Uzbekistan · FAOSTAT historical series", "Узбекистан · исторический ряд FAOSTAT"],
+    ["Rasmiy SIAT viloyat qatori yuklanmoqda…", "Loading official SIAT provincial series…", "Загрузка официальных областных рядов SIAT…"],
+    ["SIAT viloyat snapshoti hozircha yuklanmadi.", "The SIAT provincial snapshot is not available yet.", "Областной снимок SIAT пока недоступен."],
+    ["Ekin", "Crop", "Культура"],
+    ["Yil", "Year", "Год"],
+    ["Hosildorlik (t/ga)", "Yield (t/ha)", "Урожайность (т/га)"],
+    ["Yalpi hosil (t)", "Gross production (t)", "Валовой сбор (т)"],
+    ["Ekilgan maydon (ga)", "Sown area (ha)", "Посевная площадь (га)"],
+    ["Bu viloyat statistik nisbati, dala o‘lchovi emas.", "This is a provincial statistical ratio, not a field measurement.", "Это областной статистический показатель, а не измерение на поле."],
+    ["Dala konturini O‘zbekiston ichida chizing.", "Draw the field boundary inside Uzbekistan.", "Нарисуйте контур поля внутри Узбекистана."],
+    ["O‘zbekiston bazaviy xaritasi", "Uzbekistan base map", "Базовая карта Узбекистана"],
+    ["O‘zbekiston xaritasini ochish", "Open Uzbekistan map", "Открыть карту Узбекистана"],
+    ["UZB_SIAT_PROVINCIAL_YIELD", "Uzbekistan SIAT provincial yield", "Областная урожайность SIAT Узбекистана"],
+    ["UZB_AGRO_GEO_PORTAL", "Ministry of Agriculture geospatial portal", "Геопортал Министерства сельского хозяйства"],
+    ["UZB_OPEN_DATA_REGISTRY", "Uzbekistan open-data registry", "Реестр открытых данных Узбекистана"],
+    ["IFPRI_MAPSPAM_2020_UZB", "Uzbekistan MAPSPAM 2020 reference raster", "Растровый справочник MAPSPAM 2020 для Узбекистана"],
+    ["O‘ZBEKISTON SIAT · 3 EKIN · 13 HUDUD · 2010–2024", "UZBEKISTAN SIAT · 3 CROPS · 13 REGIONS · 2010–2024", "SIAT УЗБЕКИСТАНА · 3 КУЛЬТУРЫ · 13 РЕГИОНОВ · 2010–2024"],
+    ["VAZIRLIK GEOAXBOROT PORTALI · IMPORT VA API RUXSATI TEKSHIRILMAGAN", "MINISTRY GEOSPATIAL PORTAL · INGESTION / API ACCESS NOT VERIFIED", "ГЕОПОРТАЛ МИНИСТЕРСТВА · ИМПОРТ И ДОСТУП К API НЕ ПРОВЕРЕНЫ"],
+    ["OPEN DATA KATALOGI · DATASETLAR IMPORT QILINMAGAN", "OPEN DATA CATALOGUE · DATASETS NOT YET INGESTED", "КАТАЛОГ ОТКРЫТЫХ ДАННЫХ · НАБОРЫ ЕЩЁ НЕ ИМПОРТИРОВАНЫ"],
+    ["2020 RASTER REFERENCE · DALA O‘LCHOVI EMAS", "2020 RASTER REFERENCE · NOT A FIELD MEASUREMENT", "РАСТРОВЫЙ СПРАВОЧНИК 2020 · НЕ ИЗМЕРЕНИЕ НА ПОЛЕ"],
+    ["SIAT · CC BY 4.0 · O‘zbekiston ·", "SIAT · CC BY 4.0 · Uzbekistan ·", "SIAT · CC BY 4.0 · Узбекистан ·"],
+    ["SIAT viloyat qatori hozircha yuklanmadi.", "The SIAT provincial series is not available yet.", "Областной ряд SIAT пока недоступен."],
     ["Global qishloq xo‘jaligi", "Global agriculture", "Глобальное сельское хозяйство"],
     ["Ma’lumotga asoslangan qarorlar", "Data-driven decisions", "Решения на основе данных"],
     ["Server tekshirilmoqda", "Checking server", "Проверка сервера"],
@@ -283,10 +330,10 @@
     try { localStorage.setItem("osh_language", language); } catch (_) {}
     document.documentElement.lang = language;
     document.title = language === "uz"
-      ? "OSH Agriculture AI — Global"
+      ? "OSH Agriculture AI — O‘zbekiston"
       : language === "en"
-        ? "OSH Agriculture AI — Global"
-        : "OSH Agriculture AI — Глобальная платформа";
+        ? "OSH Agriculture AI — Uzbekistan"
+        : "OSH Agriculture AI — Узбекистан";
     const selector = document.getElementById("language-select");
     if (selector && selector.value !== language) selector.value = language;
     walk(document);

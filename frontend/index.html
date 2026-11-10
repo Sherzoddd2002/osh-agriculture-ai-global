@@ -2,54 +2,54 @@
 <html lang="uz">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="OSH Agriculture AI Global — 3D global agrar xarita, iqlim va hosildorlik prognozi">
-  <title>OSH Agriculture AI — Global</title>
+  <meta name="description" content="OSH Agriculture AI — O‘zbekiston viloyatlari, tumanlari va dala poligonlari uchun agrar ma’lumotlar va hosildorlik tahlili">
+  <title>OSH Agriculture AI — O‘zbekiston</title>
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.css">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 <div class="app-shell">
   <aside class="sidebar">
-    <a class="brand" href="#overview"><span class="brand-mark">🌱</span><span><b>OSH</b><small>Agriculture AI</small><em>GLOBAL</em></span></a>
+    <a class="brand" href="#overview"><span class="brand-mark">🌱</span><span><b>OSH</b><small>Agriculture AI</small><em>O‘ZBEKISTON</em></span></a>
     <nav id="main-nav">
       <button class="nav-item" data-view="overview"><span>⌂</span>Bosh sahifa</button>
-      <button class="nav-item active" data-view="regions"><span>◎</span>Global xarita</button>
+      <button class="nav-item active" data-view="regions"><span>◎</span>O‘zbekiston xaritasi</button>
       <button class="nav-item" data-view="forecast"><span>↗</span>Hosildorlik prognozi</button>
       <button class="nav-item" data-view="models"><span>⌘</span>Model laboratoriyasi</button>
       <button class="nav-item" data-view="environment"><span>☁</span>Iqlim va tuproq</button>
       <button class="nav-item" data-view="data"><span>▤</span>Ma’lumotlar va hisobotlar</button>
     </nav>
-    <div class="sidebar-photo"><div><b>Global qishloq xo‘jaligi</b><small>Ma’lumotga asoslangan qarorlar</small></div></div>
+    <div class="sidebar-photo"><div><b>O‘zbekiston qishloq xo‘jaligi</b><small>Viloyatdan dalagacha ma’lumot</small></div></div>
     <div class="sidebar-bottom"><span class="live-dot"></span><span id="server-status">Server tekshirilmoqda</span><button id="auth-open" class="auth-button">Kirish</button></div>
   </aside>
 
   <main class="main-content">
-    <header class="topbar"><div><span class="eyebrow">GLOBAL AGRICULTURAL INTELLIGENCE</span><h1 id="page-title">Global xarita</h1></div><div class="top-actions"><span id="user-label">Mehmon rejimi</span><select id="language-select" data-i18n-skip aria-label="Select language"><option value="uz">O‘zbekcha</option><option value="en">English</option><option value="ru">Русский</option></select></div></header>
+    <header class="topbar"><div><span class="eyebrow">O‘ZBEKISTON AGRAR INTELLIGENCE</span><h1 id="page-title">O‘zbekiston xaritasi</h1></div><div class="top-actions"><span id="user-label">Mehmon rejimi</span><select id="language-select" data-i18n-skip aria-label="Select language"><option value="uz">O‘zbekcha</option><option value="en">English</option><option value="ru">Русский</option></select></div></header>
 
     <section class="view" id="view-overview">
-      <div class="hero"><div class="hero-copy"><span class="hero-kicker">OSH · GLOBAL EDITION</span><h2>Yer ma’lumotlari.<br>Hosildorlik aql bilan.</h2><p>Dunyo bo‘yicha hududni tanlang, tarixiy ma’lumotlaringizni yuklang va iqlim bilan birlashtirib tahlil qiling.</p><button class="primary-button" data-goto="regions">Hudud tanlash <b>→</b></button></div><div class="hero-meta"><span>GLOBAL DATA WORKSPACE</span><b>OBSERVE · ENRICH · ANALYZE</b></div></div>
+      <div class="hero"><div class="hero-copy"><span class="hero-kicker">OSH · O‘ZBEKISTON AGRICULTURE AI</span><h2>Har bir dala.<br>O‘z ma’lumoti bilan.</h2><p>Viloyat yoki tumanni tanlang, dalangiz chegarasini xaritada chizing va ob-havo, ekin tarixi hamda mavjud rasmiy statistikani shu hududga bog‘lab tahlil qiling.</p><button class="primary-button" data-goto="regions">O‘zbekiston xaritasini ochish <b>→</b></button></div><div class="hero-meta"><span>UZBEKISTAN FIELD INTELLIGENCE</span><b>HUDUD · EKIN · MAVSUM</b></div></div>
       <div class="kpi-grid">
-        <article class="kpi-card"><small>Environmental manbalar</small><strong>4</strong><span>Weather · NDVI · SMAP · Soil</span></article>
-        <article class="kpi-card"><small>Global hudud qamrovi</small><strong>ADM0–4</strong><span>Mamlakatga qarab mavjud daraja</span></article>
-        <article class="kpi-card"><small>Ob-havo pipeline</small><strong class="green-text">Faol</strong><span>NASA POWER daily API</span></article>
-        <article class="kpi-card"><small>AI holati</small><strong class="amber-text">Tadqiqot</strong><span>Global model hali tasdiqlanmagan</span></article>
+        <article class="kpi-card"><small>ADM1 · hududlar</small><strong>14</strong><span>2017-yil chegara snapshoti</span></article>
+        <article class="kpi-card"><small>ADM2 · tuman/shahar</small><strong>199</strong><span>2020-yil chegara snapshoti</span></article>
+        <article class="kpi-card"><small>Rasmiy SIAT hosil qatori</small><strong>3 ekin</strong><span>Bug‘doy · kartoshka · xom paxta</span></article>
+        <article class="kpi-card"><small>Model holati</small><strong class="amber-text">Tadqiqot</strong><span>Shaxsiy dala modeli uchun hosil tarixi kerak</span></article>
       </div>
       <div class="section-heading"><div><span class="eyebrow">ISH JARAYONI</span><h2>Hududingizdan prognozgacha</h2></div></div>
       <div class="workflow-grid">
-        <article><i>01</i><b>Hududni tanlang</b><p>Dunyo xaritasidan mamlakat va ma’muriy hududni belgilang.</p></article>
-        <article><i>02</i><b>Ma’lumot yuklang</b><p>Hosildorlik va ekin maydonining tarixiy qatorini CSV orqali kiriting.</p></article>
-        <article><i>03</i><b>Environmental data</b><p>NASA POWER ob-havosi avtomatik yig‘iladi; boshqa qatlamlar qamrovi alohida tekshiriladi.</p></article>
-        <article><i>04</i><b>AI tahlil</b><p>Vaqt bo‘yicha validatsiya, Persistence benchmark va prognoz ssenariysi.</p></article>
+        <article><i>01</i><b>Viloyat yoki tumanni tanlang</b><p>O‘zbekiston ADM1/ADM2 chegaralaridan kerakli hududni belgilang.</p></article>
+        <article><i>02</i><b>Dala poligonini chizing</b><p>Yer konturini xaritada belgilang; maydon shu geometriya bilan tahlil qilinadi.</p></article>
+        <article><i>03</i><b>Mahalliy ma’lumotlarni ulang</b><p>SIAT, NASA ob-havosi, Sentinel-2 va mavjud tuproq/suv manbalarini tekshiring.</p></article>
+        <article><i>04</i><b>Hosil modelini baholang</b><p>Faqat shu dala va ekinga tegishli kuzatilgan hosil tarixi bo‘lsa prognoz tuzing.</p></article>
       </div>
-      <div class="notice"><b>Ilmiy aniqlik:</b> hozirgi MVP ob-havoni tanlangan poligonning vakillik nuqtasidan oladi. Bu butun dala yoki poligon bo‘yicha zonal o‘rtacha emas. NDVI, SMAP va SoilGrids ulanishi keyingi connector bosqichida yoqiladi.</div>
+      <div class="notice"><b>Ilmiy aniqlik:</b> NASA POWER hozircha vakillik nuqtasi ob-havosini beradi; butun dala bo‘yicha zonal o‘rtacha emas. SIAT rasmiy viloyat hosil qatori bug‘doy, kartoshka va xom paxta uchun mavjud; tumandagi hosildorlikni taxmin qilib to‘ldirmaymiz. Sentinel-2 NDVI, SoilGrids va suv qatlamlari to‘liq AOI zonal tahlilga hali ulanmagan.</div>
     </section>
 
     <section class="view active" id="view-regions">
-      <div class="page-intro"><span class="eyebrow">OSH · GLOBAL AGRICULTURE INTELLIGENCE</span><h2>Butun Yer sharidan hududingizni tanlang</h2><p>Globusni aylantiring, mamlakat va ma’muriy darajani tanlang. Keyin hududni saqlab, iqlim hamda mavjud hosildorlik ma’lumotlarini tahlil qiling.</p></div>
+      <div class="page-intro"><span class="eyebrow">O‘ZBEKISTON · VILOYATDAN DALAGACHA</span><h2>Viloyat, tuman yoki o‘z dalangizni tanlang</h2><p>Xarita O‘zbekiston hududiga yaqinlashtirilgan. Tekshirilgan ADM1 va ADM2 chegaralaridan tanlang yoki dala konturini o‘zingiz chizing.</p></div>
       <div class="toolbar panel">
-        <label>Mamlakat ISO-3<input id="country-iso3" maxlength="3" value="UZB" placeholder="UZB, KAZ, DEU" autocomplete="off"></label>
-        <label>Ma’muriy daraja<select id="admin-level"><option>ADM0</option><option selected>ADM1</option><option>ADM2</option><option>ADM3</option><option>ADM4</option><option>ADM5</option></select></label>
-        <span id="boundary-level-status" class="muted" role="status">Mamlakat bo‘yicha ADM0–ADM5 mavjudligi tekshirilmoqda…</span>
+        <div class="uzb-context"><b>O‘zbekiston Respublikasi</b><small>ISO-3: UZB · vaqt zonasi: Asia/Tashkent</small></div><input id="country-iso3" type="hidden" value="UZB">
+        <label>Ma’muriy daraja<select id="admin-level"><option value="ADM1">Viloyat / respublika / Toshkent shahri</option><option value="ADM2" selected>Tuman va shahar</option></select></label><label class="admin-filter-label">Viloyat / tuman qidirish<input id="uzb-admin-filter" type="search" placeholder="Masalan: Samarqand, G‘ijduvon…"></label><label>Hududni ro‘yxatdan tanlang<select id="uzb-admin-unit"><option value="">Chegaralar yuklanmoqda…</option></select></label>
+        <span id="boundary-level-status" class="muted" role="status">O‘zbekiston ADM1/ADM2 chegaralari tekshirilmoqda…</span>
         <button class="primary-button" id="load-boundaries">Chegaralarni yuklash</button>
         <button class="secondary-button" id="draw-aoi-start" type="button">＋ Maydon chizish</button>
         <button class="secondary-button" id="draw-aoi-finish" type="button" disabled>Tugatish</button>
@@ -60,20 +60,20 @@
         <article class="panel map-panel">
           <div class="panel-title">
             <div>
-              <span class="eyebrow">LIVE GLOBAL MAP</span>
-              <h3>Yer shari · 3D</h3>
+              <span class="eyebrow">O‘ZBEKISTON · INTERAKTIV XARITA</span>
+              <h3>Viloyatlar va tumanlar</h3>
               <small id="map-caption">Hudud tanlanmagan</small>
             </div>
-            <span class="source-pill">GLOBE VIEW</span>
+            <span class="source-pill">UZB · WGS84</span>
           </div>
           <div class="globe-viewport">
             <div id="global-map"></div>
             <div class="globe-hud globe-hud-top"><span class="globe-live-dot"></span><span>GLOBAL TERRAIN VIEW</span><b id="globe-status">GLOBUS YUKLANMOQDA</b></div>
-            <div class="globe-hud globe-hud-bottom"><span>DRAG · AYLANtirish</span><span>SCROLL · YAQINLASHTIRISH</span></div>
+            <div class="globe-hud globe-hud-bottom"><span>NUQTA · HUDUDNI TANLASH</span><span>SCROLL · YAQINLASHTIRISH</span></div>
           </div>
-          <div class="map-attribution">Globus va bazaviy xarita: CARTO / OpenStreetMap · Hudud chegaralari: geoBoundaries gbOpen. Chegaralar yuklanganda tanlangan ma’muriy hudud yorqin rang bilan belgilanadi.</div>
+          <div class="map-attribution">O‘zbekiston ADM1: 14 ta obyekt (2017); ADM2: 199 ta obyekt (2020). Manba: geoBoundaries. Chegara snapshot yili amaldagi ma’muriy ro‘yxat yangilangan sana degani emas.</div>
         </article>
-        <aside class="panel selection-panel"><span class="eyebrow">TANLANGAN HUDUD</span><h3 id="selected-area-name">Hududni tanlang</h3><p id="selected-area-help">ADM hududini tanlang yoki “Maydon chizish” orqali dalangiz konturini belgilang. 3 yoki undan ko‘p nuqta kerak.</p><div class="selection-metrics"><div><small>Mamlakat</small><b id="selected-country">—</b></div><div><small>Daraja</small><b id="selected-level">—</b></div><div><small>Markaz koordinatasi</small><b id="selected-center">—</b></div></div><div id="aoi-profile" class="notice compact">Hudud maydoni va kontur geometriyasi tanlangandan keyin ko‘rinadi.</div><label class="climate-year-label">Tarixiy ma’lumot boshlanish yili<input id="climate-start-year" type="number" min="1981" max="2200" value="2010"></label><button class="primary-button full" id="save-location" disabled>Kirish va hududni saqlash</button><div class="notice compact">Chizilgan poligon aynan o‘z geometriyasi bilan saqlanadi. NASA POWER hozircha vakillik nuqtasi bo‘yicha iqlim beradi; MAPSPAM tarixiy rasteri esa dala o‘lchovi emas.</div><div id="saved-location-status" class="muted"></div></aside>
+        <aside class="panel selection-panel"><span class="eyebrow">TANLANGAN HUDUD</span><h3 id="selected-area-name">Hududni tanlang</h3><p id="selected-area-help">Viloyat yoki tumanni tanlang yoxud “Maydon chizish” orqali o‘z dalangiz konturini belgilang.</p><div class="selection-metrics"><div><small>Mamlakat</small><b id="selected-country">—</b></div><div><small>Daraja</small><b id="selected-level">—</b></div><div><small>Taxminiy markaz koordinatasi</small><b id="selected-center">—</b></div></div><div id="aoi-profile" class="notice compact">Hudud maydoni va kontur geometriyasi tanlangandan keyin ko‘rinadi.</div><label class="climate-year-label">Tarixiy ma’lumot boshlanish yili<input id="climate-start-year" type="number" min="1981" max="2200" value="2010"></label><button class="primary-button full" id="save-location" disabled>Hisobga kirish va maydonni saqlash</button><div class="notice compact">Ochiq MAPSPAM 2020 hisoboti login talab qilmaydi, lekin taxminan 9,3 km rasterga asoslangan tarixiy bahodir. NASA POWER hozircha poligon markaziga yaqin vakillik nuqtasidan foydalanadi. Maydonni saqlash va shaxsiy hosil tarixini bog‘lash uchun hisob kerak.</div><div id="saved-location-status" class="muted"></div></aside>
       </div>
 
       <section class="panel mapspam-results-panel" id="mapspam-results-panel" aria-live="polite">
@@ -92,7 +92,10 @@
             </select>
             <label for="aoi-crop-code">Chizilgan maydon ekini</label>
             <select id="aoi-crop-code">
-              <option value="whea">Bug‘doy</option><option value="rice">Guruch</option><option value="maiz">Makkajo‘xori</option><option value="barl">Arpa</option><option value="pota">Kartoshka</option><option value="soyb">Soya</option><option value="cott">Paxta</option><option value="sugc">Shakarqamish</option><option value="sunf">Kungaboqar</option><option value="sorg">Jo‘xori</option><option value="bean">Loviya</option><option value="chic">No‘xat</option><option value="lent">Yasmiq</option><option value="rape">Raps</option><option value="sesa">Kunjut</option><option value="bana">Banan</option><option value="citr">Sitrus</option><option value="toma">Pomidor</option><option value="onio">Piyoz</option><option value="vege">Sabzavotlar</option><option value="cass">Maniok</option><option value="swpo">Batata</option><option value="yams">Yams</option><option value="orts">Boshqa ildizmevalar</option><option value="mill">Mayda tariq</option><option value="pmil">Marvarid tariq</option><option value="ocer">Boshqa donlar</option><option value="cowp">Vigna</option><option value="pige">Kabutar no‘xati</option><option value="opul">Boshqa dukkaklilar</option><option value="grou">Yeryong‘oq</option><option value="cnut">Kokos</option><option value="oilp">Moyli palma</option><option value="ooil">Boshqa moyli ekinlar</option><option value="sugb">Qand lavlagi</option><option value="ofib">Boshqa tolali ekinlar</option><option value="coff">Arabika qahva</option><option value="rcof">Robusta qahva</option><option value="coco">Kakao</option><option value="teas">Choy</option><option value="toba">Tamaki</option><option value="plnt">Plantain</option><option value="trof">Tropik mevalar</option><option value="temf">Mo‘tadil mevalar</option><option value="rubb">Kauchuk</option><option value="rest">Boshqa ekinlar</option>
+              <optgroup label="Asosiy ekinlar"><option value="whea">Bug‘doy</option><option value="cott">Paxta</option><option value="rice">Sholi</option><option value="maiz">Makkajo‘xori</option><option value="barl">Arpa</option><option value="sorg">Jo‘xori</option></optgroup>
+              <optgroup label="Dukkakli va moyli ekinlar"><option value="bean">Loviya</option><option value="chic">No‘xat</option><option value="lent">Yasmiq</option><option value="soyb">Soya</option><option value="sunf">Kungaboqar</option><option value="sesa">Kunjut</option><option value="rape">Raps</option><option value="grou">Yeryong‘oq</option></optgroup>
+              <optgroup label="Sabzavot va poliz"><option value="pota">Kartoshka</option><option value="toma">Pomidor</option><option value="onio">Piyoz</option><option value="vege">Sabzavotlar</option><option value="swpo">Batata</option><option value="mill">Mayda tariq</option><option value="pmil">Marvarid tariq</option><option value="ocer">Boshqa donlar</option></optgroup>
+              <optgroup label="Bog‘dorchilik va boshqa ekinlar"><option value="temf">Mo‘tadil mevalar</option><option value="citr">Sitrus</option><option value="bana">Banan</option><option value="sugb">Qand lavlagi</option><option value="ofib">Boshqa tolali ekinlar</option><option value="rest">Boshqa ekinlar</option><option value="rubb">Kauchuk</option><option value="toba">Tamaki</option></optgroup>
             </select>
             <button class="secondary-button" id="analyze-aoi-mapspam" type="button">Chizilgan poligonni hisoblash</button>
             <button class="secondary-button" id="refresh-mapspam-summary" type="button">Yangilash</button>
@@ -108,10 +111,10 @@
       <div class="section-heading"><div><span class="eyebrow">DATASET</span><h2>Hosildorlik ma’lumotingiz bormi?</h2><p>Bo‘lsa, CSV yuklang. Bo‘lmasa, yuqoridagi iqlim panelidan foydalanishingiz mumkin.</p></div></div>
       <div class="section-heading"><div><span class="eyebrow">DATASET</span><h2>Keyingi qadam: hosildorlik ma’lumotini yuklash</h2><p>Avval yuqorida hududni saqlang, so‘ng CSV faylni tanlang.</p></div></div>
       <div class="panel upload-panel">
-        <div class="notice compact">Model global jadvalni umumlashtirib o‘qimaydi: har bir dataset tanlangan bitta saqlangan poligonning `location_id` qiymati va bitta `crop_code` bilan bog‘lanadi. Prognoz faqat shu hudud va shu ekin datasetidan hisoblanadi.</div>
+        <div class="notice compact">Har bir dataset bitta saqlangan dala poligoni (`location_id`), bitta ekin va bitta mavsumga bog‘lanadi. Ekin tanlanganda tavsiya etilgan mavsum sanalari qo‘yiladi; ularni dalangiz texnologiyasiga qarab o‘zgartirishingiz mumkin. Shaxsiy prognoz uchun kuzatilgan hosil tarixi kerak.</div>
         <div class="upload-grid">
           <label>Saqlangan hudud<select id="location-select"><option value="">Avval xaritada hududni saqlang</option></select></label>
-          <label>Ekin kodi<input id="crop-code" value="WHEAT" placeholder="WHEAT, MAIZE, RICE"></label>
+          <label>Ekin kodi<select id="crop-code"><option value="WHEAT">Bug‘doy</option><option value="COTTON">Paxta</option><option value="RICE">Sholi</option><option value="MAIZE">Makkajo‘xori</option><option value="BARLEY">Arpa</option><option value="SORGHUM">Jo‘xori</option><option value="POTATO">Kartoshka</option><option value="TOMATO">Pomidor</option><option value="ONION">Piyoz</option><option value="CUCUMBER">Bodring</option><option value="GRAPES">Uzum</option><option value="MELON">Qovun</option><option value="APPLE">Olma</option><option value="VEGETABLES">Sabzavotlar</option></select></label>
           <label>Hosil mavsumi boshlanishi<input id="season-start" value="10-01" placeholder="MM-DD"></label>
           <label>Hosil mavsumi tugashi<input id="season-end" value="06-30" placeholder="MM-DD"></label>
           <label>Yil ustuni<input id="year-column" value="year"></label>
@@ -125,9 +128,9 @@
     </section>
 
     <section class="view" id="view-forecast">
-      <div class="page-intro"><span class="eyebrow">YIELD FORECAST</span><h2>Hosildorlik prognozi</h2><p>Tanlangan dataset bo‘yicha tarixiy ob-havo feature'lari bilan vaqtli validatsiya va tadqiqot ssenariysi.</p></div>
+      <div class="page-intro"><span class="eyebrow">UZB · FIELD YIELD RESEARCH</span><h2>Tanlangan dala hosildorligi</h2><p>Prognoz tanlangan poligon, ekin va mavsumga biriktirilgan o‘z kuzatilgan hosil CSV’ingiz asosida baholanadi. SIAT viloyat statistikasi dala ma’lumoti o‘rnini bosa olmaydi.</p></div>
       <div class="panel forecast-form"><label>Dataset<select id="forecast-dataset"><option value="">Dataset yuklang</option></select></label><label>Maqsadli yil<input type="number" id="target-year" value="2027" min="1900" max="2200"></label><label>Model<select id="forecast-model"><option value="">Eng yaxshi OOF varianti</option><option value="LINEAR_REGRESSION">Linear Regression</option><option value="RIDGE">Ridge</option><option value="ELASTIC_NET">ElasticNet</option><option value="RANDOM_FOREST">Random Forest</option><option value="EXTRA_TREES">Extra Trees</option><option value="HIST_GRADIENT_BOOSTING">HistGradientBoosting</option></select></label><button id="run-prediction" class="primary-button">AI prognozini hisoblash</button></div>
-      <div id="prediction-result" class="panel result-panel"><div class="empty-state">Prognoz uchun datasetni tanlang va environmental processing tugaganini tekshiring.</div></div>
+      <div id="prediction-result" class="panel result-panel"><div class="empty-state">Avval shu O‘zbekiston dalasi va ekini uchun kuzatilgan hosildorlik CSV datasetini tanlang. Kamida 8 ta mos yil hamda yetarli iqlim qamrovi bo‘lmasa, model prognoz bermaydi.</div></div>
     </section>
 
     <section class="view" id="view-models">
@@ -136,7 +139,7 @@
     </section>
 
     <section class="view" id="view-environment">
-      <div class="page-intro"><span class="eyebrow">ENVIRONMENTAL DATA</span><h2>Iqlim va tuproq</h2><p>Har bir manbaning real ulanish holati, qamrovi va cheklovi ko‘rsatiladi.</p></div>
+      <div class="page-intro"><span class="eyebrow">O‘ZBEKISTON · ENVIRONMENTAL DATA</span><h2>O‘zbekiston iqlimi va tuproq</h2><p>NASA POWER, Open-Meteo, Sentinel-2, SMAP va SoilGrids manbalarining holati, qamrovi va fazoviy aniqligi alohida ko‘rsatiladi.</p></div>
       <div id="source-cards" class="source-grid"><div class="loading">Manbalar tekshirilmoqda…</div></div>
       <div class="toolbar panel environment-toolbar">
         <label>Saqlangan hudud<select id="environment-location-select"><option value="">Avval hududni saqlang</option></select></label>
@@ -167,31 +170,54 @@
     </section>
 
     <section class="view" id="view-data">
-      <div class="page-intro"><span class="eyebrow">DATA & REPORTS</span><h2>Ma’lumotlar va hisobotlar</h2><p>Yuklangan datasetlar, yillar qamrovi, ob-havo integratsiyasi va processing job holati.</p></div>
+      <div class="page-intro"><span class="eyebrow">O‘ZBEKISTON · DATA & REPORTS</span><h2>Rasmiy statistika va dala ma’lumotlari</h2><p>SIAT, Qishloq xo‘jaligi vazirligi geoportali, FAOSTAT hamda o‘zingiz yuklagan dala datasetlarini bir joyda tekshiring.</p></div>
       <div class="panel">
-        <div class="panel-title"><div><span class="eyebrow">GLOBAL HISTORICAL DATA</span><h3>FAOSTAT tarixiy ekinlar bazasi</h3></div><button class="secondary-button" id="refresh-global-crops">Yangilash</button></div>
-        <p class="muted">FAOSTAT QCL · alohida ekinlar, yig‘ma agregatlar va mahsulot shakllari alohida tasniflanadi. Mavjud yillar mamlakat va itemga qarab farq qiladi. Bu tarixiy kuzatuv, prognoz emas.</p>
+        <div class="panel-title"><div><span class="eyebrow">UZB NATIONAL SERIES</span><h3>O‘zbekiston · FAOSTAT tarixiy qatori</h3></div><button class="secondary-button" id="refresh-global-crops">Yangilash</button></div>
+        <p class="muted">Mamlakat tanlovi O‘zbekiston bilan cheklangan. FAOSTAT QCL — milliy darajadagi tarixiy kuzatuv; viloyat/tuman yoki dala hosildorligini almashtirmaydi. So‘nggi mavjud yil ma’lumot bazasining yangilanishiga bog‘liq.</p>
         <div class="upload-grid">
           <label>Mamlakat / hudud<select id="global-country"><option value="">Yuklanmoqda…</option></select></label>
           <label>Ma’lumot turi<select id="global-item-type"><option value="CROP">Alohida ekinlar</option><option value="AGGREGATE">Yig‘ma ko‘rsatkichlar</option><option value="PRODUCT_FORM">Mahsulot shakllari</option><option value="ALL">Barchasi</option></select></label>
           <label>Ekin / mahsulot<select id="global-crop"><option value="">Yuklanmoqda…</option></select></label>
-          <label>Boshlanish yili<input id="global-start-year" type="number" min="1961" max="2024" value="1961"></label>
+          <label>Boshlanish yili<input id="global-start-year" type="number" min="1992" max="2024" value="1992"></label>
           <label>Tugash yili<input id="global-end-year" type="number" min="1961" max="2024" value="2024"></label>
         </div>
         <div class="upload-bottom"><button class="primary-button" id="load-global-series">Tarixiy ma’lumotni ko‘rsatish</button><button class="secondary-button" id="global-yield-forecast">Hosildorlik trend ssenariysi</button></div>
-        <div id="global-data-status" class="muted" role="status">Global FAOSTAT katalogi yuklanmoqda…</div>
+        <div id="global-data-status" class="muted" role="status">O‘zbekiston FAOSTAT katalogi yuklanmoqda…</div>
         <div id="global-crop-summary" class="kpi-grid"></div>
         <div id="global-crop-table" class="table-wrap"></div>
         <div id="global-prediction-result" class="result-panel"></div>
+      </div>
+      <div class="panel uzb-official-panel">
+        <div class="panel-title"><div><span class="eyebrow">SIAT · RASMIY STATISTIKA</span><h3>Viloyatlar bo‘yicha rasmiy hosildorlik manbalari</h3></div><span class="source-pill">CC BY 4.0</span></div>
+        <p>Saytning SIAT build jarayoni bug‘doy, kartoshka va xom paxta uchun ishlab chiqarish hajmini ekilgan maydonga bo‘lib, 2010–2024 viloyat darajasidagi t/ha qatorlarini tayyorlaydi. Bu rasmiy statistik nisbat; tuman yoki alohida dala o‘lchovi emas.</p>
+        <div class="upload-grid uzb-official-controls">
+          <label>Ekin<select id="uzb-official-crop"><option value="whea">Bug‘doy</option><option value="pota">Kartoshka</option><option value="cott">Xom paxta</option></select></label>
+          <label>Viloyat<select id="uzb-official-region"><option value="">SIAT ma’lumoti yuklanmoqda…</option></select></label>
+        </div>
+        <div id="uzb-official-yield-status" class="muted" role="status">Rasmiy SIAT viloyat qatori yuklanmoqda…</div>
+        <div id="uzb-official-yield-table" class="table-wrap"></div>
+        <div class="source-grid">
+          <article class="source-card"><h3>Bug‘doy</h3><p>Yalpi hosil va ekilgan maydon. 13 qishloq xo‘jaligi hududi.</p><a href="https://siat.stat.uz/data/1458/" target="_blank" rel="noopener">SIAT · hosil</a> · <a href="https://siat.stat.uz/data/2761/" target="_blank" rel="noopener">SIAT · maydon</a></article>
+          <article class="source-card"><h3>Kartoshka</h3><p>Yalpi hosil va ekilgan maydon. 13 qishloq xo‘jaligi hududi.</p><a href="https://siat.stat.uz/data/323/" target="_blank" rel="noopener">SIAT · hosil</a> · <a href="https://siat.stat.uz/data/2040/" target="_blank" rel="noopener">SIAT · maydon</a></article>
+          <article class="source-card"><h3>Xom paxta</h3><p>Yalpi hosil va ekilgan maydon. Paxta tolasi bilan aralashtirilmaydi.</p><a href="https://siat.stat.uz/data/2389/" target="_blank" rel="noopener">SIAT · hosil</a> · <a href="https://siat.stat.uz/data/2039/" target="_blank" rel="noopener">SIAT · maydon</a></article>
+        </div>
+      </div>
+      <div class="panel uzb-official-panel">
+        <div class="panel-title"><div><span class="eyebrow">QISHLOQ XO‘JALIGI VAZIRLIGI · OPEN DATA</span><h3>O‘zbekistonning mahalliy geoma’lumot manbalari</h3></div></div>
+        <div class="source-grid">
+          <article class="source-card"><h3>Vazirlik geoaxborot tizimi</h3><p>Ekin konturlari, dala monitoringi va qishloq xo‘jaligi yerlariga oid fazoviy ma’lumotlar uchun rasmiy portal.</p><a href="https://gov.uz/oz/agro/pages/geoaxborot-tizimi" target="_blank" rel="noopener">Geoaxborot tizimini ochish</a></article>
+          <article class="source-card"><h3>Ochiq ma’lumotlar reyestri</h3><p>Ekin maydonlari konturlari, hosil va qishloq xo‘jaligida foydalanilgan suv resurslari datasetlari ro‘yxati.</p><a href="https://data.egov.uz/data/60faa9032a2e256d868e8245" target="_blank" rel="noopener">Ekin maydoni va konturlari</a> · <a href="https://data.egov.uz/data/6108023c2a2e256d868e879c" target="_blank" rel="noopener">Hosil</a> · <a href="https://data.egov.uz/data/610802fc2a2e256d868e87a1" target="_blank" rel="noopener">Suv resurslari</a></article>
+        </div>
+        <p class="muted">Ushbu sahifalar rasmiy tashqi manbalardir; havola mavjudligi ularning barcha fayllari OSH bazasiga avtomatik import qilinganini anglatmaydi. Importdan oldin format, davriylik, hudud kodi va litsenziya tekshiriladi.</p>
       </div>
       <div class="panel"><div class="panel-title"><h3>Mening datasetlarim</h3><button class="secondary-button" id="refresh-datasets">Yangilash</button></div><div id="dataset-list" class="empty-state">Hisobga kiring va dataset yuklang.</div></div>
       <div class="panel"><h3>So‘nggi background job</h3><div id="job-list" class="empty-state">Hozircha job yo‘q.</div></div>
     </section>
 
-    <footer class="footer"><span>OSH Agriculture AI · Global</span><span>Research-first · Data provenance · Open science</span><span>v0.1 foundation</span></footer>
+    <footer class="footer"><span>OSH Agriculture AI · O‘zbekiston</span><span>Rasmiy manba · Fazoviy aniqlik · Ilmiy validatsiya</span><span>Uzbekistan edition</span></footer>
   </main>
 </div>
 
-<div class="modal-backdrop" id="auth-modal" hidden><div class="modal"><button class="modal-close" id="auth-close">×</button><span class="eyebrow">USER ACCOUNT</span><h2>OSH Global hisob</h2><p>Ochiq xarita va chegara katalogini ko‘rish uchun hisob shart emas. Chizilgan poligonni serverda saqlash, shaxsiy CSV dataset va aynan shu hudud modelini yuritish uchun hisob kerak.</p><label>Email<input id="auth-email" type="email" autocomplete="username" placeholder="name@example.com"></label><label>Parol<input id="auth-password" type="password" autocomplete="current-password" minlength="10" placeholder="Ro‘yxatdan o‘tishda kamida 10 belgi"></label><div class="modal-actions"><button class="secondary-button" id="register-button">Ro‘yxatdan o‘tish</button><button class="primary-button" id="login-button">Kirish</button></div><small id="auth-message"></small></div></div>
+<div class="modal-backdrop" id="auth-modal" hidden><div class="modal"><button class="modal-close" id="auth-close">×</button><span class="eyebrow">USER ACCOUNT</span><h2>OSH O‘zbekiston hisobi</h2><p>Ochiq O‘zbekiston xaritasi, ADM katalogi va chizilgan maydon uchun ochiq MAPSPAM 2020 raster hisobi hisobga kirmasdan ishlaydi (server API online bo‘lishi kerak). Email va parol faqat maydonni serverda doimiy saqlash, o‘zingizning haqiqiy hosil ma’lumotlaringizni CSV orqali ulash va shu maydon/ekin uchun shaxsiy model ishlatish uchun kerak. Hisob ochish faqat shaxsiy ma’lumotlarni saqlash uchun kerak.</p><label>Email<input id="auth-email" type="email" autocomplete="username" placeholder="name@example.com"></label><label>Parol<input id="auth-password" type="password" autocomplete="current-password" minlength="10" placeholder="Ro‘yxatdan o‘tishda kamida 10 belgi"></label><div class="modal-actions"><button class="secondary-button" id="register-button">Ro‘yxatdan o‘tish</button><button class="primary-button" id="login-button">Kirish</button></div><small id="auth-message"></small></div></div>
 <script src="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.js"></script><script src="./i18n.js"></script><script src="./app.js"></script>
 </body></html>
