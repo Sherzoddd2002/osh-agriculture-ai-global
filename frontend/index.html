@@ -47,8 +47,9 @@
     <section class="view active" id="view-regions">
       <div class="page-intro"><span class="eyebrow">OSH · GLOBAL AGRICULTURE INTELLIGENCE</span><h2>Butun Yer sharidan hududingizni tanlang</h2><p>Globusni aylantiring, mamlakat va ma’muriy darajani tanlang. Keyin hududni saqlab, iqlim hamda mavjud hosildorlik ma’lumotlarini tahlil qiling.</p></div>
       <div class="toolbar panel">
-        <label>Mamlakat ISO-3<input id="country-iso3" maxlength="3" value="UZB" placeholder="UZB, KAZ, DEU"></label>
+        <label>Mamlakat ISO-3<input id="country-iso3" maxlength="3" value="UZB" placeholder="UZB, KAZ, DEU" autocomplete="off"></label>
         <label>Ma’muriy daraja<select id="admin-level"><option>ADM0</option><option selected>ADM1</option><option>ADM2</option><option>ADM3</option><option>ADM4</option><option>ADM5</option></select></label>
+        <span id="boundary-level-status" class="muted" role="status">Mamlakat bo‘yicha ADM0–ADM5 mavjudligi tekshirilmoqda…</span>
         <button class="primary-button" id="load-boundaries">Chegaralarni yuklash</button>
         <button class="secondary-button" id="draw-aoi-start" type="button">＋ Maydon chizish</button>
         <button class="secondary-button" id="draw-aoi-finish" type="button" disabled>Tugatish</button>
@@ -72,7 +73,7 @@
           </div>
           <div class="map-attribution">Globus va bazaviy xarita: CARTO / OpenStreetMap · Hudud chegaralari: geoBoundaries gbOpen. Chegaralar yuklanganda tanlangan ma’muriy hudud yorqin rang bilan belgilanadi.</div>
         </article>
-        <aside class="panel selection-panel"><span class="eyebrow">TANLANGAN HUDUD</span><h3 id="selected-area-name">Hududni tanlang</h3><p id="selected-area-help">ADM hududini tanlang yoki “Maydon chizish” orqali dalangiz konturini belgilang. 3 yoki undan ko‘p nuqta kerak.</p><div class="selection-metrics"><div><small>Mamlakat</small><b id="selected-country">—</b></div><div><small>Daraja</small><b id="selected-level">—</b></div><div><small>Markaz koordinatasi</small><b id="selected-center">—</b></div></div><label class="climate-year-label">Tarixiy ma’lumot boshlanish yili<input id="climate-start-year" type="number" min="1981" max="2200" value="2010"></label><button class="primary-button full" id="save-location" disabled>Kirish va hududni saqlash</button><div class="notice compact">Kichik dala yoki bog‘ chegarasini qo‘lda chizishingiz mumkin. Saqlash va tahlil uchun hisobga kirish kerak. NASA POWER nuqtaviy iqlim beradi; kichik dala uchun Sentinel-2 kabi 10 m qatlam kerak bo‘ladi.</div><div id="saved-location-status" class="muted"></div></aside>
+        <aside class="panel selection-panel"><span class="eyebrow">TANLANGAN HUDUD</span><h3 id="selected-area-name">Hududni tanlang</h3><p id="selected-area-help">ADM hududini tanlang yoki “Maydon chizish” orqali dalangiz konturini belgilang. 3 yoki undan ko‘p nuqta kerak.</p><div class="selection-metrics"><div><small>Mamlakat</small><b id="selected-country">—</b></div><div><small>Daraja</small><b id="selected-level">—</b></div><div><small>Markaz koordinatasi</small><b id="selected-center">—</b></div></div><div id="aoi-profile" class="notice compact">Hudud maydoni va kontur geometriyasi tanlangandan keyin ko‘rinadi.</div><label class="climate-year-label">Tarixiy ma’lumot boshlanish yili<input id="climate-start-year" type="number" min="1981" max="2200" value="2010"></label><button class="primary-button full" id="save-location" disabled>Kirish va hududni saqlash</button><div class="notice compact">Chizilgan poligon aynan o‘z geometriyasi bilan saqlanadi. NASA POWER hozircha vakillik nuqtasi bo‘yicha iqlim beradi; MAPSPAM tarixiy rasteri esa dala o‘lchovi emas.</div><div id="saved-location-status" class="muted"></div></aside>
       </div>
 
       <section class="panel mapspam-results-panel" id="mapspam-results-panel" aria-live="polite">
@@ -89,6 +90,11 @@
               <option value="irrigated">Sug‘oriladigan</option>
               <option value="rainfed">Lalmikor</option>
             </select>
+            <label for="aoi-crop-code">Chizilgan maydon ekini</label>
+            <select id="aoi-crop-code">
+              <option value="whea">Bug‘doy</option><option value="rice">Guruch</option><option value="maiz">Makkajo‘xori</option><option value="barl">Arpa</option><option value="pota">Kartoshka</option><option value="soyb">Soya</option><option value="cott">Paxta</option><option value="sugc">Shakarqamish</option><option value="sunf">Kungaboqar</option><option value="sorg">Jo‘xori</option><option value="bean">Loviya</option><option value="chic">No‘xat</option><option value="lent">Yasmiq</option><option value="rape">Raps</option><option value="sesa">Kunjut</option><option value="bana">Banan</option><option value="citr">Sitrus</option><option value="toma">Pomidor</option><option value="onio">Piyoz</option><option value="vege">Sabzavotlar</option><option value="cass">Maniok</option><option value="swpo">Batata</option><option value="yams">Yams</option><option value="orts">Boshqa ildizmevalar</option><option value="mill">Mayda tariq</option><option value="pmil">Marvarid tariq</option><option value="ocer">Boshqa donlar</option><option value="cowp">Vigna</option><option value="pige">Kabutar no‘xati</option><option value="opul">Boshqa dukkaklilar</option><option value="grou">Yeryong‘oq</option><option value="cnut">Kokos</option><option value="oilp">Moyli palma</option><option value="ooil">Boshqa moyli ekinlar</option><option value="sugb">Qand lavlagi</option><option value="ofib">Boshqa tolali ekinlar</option><option value="coff">Arabika qahva</option><option value="rcof">Robusta qahva</option><option value="coco">Kakao</option><option value="teas">Choy</option><option value="toba">Tamaki</option><option value="plnt">Plantain</option><option value="trof">Tropik mevalar</option><option value="temf">Mo‘tadil mevalar</option><option value="rubb">Kauchuk</option><option value="rest">Boshqa ekinlar</option>
+            </select>
+            <button class="secondary-button" id="analyze-aoi-mapspam" type="button">Chizilgan poligonni hisoblash</button>
             <button class="secondary-button" id="refresh-mapspam-summary" type="button">Yangilash</button>
           </div>
         </div>
@@ -185,6 +191,6 @@
   </main>
 </div>
 
-<div class="modal-backdrop" id="auth-modal" hidden><div class="modal"><button class="modal-close" id="auth-close">×</button><span class="eyebrow">USER ACCOUNT</span><h2>OSH Global hisob</h2><p>Datasetlar shaxsiy hisobga biriktiriladi.</p><label>Email<input id="auth-email" type="email" autocomplete="email" placeholder="name@example.com"></label><label>Parol<input id="auth-password" type="password" autocomplete="current-password" placeholder="Kamida 10 belgi"></label><div class="modal-actions"><button class="secondary-button" id="register-button">Ro‘yxatdan o‘tish</button><button class="primary-button" id="login-button">Kirish</button></div><small id="auth-message"></small></div></div>
+<div class="modal-backdrop" id="auth-modal" hidden><div class="modal"><button class="modal-close" id="auth-close">×</button><span class="eyebrow">USER ACCOUNT</span><h2>OSH Global hisob</h2><p>Datasetlar shaxsiy hisobga biriktiriladi.</p><label>Email<input id="auth-email" type="email" autocomplete="username" placeholder="name@example.com"></label><label>Parol<input id="auth-password" type="password" autocomplete="current-password" minlength="10" placeholder="Ro‘yxatdan o‘tishda kamida 10 belgi"></label><div class="modal-actions"><button class="secondary-button" id="register-button">Ro‘yxatdan o‘tish</button><button class="primary-button" id="login-button">Kirish</button></div><small id="auth-message"></small></div></div>
 <script src="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.js"></script><script src="./i18n.js"></script><script src="./app.js"></script>
 </body></html>
