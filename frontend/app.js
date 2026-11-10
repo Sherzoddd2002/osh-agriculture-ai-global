@@ -587,16 +587,133 @@ async function loadMapspamSummaries() {
 $('mapspam-technology').addEventListener('change', loadMapspamSummaries);
 $('refresh-mapspam-summary').addEventListener('click', loadMapspamSummaries);
 
+async function analyzeCustomAOI(){
+  if(!selectedFeature?.properties?.__custom_aoi){
+    toast($('mapspam-summary-status'),'Avval xaritada maydon chizing.');
+    return;
+  }
+  if(!token){
+    pendingAOIRasterAnalysis=true;
+    toast($('mapspam-summary-status'),'Tanlangan poligon bo‘yicha raster hisobi uchun hisobga kiring.');
+    openAuth();
+    return;
+  }
+  const status=$('mapspam-summary-status'), table=$('mapspam-summary-table');
+  const cropCode=$('aoi-crop-code')?.value||'whea';
+  const technology=$('mapspam-technology').value||'all';
+  const requestId=++mapspamRequestSequence;
+  const payload={
+    geojson:selectedFeature,
+    crop_code:cropCode,
+    technology,
+    location_name:featureName(selectedFeature),
+    admin_level:'CUSTOM'
+  };
+  table.innerHTML='';
+  toast(status,'Tanlangan poligon ichidagi MAPSPAM 2020 raster kataklari hisoblanmoqda…');
+  try{
+    const result=await api('/global-raster-summary/mapspam',{
+      method:'POST',
+      headers:authHeaders(),
+      body:JSON.stringify(payload)
+    });
+    if(requestId!==mapspamRequestSequence)return;
+    const valid=Number(result.valid_cells||0);
+    const values=[
+      ['Ekin',result.crop_name||cropCode],
+      ['Jismoniy maydon',mapspamNumber(result.physical_area_ha,1)+' ga'],
+      ['Yig‘ib olingan maydon',mapspamNumber(result.harvested_area_ha,1)+' ga'],
+      ['Ishlab chiqarish',mapspamNumber(result.production_t,1)+' t'],
+      ['Hosildorlik',result.yield_t_ha_area_weighted===null?'—':mapspamNumber(result.yield_t_ha_area_weighted,3)+' t/ga'],
+      ['Yaroqli raster kataklari',mapspamNumber(valid,0)]
+    ];
+    table.innerHTML='<div class="kpi-grid">'+values.map(([label,value])=>'<article class="kpi-card"><small>'+escapeHtml(label)+'</small><strong>'+escapeHtml(value)+'</strong></article>').join('')+'</div>';
+    const message=valid
+      ?'Tanlangan poligon bo‘yicha natija tayyor · '+valid+' ta yaroqli raster katagi · MAPSPAM '+(result.source_year||2020)+'.'
+      :'Bu poligon kesimida yaroqli MAPSPAM katagi topilmadi. Buni 0 hosildorlik deb talqin qilmang; raster qamrovi yoki 9.3 km katak o‘lchami sabab bo‘lishi mumkin.';
+    toast(status,message);
+  }catch(error){
+    if(requestId!==mapspamRequestSequence)return;
+    toast(status,'Poligon raster tahlili bajarilmadi: '+error.message);
+  }
+}
+$('analyze-aoi-mapspam')?.addEventListener('click',analyzeCustomAOI);
+$('aoi-crop-code')?.addEventListener('change',()=>{if(selectedFeature?.properties?.__custom_aoi&&token)analyzeCustomAOI();});
+
 $('country-iso3').addEventListener('keydown',e=>{if(e.key==='Enter')loadBoundaries();});
 
-$('save-location').addEventListener('click',async()=>{if(!selectedFeature)return;if(!token){toast($('saved-location-status'),'Maydon tanlandi. Saqlash va tahlil qilish uchun hisobga kiring yoki ro‘yxatdan o‘ting.');openAuth();return;}try{const code=$('country-iso3').value.toUpperCase(),level=selectedFeature.properties?.__custom_aoi?'CUSTOM':$('admin-level').value;const payload={country_iso3:code,name:featureName(selectedFeature),admin_level:level,climate_start_year:Number($('climate-start-year').value)||2010,geojson:selectedFeature,source:selectedFeature.properties?.__custom_aoi?'User-drawn AOI':'geoBoundaries gbOpen'};toast($('saved-location-status'),'Hudud saqlanmoqda va iqlim tahlili navbatga qo‘yilmoqda…');const res=await api('/locations',{method:'POST',headers:authHeaders(),body:JSON.stringify(payload)});selectedLocationId=res.id;toast($('saved-location-status'),`Hudud saqlandi · ${res.name}. Yillik iqlim job #${res.climate_job_id} boshlandi.`);await loadLocations();$('location-select').value=String(res.id);$('environment-location-select').value=String(res.id);pollClimateJob(res.climate_job_id,res.id);}catch(e){toast($('saved-location-status'),e.message);}});
+
+async function saveSelectedLocation(){
+  if(!selectedFeature)return;
+  if(!token){
+    pendingLocationSave=true;
+    localStorage.setItem('osh_pending_aoi_save','1');
+    persistPendingAOI(selectedFeature);
+    toast($('saved-location-status'),'Poligon brauzerda saqlandi. Hisobga kirgach aynan shu kontur serverga yuboriladi.');
+    openAuth();
+    return;
+  }
+  try{
+    const code=$('country-iso3').value.toUpperCase();
+    const level=selectedFeature.properties?.__custom_aoi?'CUSTOM':$('admin-level').value;
+    const payload={
+      country_iso3:code,
+      name:featureName(selectedFeature),
+      admin_level:level,
+      climate_start_year:Number($('climate-start-year').value)||2010,
+      geojson:selectedFeature,
+      source:selectedFeature.properties?.__custom_aoi?'User-drawn AOI':'geoBoundaries gbOpen'
+    };
+    toast($('saved-location-status'),'Tanlangan poligon serverga saqlanmoqda…');
+    const res=await api('/locations',{method:'POST',headers:authHeaders(),body:JSON.stringify(payload)});
+    selectedLocationId=res.id;
+    pendingLocationSave=false;
+    localStorage.removeItem('osh_pending_aoi_save');
+    localStorage.removeItem(AOI_STORAGE_KEY);
+    toast($('saved-location-status'),'Hudud saqlandi · '+res.name+'. Faqat shu hudud uchun iqlim job #'+res.climate_job_id+' boshlandi.');
+    await loadLocations();
+    $('location-select').value=String(res.id);
+    $('environment-location-select').value=String(res.id);
+    pollClimateJob(res.climate_job_id,res.id);
+    if(selectedFeature.properties?.__custom_aoi)await analyzeCustomAOI();
+  }catch(e){
+    toast($('saved-location-status'),'Hudud saqlanmadi: '+e.message);
+  }
+}
+$('save-location').addEventListener('click',saveSelectedLocation);
+
+
 
 function openAuth(){$('auth-modal').hidden=false;$('auth-message').textContent='';}
 function closeAuth(){$('auth-modal').hidden=true;}
 $('auth-open').addEventListener('click',()=>token?(logout()):openAuth());$('auth-close').addEventListener('click',closeAuth);
-async function authAction(mode){const email=$('auth-email').value.trim(),password=$('auth-password').value;if(!email||!password){toast($('auth-message'),'Email va parolni kiriting.');return;}try{const res=await api(`/auth/${mode}`,{method:'POST',headers:authHeaders(),body:JSON.stringify({email,password})});token=res.access_token;localStorage.setItem('osh_global_token',token);setAuthUI(res.user);closeAuth();await loadLocations();await loadDatasets();}catch(e){toast($('auth-message'),e.message);}}
-$('register-button').addEventListener('click',()=>authAction('register'));$('login-button').addEventListener('click',()=>authAction('login'));
-function setAuthUI(user){$('user-label').textContent=user?.email||'Mehmon rejimi';$('auth-open').textContent=user?'Chiqish':'Kirish';$('save-location').disabled=!selectedFeature;$('save-location').textContent=user?'Hududni saqlash va tahlil qilish':'Kirish va hududni saqlash';}
+async function authAction(mode){
+  const email=$('auth-email').value.trim(),password=$('auth-password').value;
+  if(!email||!password){toast($('auth-message'),'Email va parolni kiriting.');return;}
+  if(mode==='register'&&password.length<10){toast($('auth-message'),'Yangi parol kamida 10 belgidan iborat bo‘lishi kerak.');return;}
+  try{
+    const res=await api('/auth/'+mode,{method:'POST',headers:authHeaders(),body:JSON.stringify({email,password})});
+    token=res.access_token;
+    localStorage.setItem('osh_global_token',token);
+    setAuthUI(res.user);
+    closeAuth();
+    await loadLocations();
+    await loadDatasets();
+    if(pendingLocationSave&&selectedFeature)await saveSelectedLocation();
+    else if(selectedFeature?.properties?.__custom_aoi){
+      pendingAOIRasterAnalysis=false;
+      await analyzeCustomAOI();
+    }
+  }catch(e){toast($('auth-message'),e.message);}
+}
+$('register-button').addEventListener('click',()=>authAction('register'));
+$('login-button').addEventListener('click',()=>authAction('login'));
+function setAuthUI(user){
+  $('user-label').textContent=user?.email||'Mehmon rejimi';
+  $('auth-open').textContent=user?'Chiqish':'Kirish';
+  $('save-location').disabled=!selectedFeature;
+  $('save-location').textContent=user?'Hududni saqlash va tahlil qilish':'Kirish va hududni saqlash';
+}
 function logout(reason='Hisobdan chiqildi.'){token='';selectedLocationId=null;currentDatasetId=null;currentJobId=null;currentClimateJobId=null;localStorage.removeItem('osh_global_token');setAuthUI(null);locations.length=0;$('dataset-list').textContent='Hisobga kiring va dataset yuklang.';$('forecast-dataset').innerHTML='<option value="">Dataset yuklang</option>';$('process-dataset').disabled=true;$('location-select').innerHTML='<option value="">Avval xaritada hududni saqlang</option>';$('environment-location-select').innerHTML='<option value="">Avval hududni saqlang</option>';$('location-climate-results').hidden=true;toast($('saved-location-status'),reason);toast($('environment-status'),reason);}
 
 async function loadLocations(){if(!token)return;try{const rows=await api('/locations',{headers:authHeaders(false)});locations.splice(0,locations.length,...rows);const options='<option value="">Hududni tanlang</option>'+rows.map(x=>`<option value="${x.id}">${escapeHtml(x.name)} · ${escapeHtml(x.country_iso3)} · ${escapeHtml(x.admin_level)}</option>`).join('');$('location-select').innerHTML=options;$('environment-location-select').innerHTML=options;if(!selectedLocationId&&rows.length)selectedLocationId=rows[0].id;if(selectedLocationId&&rows.some(x=>x.id===selectedLocationId)){$('location-select').value=String(selectedLocationId);$('environment-location-select').value=String(selectedLocationId);loadClimate(selectedLocationId);}else if(!rows.length){selectedLocationId=null;$('environment-status').textContent='Hali saqlangan hudud yo‘q. Avval Hududiy tahlil bo‘limida hudud tanlang.';$('location-climate-results').hidden=true;}}catch(e){console.warn(e);}}
@@ -635,11 +752,11 @@ async function loadClimate(locationId){if(!token||!locationId)return;try{const d
 
 $('upload-dataset').addEventListener('click',async()=>{if(!token){openAuth();return;}const locationId=Number($('location-select').value),file=$('yield-file').files[0];if(!locationId||!file){toast($('upload-status'),'Hududni tanlang va CSV faylni biriktiring.');return;}const form=new FormData();form.append('location_id',locationId);form.append('crop_code',$('crop-code').value||'WHEAT');form.append('name',file.name);form.append('year_column',$('year-column').value||'year');form.append('yield_column',$('yield-column').value||'yield_t_ha');form.append('area_column',$('area-column').value||'');form.append('area_basis',$('area-basis').value);form.append('season_start',$('season-start').value);form.append('season_end',$('season-end').value);form.append('global_consent',$('global-consent').checked?'true':'false');form.append('file',file);toast($('upload-status'),'CSV tekshirilmoqda va bazaga yozilmoqda…');try{const res=await api('/datasets/upload',{method:'POST',headers:authHeaders(false),body:form});currentDatasetId=res.dataset_id;toast($('upload-status'),`Dataset SQL bazaga saqlandi: ${res.row_count} qator · ${res.year_range[0]}–${res.year_range[1]}. Avtomatik ob-havo va model tahlili job #${res.analysis_job_id} boshlandi.`);await loadDatasets();$('forecast-dataset').value=String(currentDatasetId);$('process-dataset').disabled=true;currentJobId=res.analysis_job_id;pollJob();}catch(e){toast($('upload-status'),e.message);}});
 
-async function loadDatasets(){if(!token)return;try{const ds=await api('/datasets',{headers:authHeaders(false)});$('dataset-list').innerHTML=ds.length?ds.map(d=>`<div class="dataset-row"><span><b>${escapeHtml(d.name)}</b><small> · ${escapeHtml(d.crop_code)} · ${d.first_year}–${d.last_year} · ${d.row_count} qator</small></span><span class="status-chip">${escapeHtml(d.status)}</span></div>`).join(''):'<div class="empty-state">Hozircha dataset yo‘q.</div>';if(ds.length){$('forecast-dataset').innerHTML=ds.map(d=>`<option value="${d.id}">${escapeHtml(d.name)} · ${d.crop_code}</option>`).join('');if(!currentDatasetId)currentDatasetId=ds[0].id;if(ds.some(d=>d.id===currentDatasetId))$('forecast-dataset').value=String(currentDatasetId);$('process-dataset').disabled=false;}}catch(e){console.warn(e);}}
+async function loadDatasets(){if(!token)return;try{const ds=await api('/datasets',{headers:authHeaders(false)});$('dataset-list').innerHTML=ds.length?ds.map(d=>{const loc=locations.find(x=>x.id===d.location_id);return `<div class="dataset-row"><span><b>${escapeHtml(d.name)}</b><small> · ${escapeHtml(d.crop_code)} · ${escapeHtml(loc?.name||'Hudud #'+d.location_id)} · ${d.first_year}–${d.last_year} · ${d.row_count} qator</small></span><span class="status-chip">${escapeHtml(d.status)}</span></div>`;}).join(''):'<div class="empty-state">Hozircha dataset yo‘q.</div>';if(ds.length){$('forecast-dataset').innerHTML=ds.map(d=>{const loc=locations.find(x=>x.id===d.location_id);return `<option value="${d.id}">${escapeHtml(loc?.name||'Hudud #'+d.location_id)} · ${escapeHtml(d.crop_code)} · ${escapeHtml(d.name)}</option>`;}).join('');if(!currentDatasetId)currentDatasetId=ds[0].id;if(ds.some(d=>d.id===currentDatasetId))$('forecast-dataset').value=String(currentDatasetId);$('process-dataset').disabled=false;}}catch(e){console.warn(e);}}
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 async function startProcessing(){if(!token||!currentDatasetId){toast($('job-list'),'Avval hisobga kiring va dataset yuklang.');return;}try{const j=await api(`/datasets/${currentDatasetId}/process`,{method:'POST',headers:authHeaders()});currentJobId=j.job_id;toast($('job-list'),`Job #${j.job_id}: ${j.status}`);pollJob();}catch(e){toast($('job-list'),e.message);}}
-function pollJob(){if(!currentJobId)return;const check=async()=>{try{const j=await api(`/jobs/${currentJobId}`,{headers:authHeaders(false)});const automatic=j.result?.automatic_analysis;$('job-list').innerHTML=`<b>Job #${j.id}</b> · ${j.status} · ${j.progress}%<p>${escapeHtml(j.message||'')}</p>${j.error?`<p class="amber-text">${escapeHtml(j.error)}</p>`:''}${automatic?`<div class="notice"><b>AI model holati:</b> ${escapeHtml(automatic.status)}<br>${escapeHtml(automatic.reason||automatic.note||'')}</div>`:''}${j.result?`<pre>${escapeHtml(JSON.stringify(j.result,null,2))}</pre>`:''}`;if(['COMPLETED','FAILED'].includes(j.status)){if(automatic?.prediction)renderPrediction({...automatic.prediction,dataset_id:currentDatasetId,location:'Tanlangan hudud',crop_code:'Dataset'});loadDatasets();return;}setTimeout(check,3000);}catch(e){toast($('job-list'),e.message);}};check();}
+function pollJob(){if(!currentJobId)return;const check=async()=>{try{const j=await api(`/jobs/${currentJobId}`,{headers:authHeaders(false)});const automatic=j.result?.automatic_analysis;$('job-list').innerHTML=`<b>Job #${j.id}</b> · ${j.status} · ${j.progress}%<p>${escapeHtml(j.message||'')}</p>${j.error?`<p class="amber-text">${escapeHtml(j.error)}</p>`:''}${automatic?`<div class="notice"><b>AI model holati:</b> ${escapeHtml(automatic.status)}<br>${escapeHtml(automatic.reason||automatic.note||'')}</div>`:''}${j.result?`<pre>${escapeHtml(JSON.stringify(j.result,null,2))}</pre>`:''}`;if(['COMPLETED','FAILED'].includes(j.status)){if(automatic?.prediction){const location=locations.find(x=>x.id===Number($('location-select').value));renderPrediction({...automatic.prediction,dataset_id:currentDatasetId,location:location?.name||'Tanlangan poligon',crop_code:$('crop-code').value||'Tanlangan ekin'});}loadDatasets();return;}setTimeout(check,3000);}catch(e){toast($('job-list'),e.message);}};check();}
 $('refresh-datasets').addEventListener('click',loadDatasets);$('process-dataset').addEventListener('click',startProcessing);
 
 $('run-prediction').addEventListener('click',async()=>{if(!token){openAuth();return;}const datasetId=Number($('forecast-dataset').value)||currentDatasetId;if(!datasetId){toast($('prediction-result'),'Avval dataset yuklang.');return;}const payload={dataset_id:datasetId,target_year:Number($('target-year').value)};if($('forecast-model').value)payload.model=$('forecast-model').value;$('prediction-result').innerHTML='<div class="empty-state">Model hisoblayapti…</div>';try{const r=await api('/predictions',{method:'POST',headers:authHeaders(),body:JSON.stringify(payload)});renderPrediction(r);}catch(e){$('prediction-result').textContent=e.message;}});
