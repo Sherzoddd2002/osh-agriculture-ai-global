@@ -1,0 +1,29 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import assert from "node:assert/strict";
+
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
+const html=fs.readFileSync(path.join(root,"docs","index.html"),"utf8");
+assert.ok(html.includes('id="map"'),"map container is missing");
+assert.ok(html.includes('id="region-load"'),"ADM boundary loader is missing");
+assert.ok(html.includes('id="region-draw-start"'),"custom field drawing is missing");
+assert.ok(html.includes('id="region-analyze"'),"area analysis control is missing");
+assert.ok(html.includes('id="region-run-model"'),"yield scenario control is missing");
+assert.ok(html.includes("./data/boundaries/global/"),"country ADM bundle path is missing");
+assert.ok(!/fly\.dev|OSH_API_BASE/i.test(html),"public Pages html must not call Fly or expose a private API origin");
+assert.ok(html.includes("renderMapspamReference"),"selected-area MAPSPAM view is missing");
+assert.ok(html.includes("fetchYieldClimateHistory"),"observed-yield climate ML workflow is missing");
+assert.ok(html.includes("NO_RASTER_CELLS"),"missing raster support must remain NULL, not zero");
+const inline=[...html.matchAll(/<script>([\s\S]*?)<\/script>/gi)];
+assert.equal(inline.length,1,"expected one inline application script");
+const tmp=path.join(root,".static-demo-check.js");
+try {
+ fs.writeFileSync(tmp,inline[0][1],"utf8");
+} finally {
+ const {spawnSync}=await import("node:child_process");
+ const result=spawnSync("node",["--check",tmp],{encoding:"utf8"});
+ fs.rmSync(tmp,{force:true});
+ assert.equal(result.status,0,result.stderr||"inline app syntax check failed");
+}
+console.log("PASS public static demo: map, global ADM, custom AOI, selected-area insights, ML controls and no Fly dependency");
