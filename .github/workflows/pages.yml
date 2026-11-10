@@ -183,17 +183,10 @@ jobs:
         run: node scripts/test_public_global_boundaries.mjs
       - name: Check public static data showcase and its QA suite
         run: python scripts/check_public_site.py
-      - name: Assemble complete application as GitHub Pages homepage
+      - name: Assemble static public homepage for GitHub Pages
         run: python scripts/assemble_public_frontend.py
-      - name: Verify complete application and language selector
-        run: node scripts/test_public_frontend.mjs
-      - name: Probe Fly API health (non-blocking visibility check)
-        run: |
-          if curl --fail --silent --show-error --connect-timeout 5 --max-time 15 https://osh-agriculture-ai-global.fly.dev/api/v1/health; then
-            echo "Fly API health endpoint responded."
-          else
-            echo "::warning::Fly API did not respond to the build-time probe; the Pages UI will show server-offline status until the API is available."
-          fi
+      - name: Verify public static demo and JavaScript
+        run: node scripts/test_public_static_demo.mjs
       - name: Upload static demo
         uses: actions/upload-pages-artifact@v3
         with:
