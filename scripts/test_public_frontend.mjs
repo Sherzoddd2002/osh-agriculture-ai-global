@@ -32,6 +32,11 @@ assert.ok(app.includes("refreshBoundaryAvailability"),"country-specific ADM avai
 assert.ok(app.includes("availability_levels"),"app does not read country ADM availability metadata");
 assert.ok(app.includes("persistPendingAOI")&&app.includes("restorePendingAOI"),"drawn AOI is not persisted/restored");
 assert.ok(app.includes("/global-raster-summary/mapspam"),"custom AOI raster summary is not wired to the zonal endpoint");
+const aoiAnalysisStart=app.indexOf("async function analyzeCustomAOI()");
+const aoiAnalysisEnd=app.indexOf("$('analyze-aoi-mapspam')",aoiAnalysisStart);
+assert.ok(aoiAnalysisStart>=0&&aoiAnalysisEnd>aoiAnalysisStart,"custom AOI analysis function is missing");
+assert.ok(!app.slice(aoiAnalysisStart,aoiAnalysisEnd).includes("if(!token)"),"public custom AOI raster analysis must not require login");
+assert.ok(page.includes("To‘lov yoki bank karta talabi yo‘q"),"account modal must explain that public analysis has no payment requirement");
 assert.ok(app.includes("dataset_id")&&app.includes("location_id"),"dataset-to-location model scope is not surfaced");
 for(const id of ["boundary-level-status","aoi-profile","aoi-crop-code","analyze-aoi-mapspam"]){
  assert.ok(page.includes('id="'+id+'"'),"full app page is missing "+id);
