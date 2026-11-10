@@ -172,6 +172,106 @@ def build_country_payload(country: str, rows: list[GlobalRasterSummary]) -> dict
     }
 
 
+def merge_uzb_adm2_reference(payload: dict, output_dir: Path) -> dict:
+    """Retain the separately validated 199-district UZB package in global export.
+
+    The central reference archive currently contains the UZB ADM0/ADM1 rows,
+    while the public MAPSPAM integration snapshot contains the complete ADM2
+    district layer. Merge only that verified ADM2 level after checking all
+    14 province parent IDs; never replace or synthesize district observations.
+    """
+    if payload.get("country_iso3") != "UZB":
+        return payload
+
+    reference_path = output_dir.parent / "UZB_MAPSPAM_2020_ADM1_ADM2.json"
+    if not reference_path.is_file():
+        raise FileNotFoundError(
+            "UZB ADM2 reference snapshot is missing: " + str(reference_path)
+        )
+    reference = json.loads(reference_path.read_text(encoding="utf-8"))
+    if (
+        reference.get("country_iso3") != "UZB"
+        or reference.get("dataset_id") != DATASET_ID
+        or reference.get("source_year") != SOURCE_YEAR
+        or reference.get("technology") != TECHNOLOGY
+        or reference.get("license") != LICENSE
+        or reference.get("source_url") != SOURCE_URL
+    ):
+        raise ValueError("UZB ADM2 reference package metadata/licence/source mismatch")
+
+    reference_levels = reference.get("levels") or {}
+    adm2 = reference_levels.get("ADM2") or {}
+    districts = adm2.get("areas") or {}
+    if len(districts) != 199 or int(adm2.get("area_count", -1)) != 199:
+        raise ValueError(
+            f"UZB ADM2 reference must contain exactly 199 districts; found {len(districts)}"
+        )
+    if int(adm2.get("crop_count", -1)) != len(CROP_CODES):
+        raise ValueError("UZB ADM2 reference crop count does not equal the 46-crop catalogue")
+
+    adm1 = (payload.get("levels") or {}).get("ADM1") or {}
+    provinces = adm1.get("areas") or {}
+    if len(provinces) != 14:
+        raise ValueError(
+            f"UZB global package must contain 14 ADM1 provinces before ADM2 merge; found {len(provinces)}"
+        )
+    province_ids = set(provinces)
+    district_parent_ids: set[str] = set()
+    for district_id, district in districts.items():
+        identity = f"UZB/ADM2/{district_id}"
+        if not str(district.get("name") or "").strip():
+            raise ValueError(f"{identity}: missing district name")
+        parent_id = str(district.get("parent_admin_id") or "").strip()
+        if not parent_id:
+            raise ValueError(f"{identity}: missing ADM1 parent ID")
+        district_parent_ids.add(parent_id)
+        crops = district.get("crops") or {}
+        if set(crops) != CROP_CODES:
+            raise ValueError(f"{identity}: expected all 46 MAPSPAM crop rows")
+        for crop_code, row in crops.items():
+            row_id = f"{identity}/{crop_code}"
+            cells = finite_nonnegative(row.get("valid_cells"), "valid_cells", row_id)
+            if not cells.is_integer():
+                raise ValueError(f"{row_id}: valid_cells must be an integer")
+            yld = finite_nonnegative(row.get("yield_t_ha"), "yield_t_ha", row_id, nullable=True)
+            status = str(row.get("spatial_status") or "").upper()
+            if status == "ESTIMATED":
+                if cells <= 0 or yld is None:
+                    raise ValueError(f"{row_id}: invalid ESTIMATED district record")
+            elif status == "NO_RASTER_CELLS":
+                if cells != 0 or yld is not None:
+                    raise ValueError(f"{row_id}: NO_RASTER_CELLS must retain NULL yield")
+            else:
+                raise ValueError(f"{row_id}: unsupported spatial status {status!r}")
+            for field in ("physical_area_ha", "harvested_area_ha", "production_t"):
+                finite_nonnegative(row.get(field), field, row_id)
+
+    if district_parent_ids != province_ids:
+        raise ValueError(
+            "UZB ADM2 parent IDs do not exactly match the 14 global ADM1 provinces; "
+            f"missing={sorted(province_ids - district_parent_ids)}, "
+            f"unknown={sorted(district_parent_ids - province_ids)}"
+        )
+
+    payload["levels"]["ADM2"] = adm2
+    payload["uzbekistan_adm2_reference"] = {
+        "source_file": "UZB_MAPSPAM_2020_ADM1_ADM2.json",
+        "district_count": 199,
+        "parent_admin_level": "ADM1",
+        "parent_province_count": 14,
+        "note": "Previously validated MAPSPAM 2020 district summaries; merged only after exact ADM1 parent-ID verification.",
+    }
+    return payload
+
+
+def count_summary_rows(payload: dict) -> int:
+    return sum(
+        len(area.get("crops") or {})
+        for level in (payload.get("levels") or {}).values()
+        for area in (level.get("areas") or {}).values()
+    )
+
+
 def write_gzip_json(path: Path, payload: dict) -> int:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -222,14 +322,16 @@ def main() -> None:
     total_bytes = 0
     for country, rows in sorted(grouped.items()):
         payload = build_country_payload(country, rows)
+        payload = merge_uzb_adm2_reference(payload, args.output_dir)
+        country_rows = count_summary_rows(payload)
         filename = f"{country}.json.gz"
         size = write_gzip_json(args.output_dir / filename, payload)
         total_bytes += size
-        total_rows += len(rows)
+        total_rows += country_rows
         countries[country] = {
             "file": filename,
             "country_name": payload["country_name"],
-            "row_count": len(rows),
+            "row_count": country_rows,
             "levels": {
                 level: {
                     "area_count": details["area_count"],
@@ -256,6 +358,7 @@ def main() -> None:
         "countries": countries,
         "notes": [
             "Only verified MAPSPAM ADM0 country, ADM1 province and ADM2 district summaries are included.",
+            "Uzbekistan ADM2 includes the previously validated 199-district public snapshot, merged only after exact linkage to all 14 ADM1 province IDs.",
             "MAPSPAM 2020 is a single reference-year gridded estimate, not a future forecast. ADM0, ADM1 and ADM2 are separate hierarchy levels and must not be added together.",
             "NO_RASTER_CELLS retains NULL yield; it is never converted to zero.",
             "Use the displayed attribution and retain the CC BY-SA 4.0 licence.",
