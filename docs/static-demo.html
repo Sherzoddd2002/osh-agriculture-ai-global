@@ -950,13 +950,25 @@ async function renderMapspamReference(feature,cropCode){
   output.textContent="Qo‘lda chizilgan dala uchun MAPSPAM ma’muriy xulosasi mos kelmaydi. Dala tahlilida ob-havo va Sentinel-2 sahnalari ko‘rsatiladi; hosildorlik AI ssenariysi uchun aynan shu maydonning tarixiy CSV qatori kerak.";
   return {status:"CUSTOM_AOI"};
  }
- const countryIso=String(props.countryISO3||props.country_iso3||$("region-iso3").value||"").toUpperCase();
+ const countryField=$("region-iso3");
+ const countryIso=String(props.countryISO3||props.country_iso3||(countryField&&countryField.value)||"UZB").toUpperCase();
  const adminId=String(props.shapeID||props.shape_id||"");
  const crop=cropList.find(item=>item[0]===cropCode);
  const cropName=crop?crop[1]:cropCode.toUpperCase();
  const displayAreaName=regionFeatureName(feature);
  output.innerHTML="<div class='region-empty'>"+regionEscape(countryIso)+" · MAPSPAM 2020 hududiy ma’lumoti yuklanmoqda…</div>";
- const payload=await loadPublicMapspamCountry(countryIso);
+ let payload;
+ if(typeof loadPublicMapspamCountry==="function"){
+  payload=await loadPublicMapspamCountry(countryIso);
+ }else{
+  payload=mapspamReferenceCache&&mapspamReferenceCache.country_iso3===countryIso?mapspamReferenceCache:null;
+  if(!payload){
+   const response=await fetch("./data/mapspam/UZB_MAPSPAM_2020_ADM1_ADM2.json",{cache:"force-cache",headers:{Accept:"application/json"}});
+   if(!response.ok)throw new Error("MAPSPAM public JSON HTTP "+response.status);
+   payload=await response.json();
+   mapspamReferenceCache=payload;
+  }
+ }
  if(selectedAOI!==feature||$("region-crop-select").value!==cropCode)return {status:"STALE_SELECTION"};
  const levelData=payload.levels&&payload.levels[level];
  const areas=levelData&&levelData.areas||{};
