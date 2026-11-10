@@ -18,11 +18,17 @@ required_ids = {
     "map", "region-iso3", "region-level", "region-load", "region-search",
     "region-select", "region-analyze", "region-yield-file", "region-run-model",
     "region-model-result", "region-crop-select", "region-mapspam-result", "crop-select", "crop-chips",
+    "region-draw-undo", "region-area", "country-data-status", "country-data-insights",
 }
 found_ids = set(re.findall(r'\bid=["\']([^"\']+)["\']', html))
 missing = sorted(required_ids - found_ids)
 if missing:
     raise SystemExit(f"FAIL: missing required UI IDs: {missing}")
+
+all_ids = re.findall(r'\bid=["\']([^"\']+)["\']', html)
+duplicates = sorted({value for value in all_ids if all_ids.count(value) > 1})
+if duplicates:
+    raise SystemExit(f"FAIL: duplicate HTML element IDs: {duplicates}")
 
 if "fly.dev" in html.lower() or "osh backend" in html.lower():
     raise SystemExit("FAIL: public GitHub Pages HTML still references a private backend/Fly service")
