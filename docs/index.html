@@ -129,6 +129,7 @@
 .region-csv-help{margin:12px 0;border:1px solid #315064;background:#0e2636}.region-csv-help summary{cursor:pointer;color:#c5d8e1;font-size:11px;font-weight:850;list-style-position:inside}.region-csv-help p{margin:10px 0 0;color:#98afbd;font-size:10px;line-height:1.7}.region-csv-help code{color:var(--mint);font-size:10px}
 .region-model-source-note{margin:11px 0 13px;padding:11px 13px;border:1px solid #2b5260;border-radius:11px;background:#102a38;color:#a9c1cc;font-size:10px;line-height:1.65}
 </style>
+<link rel="stylesheet" href="./ui-refresh.css">
 </head>
 <body>
 <div class="app">
@@ -140,12 +141,13 @@
       <a class="active" href="#overview" title="Bosh sahifa" aria-label="Bosh sahifa"><span class="nav-icon">⌂</span><span class="nav-text">Bosh sahifa</span></a>
       <a href="#globe" title="Global xarita" aria-label="Global xarita"><span class="nav-icon">◎</span><span class="nav-text">Xarita</span></a>
       <a href="#field-analysis" title="Hudud va dala tahlili" aria-label="Maydon tahlili"><span class="nav-icon">⌖</span><span class="nav-text">Hudud tahlili</span></a>
+      <a href="#ai-predict" title="AI Predict · hosildorlik prognozi" aria-label="AI Predict"><span class="nav-icon">↗</span><span class="nav-text">AI Predict</span></a>
       <a href="#archive" title="Global ma’lumotlar" aria-label="Global ma’lumotlar"><span class="nav-icon">▤</span><span class="nav-text">Ma’lumotlar</span></a>
       <a href="#spatial" title="Ekinlar va fazoviy tahlil" aria-label="Ekinlar va fazoviy tahlil"><span class="nav-icon">▦</span><span class="nav-text">Ekinlar</span></a>
-      <a href="#models" title="AI laboratoriyasi" aria-label="AI laboratoriyasi"><span class="nav-icon">⌘</span><span class="nav-text">AI laboratoriya</span></a>
+      <a href="#models" title="Model laboratoriyasi" aria-label="Model laboratoriyasi"><span class="nav-icon">⌘</span><span class="nav-text">Model lab</span></a>
     </nav>
   </div>
-  <div class="side-card"><small>GLOBAL MAPSPAM REFERENCE</small><b>228,620 xulosa</b><p>IFPRI MAPSPAM · 2020 · 46 ekin</p></div>
+  <div class="side-card"><small>GLOBAL MAPSPAM REFERENCE</small><b>237,774 xulosa</b><p>153 mamlakat · 2020 · 46 ekin</p></div>
   <div class="side-foot">Research workspace · v1.0</div>
 </aside>
 
@@ -161,7 +163,7 @@
         <div class="kicker">OSH · GLOBAL AGRICULTURE INTELLIGENCE</div>
         <h2>Dunyo yerlarini <span>ma’lumotga aylantiramiz.</span></h2>
         <p>Mamlakat yoki hududni tanlang, ekinlar va iqlim ko‘rsatkichlarini o‘rganing, o‘z dalangizni xaritada chizing. OSH global agrar ma’lumotlar va tekshiriladigan AI ssenariylarini bir joyga jamlaydi.</p>
-        <div class="hero-actions"><a class="btn-primary" href="#archive">Data arxivini ko‘rish <b>→</b></a><a class="btn-secondary" href="#models">Model laboratoriyasi <span>↗</span></a></div>
+        <div class="hero-actions"><a class="btn-primary" href="#ai-predict">AI Predict’ni ochish <b>↗</b></a><a class="btn-secondary" href="#globe">Hududni tanlash <span>⌖</span></a><a class="btn-secondary" href="#archive">Data arxivi <span>→</span></a></div>
       </div>
       <div class="hero-panel">
         <small>MAPSPAM ADMINISTRATIVE REFERENCE · 2020</small>
@@ -263,8 +265,37 @@
           <p class="region-footnote">Bu 2020-yilga tegishli gridded fazoviy baho; joriy yil kuzatuvi, dala o‘lchovi yoki kelajak AI prognozi emas. Grid aniqligi ekvatorda taxminan 9.3 km. Manba: <a href="https://doi.org/10.7910/DVN/SWPENT" target="_blank" rel="noopener">IFPRI MAPSPAM · CC BY-SA 4.0</a>. Tumanlar va viloyatlar o‘z ma’muriy chegara vintage’i bilan bog‘langan.</p>
         </article>
 
-        <article class="panel region-result-card region-yield-card">
-          <div class="region-result-head"><div><span class="eyebrow">RESEARCH MODEL / CSV INPUT</span><h3>Hosildorlik uchun Ridge baseline ssenariysi</h3><small>Viloyat bug‘doy/kartoshka/paxta uchun SIAT qatori avtomatik; boshqa holatlarda aynan hudud/ekin CSV. Hisob brauzerda bajariladi.</small></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><a class="btn-secondary" href="./data/templates/yield-template.csv" download>CSV shablon ↓</a><span class="tag">LOCAL · NO UPLOAD</span></div></div>
+        
+      </div>
+      
+      <section class="section ai-predict-section" id="ai-predict">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">03 / AI PREDICT</div>
+            <h2>Hosildorlik prognozi</h2>
+            <p>Hudud va ekinga mos haqiqiy tarixiy hosildorlik hamda ERA5-Land iqlim qatori asosida tekshiriladigan Ridge ssenariysi. Avval xaritada hudud tanlang.</p>
+          </div>
+          <a class="btn-secondary" href="#field-analysis">Hudud tanlash ↑</a>
+        </div>
+        <div class="ai-predict-intro">
+          <article class="ai-predict-tile">
+            <small>01 · SIAT AUTO DATA</small>
+            <b>O‘zbekiston viloyatlari</b>
+            <p>Bug‘doy, kartoshka va xom paxta uchun rasmiy 2010–2024 SIAT qatori avtomatik yuklanadi. Tuman va dala qiymatlari o‘rnini bosmaydi.</p>
+          </article>
+          <article class="ai-predict-tile">
+            <small>02 · YOUR OBSERVATIONS</small>
+            <b>Boshqa mamlakat, tuman yoki ekin</b>
+            <p>Aynan tanlangan hudud va ekinga tegishli kamida 8 yillik real kuzatuvli CSV kerak. CSV brauzer ichida qoladi.</p>
+          </article>
+          <article class="ai-predict-tile">
+            <small>03 · MODEL VALIDATION</small>
+            <b>Ridge vs Persistence</b>
+            <p>Vaqt tartibli OOF validatsiya, OOF MAE, Persistence MAE va iqlim qamrovi prognoz bilan birga ko‘rsatiladi.</p>
+          </article>
+        </div>
+<article class="panel region-result-card region-yield-card">
+          <div class="region-result-head"><div><span class="eyebrow">AI PREDICT · RIDGE + ERA5-LAND</span><h3>AI hosildorlik prognozi</h3><small>Viloyat bug‘doy/kartoshka/paxta uchun SIAT qatori avtomatik; boshqa holatlarda aynan hudud/ekin CSV. Hisob brauzerda bajariladi.</small></div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><a class="btn-secondary" href="./data/templates/yield-template.csv" download>CSV shablon ↓</a><span class="tag">LOCAL · NO UPLOAD</span></div></div>
           <details class="info-note region-csv-help">
             <summary>CSV faylni qanday tayyorlash kerak?</summary>
             <p>Faylning birinchi qatorida <code>year,yield_t_ha</code> ustunlari bo‘lsin. Har yil uchun bitta qator, hosildorlik esa <b>tonna/gektar (t/ha)</b> birlikda yoziladi. Takroriy yil bo‘lmasin; kamida 8 ta haqiqiy kuzatuv kiriting. Ma’lumot UTF-8 CSV bo‘lishi kerak.</p>
@@ -279,11 +310,13 @@
             <label>Mavsum boshlanishi<input id="region-season-start" value="10-01" placeholder="MM-DD"></label>
             <label>Mavsum tugashi<input id="region-season-end" value="06-30" placeholder="MM-DD"></label>
             <label>Maqsadli yil<input type="number" id="region-target-year" value="2027" min="1900" max="2200"></label>
-            <button class="btn-primary" id="region-run-model" disabled>Ridge + iqlim ML hisoblash</button>
+            <button class="btn-primary" id="region-run-model" disabled>AI Predict hisoblash →</button>
           </div>
           <div class="region-model-result" id="region-model-result">CSV brauzerda qoladi. Model haqiqiy yillik hosildorlikni ERA5-Land mavsumiy harorat, yog‘in, ET₀ va GDD bilan birlashtiradi. Kamida 8 ta yetarli qamrovli yil kerak; kelajak ob-havosi so‘nggi 5 yillik norma bilan taxmin qilinadi.</div>
         </article>
-      </div>
+        <div class="ai-predict-footnote"><b>Ilmiy cheklov:</b> bu hozircha universal, barcha mamlakatlar uchun validatsiyadan o‘tgan global model emas. MAPSPAM 2020 tarixiy fazoviy reference bo‘lib, AI prognozi uchun hosildorlik targeti sifatida ishlatilmaydi. Kelajak ob-havosi noma’lum bo‘lgani sababli so‘nggi 5 mos mavsum ERA5-Land normasi ssenariyda qo‘llanadi.</div>
+      </section>
+
       <div class="info-note"><b>Kichik maydon haqida:</b> geoBoundaries faqat ma’muriy chegaralarni beradi. Fermer dalasini aniqlash uchun yuqoridagi “Maydon chizish”dan foydalaning. Har bir manbaning haqiqiy grid aniqligi natijada alohida ko‘rsatiladi; kichik poligon chizish 9 km SMAP/MAPSPAM ma’lumotini 10 metrli dala ma’lumotiga aylantirmaydi.</div>
     </section>
 
@@ -544,7 +577,7 @@ window.__setDemoState=function(state){
 if(window.maplibregl){
  map=new maplibregl.Map({
   container:"map",
-  style:"https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+  style:"https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
   center:[64,35],zoom:1.28,minZoom:.85,maxZoom:19,renderWorldCopies:false,attributionControl:true
  });
  map.addControl(new maplibregl.NavigationControl({showCompass:true,showZoom:true}),"top-right");
