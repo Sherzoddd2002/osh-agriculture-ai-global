@@ -263,12 +263,12 @@ def merge_uzb_adm2_reference(payload: dict, output_dir: Path) -> dict:
     }
     if not district_boundary_years and adm2.get("boundary_year") is not None:
         district_boundary_years.add(int(adm2["boundary_year"]))
-    if adm2.get("boundary_year") is None:
-        adm2["boundary_year"] = (
-            next(iter(district_boundary_years))
-            if len(district_boundary_years) == 1
-            else None
-        )
+    if len(district_boundary_years) > 1:
+        adm2["boundary_year"] = None
+    elif len(district_boundary_years) == 1:
+        adm2["boundary_year"] = next(iter(district_boundary_years))
+    elif adm2.get("boundary_year") is None:
+        adm2["boundary_year"] = None
     if "boundary_year_varies" not in adm2:
         adm2["boundary_year_varies"] = len(district_boundary_years) > 1
     elif not isinstance(adm2["boundary_year_varies"], bool):
