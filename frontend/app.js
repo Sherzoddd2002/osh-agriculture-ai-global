@@ -903,8 +903,7 @@ function renderUzbekOfficialYield(){
       rows.map(row=>'<tr><td>'+escapeHtml(row.year)+'</td><td>'+fmt(row.yield,3)+'</td><td>'+fmt(row.production_t,0)+'</td><td>'+fmt(row.sown_area_ha,0)+'</td></tr>').join('')+
       '</tbody></table>'
     :'<div class="empty-state">Bu viloyat uchun kuzatuv topilmadi.</div>';
-  const sourceLinks=(UZB_SIAT_SOURCES[cropCode]||[]).map(([label,url])=>'<a href="'+url+'" target="_blank" rel="noopener">'+escapeHtml(label)+'</a>').join(' · ');
-  toast(status,`SIAT · O‘zbekiston · ${region.name_uz} · ${crop.crop_name_uz||cropCode} · ${rows.length} yillik kuzatuv · ${uzbOfficialYieldCache.geographic_coverage}. ${sourceLinks}`);
+  toast(status,`SIAT · CC BY 4.0 · O‘zbekiston · ${region.name_uz} · ${crop.crop_name_uz||cropCode} · ${rows.length} yillik kuzatuv · ${uzbOfficialYieldCache.geographic_coverage}. Bu viloyat statistik nisbati, dala o‘lchovi emas.`);
 }
 $('uzb-official-crop').addEventListener('change',populateUzbekOfficialYieldControls);
 $('uzb-official-region').addEventListener('change',renderUzbekOfficialYield);
