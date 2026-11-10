@@ -8,10 +8,17 @@
 
 [Qisqa demo: 3D globus, data archive va model laboratoriyasi](docs/assets/demo-walkthrough.gif)
 
-## Ma’lumotlar inventarizatsiyasi · 2026-11-08
+## Public demo ma’lumotlar qamrovi · 2026-11-10
 
-| Arxiv | Bazadagi qatorlar | Qamrov |
-|---|---:|---|
+| Ochiq qatlam | Qamrov |
+|---|---:|
+| Global ma’muriy chegaralar | 245 mamlakat/hudud · ADM1 + ADM2 katalogi |
+| IFPRI MAPSPAM 2020 v2r2 | 153 mamlakat · 46 ekin · 228,620 admin xulosasi |
+| O‘zbekiston public reference | 14 viloyat · 199 tuman · 46 ekin |
+| CROPGRIDS v1.08 katalogi | 173 ekin qatlami (public Pages prediction input emas) |
+
+**Ilmiy aniqlik:** MAPSPAM 2020 — bitta reference yil va taxminan 9.3 km ekvivalent gridli fazoviy baho; joriy yil kuzatuvi, dala o‘lchovi yoki kelajak prognozi emas. FAOSTAT milliy statistikasi va boshqa ichki reference qatorlari ommaviy demo paketiga avtomatik chiqarilmaydi. NDVI/SMAP/SoilGrids raster feature’lari hozircha AI modeliga to‘liq ulanmagan.
+---|---:|---|
 | FAOSTAT QCL | **610,299** | 1961–2024 · 202 mamlakat/hudud · 169 item kodi |
 | IFPRI MAPSPAM 2020 v2r2 | **228,620** | 153 mamlakat · 46 ekin · ADM0/ADM1/ADM2 |
 | **Jami** | **838,919** | Ikki alohida manbaning yozuvlari |
