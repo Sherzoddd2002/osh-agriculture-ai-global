@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "docs/static-demo.html"
+      - "docs/index.html"
+      - ".github/workflows/demo-gif.yml"
       - "scripts/assemble_public_frontend.py"
       - "scripts/test_public_static_demo.mjs"
       - "scripts/export_public_mapspam_global.py"
