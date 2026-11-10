@@ -6,7 +6,6 @@ let map = null, boundaryFeatures = [], selectedFeature = null, selectedLocationI
 let drawingAOI = false, drawingPoints = [];
 let boundaryManifest = null;
 let pendingLocationSave = localStorage.getItem('osh_pending_aoi_save') === '1';
-let pendingAOIRasterAnalysis = false;
 let savingLocationInProgress = false;
 const AOI_STORAGE_KEY = 'osh_pending_aoi_v1';
 const locations = [];
@@ -257,7 +256,7 @@ function finishAOIDrawing(){
   persistPendingAOI(customFeature);
   selectFeature(customFeature);
   $('selected-level').textContent='CUSTOM AOI';
-  $('selected-area-help').textContent='Chizilgan dala poligoni. Kontur brauzerda saqlandi; hisobga kirgach aynan shu geometriya serverga yuboriladi.';
+  $('selected-area-help').textContent='Dala poligoni tanlandi. Ochiq MAPSPAM 2020 raster tahlili avtomatik boshlanadi; maydonni keyinroq saqlash va shaxsiy hosil datasetini ulash uchun hisobga kiring.';
   toast($('boundary-status'),'Maydon tanlandi va brauzerda saqlandi. Endi “Hududni saqlash va tahlil qilish”ni bosing.');
 }
 $('draw-aoi-start').addEventListener('click',startAOIDrawing);
@@ -375,7 +374,7 @@ function selectFeature(f){
   const center=coordsCenter(f.geometry);
   $('selected-center').textContent=center? `${center.lat.toFixed(4)}, ${center.lon.toFixed(4)}` : '—';
   $('save-location').disabled=!selectedFeature;
-  $('save-location').textContent=token?'Hududni saqlash va tahlil qilish':'Kirish va hududni saqlash';
+  $('save-location').textContent=token?'Maydonni saqlash va dataset ulash':'Kirish va maydonni saqlash';
 
   const selectedIndex=boundaryFeatures.indexOf(f);
   const collection={
@@ -508,10 +507,7 @@ async function loadMapspamSummaries() {
   const level = $('admin-level').value;
   if(selectedFeature.properties?.__custom_aoi){
     $('mapspam-context').textContent=countryCode+' · '+featureName(selectedFeature)+' · CUSTOM AOI · faqat tanlangan poligon';
-    if(token)return analyzeCustomAOI();
-    table.innerHTML='';
-    toast(status,'Chizilgan poligon saqlandi. Shu geometriya bo‘yicha raster ma’lumotlarini olish uchun hisobga kiring.');
-    return;
+    return analyzeCustomAOI();
   }
   const adminId = mapspamSelectedAdminId(selectedFeature, countryCode, level);
   if (!adminId) {
@@ -593,12 +589,6 @@ async function analyzeCustomAOI(){
     toast($('mapspam-summary-status'),'Avval xaritada maydon chizing.');
     return;
   }
-  if(!token){
-    pendingAOIRasterAnalysis=true;
-    toast($('mapspam-summary-status'),'Tanlangan poligon bo‘yicha raster hisobi uchun hisobga kiring.');
-    openAuth();
-    return;
-  }
   const status=$('mapspam-summary-status'), table=$('mapspam-summary-table');
   const cropCode=$('aoi-crop-code')?.value||'whea';
   const technology=$('mapspam-technology').value||'all';
@@ -639,7 +629,7 @@ async function analyzeCustomAOI(){
   }
 }
 $('analyze-aoi-mapspam')?.addEventListener('click',analyzeCustomAOI);
-$('aoi-crop-code')?.addEventListener('change',()=>{if(selectedFeature?.properties?.__custom_aoi&&token)analyzeCustomAOI();});
+$('aoi-crop-code')?.addEventListener('change',()=>{if(selectedFeature?.properties?.__custom_aoi)analyzeCustomAOI();});
 
 $('country-iso3').addEventListener('keydown',e=>{if(e.key==='Enter')loadBoundaries();});
 
@@ -705,10 +695,6 @@ async function authAction(mode){
     await loadLocations();
     await loadDatasets();
     if(pendingLocationSave&&selectedFeature)await saveSelectedLocation();
-    else if(selectedFeature?.properties?.__custom_aoi){
-      pendingAOIRasterAnalysis=false;
-      await analyzeCustomAOI();
-    }
   }catch(e){toast($('auth-message'),e.message);}
 }
 $('register-button').addEventListener('click',()=>authAction('register'));
@@ -717,7 +703,7 @@ function setAuthUI(user){
   $('user-label').textContent=user?.email||'Mehmon rejimi';
   $('auth-open').textContent=user?'Chiqish':'Kirish';
   $('save-location').disabled=!selectedFeature;
-  $('save-location').textContent=user?'Hududni saqlash va tahlil qilish':'Kirish va hududni saqlash';
+  $('save-location').textContent=user?'Maydonni saqlash va dataset ulash':'Kirish va maydonni saqlash';
 }
 function logout(reason='Hisobdan chiqildi.'){token='';selectedLocationId=null;currentDatasetId=null;currentJobId=null;currentClimateJobId=null;localStorage.removeItem('osh_global_token');setAuthUI(null);locations.length=0;$('dataset-list').textContent='Hisobga kiring va dataset yuklang.';$('forecast-dataset').innerHTML='<option value="">Dataset yuklang</option>';$('process-dataset').disabled=true;$('location-select').innerHTML='<option value="">Avval xaritada hududni saqlang</option>';$('environment-location-select').innerHTML='<option value="">Avval hududni saqlang</option>';$('location-climate-results').hidden=true;toast($('saved-location-status'),reason);toast($('environment-status'),reason);}
 
