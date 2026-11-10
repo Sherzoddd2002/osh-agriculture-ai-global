@@ -253,6 +253,27 @@ def merge_uzb_adm2_reference(payload: dict, output_dir: Path) -> dict:
             f"unknown={sorted(district_parent_ids - province_ids)}"
         )
 
+    # The legacy Uzbekistan public snapshot predates the global export
+    # manifest schema: it has boundary_year but not boundary_year_varies.
+    # Normalize its level metadata before the common manifest writer reads it.
+    district_boundary_years = {
+        int(area["boundary_year"])
+        for area in districts.values()
+        if area.get("boundary_year") is not None
+    }
+    if not district_boundary_years and adm2.get("boundary_year") is not None:
+        district_boundary_years.add(int(adm2["boundary_year"]))
+    if adm2.get("boundary_year") is None:
+        adm2["boundary_year"] = (
+            next(iter(district_boundary_years))
+            if len(district_boundary_years) == 1
+            else None
+        )
+    if "boundary_year_varies" not in adm2:
+        adm2["boundary_year_varies"] = len(district_boundary_years) > 1
+    elif not isinstance(adm2["boundary_year_varies"], bool):
+        raise ValueError("UZB ADM2 boundary_year_varies metadata must be boolean")
+
     payload["levels"]["ADM2"] = adm2
     payload["uzbekistan_adm2_reference"] = {
         "source_file": "UZB_MAPSPAM_2020_ADM1_ADM2.json",
@@ -336,8 +357,8 @@ def main() -> None:
                 level: {
                     "area_count": details["area_count"],
                     "crop_count": details["crop_count"],
-                    "boundary_year": details["boundary_year"],
-                    "boundary_year_varies": details["boundary_year_varies"],
+                    "boundary_year": details.get("boundary_year"),
+                    "boundary_year_varies": bool(details.get("boundary_year_varies", False)),
                 }
                 for level, details in payload["levels"].items()
             },
