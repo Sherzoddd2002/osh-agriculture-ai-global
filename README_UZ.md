@@ -154,13 +154,15 @@ year,yield_t_ha,area_ha,production_t
 
 ## Ma’lumotlarni qayta ishlash ketma-ketligi
 
-1. Hisob yarating yoki tizimga kiring.
-2. Mamlakat ISO-3 kodini (masalan, `UZB`, `KAZ`, `DEU`) va ma’muriy darajani tanlang.
-3. Chegaralarni yuklang va xaritada kerakli hududni bosing.
-4. Hududni saqlang.
-5. Hosildorlik CSV faylini va ustunlarini belgilang, ekin mavsumining boshlanish/tugash sanasini kiriting.
-6. Datasetni yuklang. U SQL bazaga yoziladi va ob-havo bilan birlashtirish job’i avtomatik navbatga tushadi.
-7. Job tugagach, qamrov va avtomatik model tahlilini ko‘ring. Yetarli tarix bo‘lmasa, model ishlatilmaydi va sabab ko‘rsatiladi.
+1. Sayt ochilganda O‘zbekiston xaritasi va ADM2 qatlamini yuklang; mamlakat kodi avtomatik `UZB`.
+2. Ma’muriy darajadan ADM1 (viloyat/respublika/Toshkent shahri) yoki ADM2 (tuman/shahar) tanlang; qidiruv maydonida hudud nomini yozing.
+3. O‘zingizning dalangiz bo‘lsa, **Maydon chizish** orqali poligon belgilang. Nuqtalar O‘zbekiston chegarasi ichida bo‘lishi shart.
+4. Ochiq MAPSPAM 2020 zonal hisobi guest rejimida ishlaydi, ammo backend va raster fayllar online bo‘lishi kerak.
+5. Doimiy saqlash uchun hisobga kiring; keyin haqiqiy hosil CSV faylini shu poligon va ekinga bog‘lang. Ekin tanlanganda tavsiya etilgan mavsum sanalari qo‘yiladi.
+6. Dataset SQL bazaga yoziladi va ob-havo bilan birlashtirish job’i navbatga tushadi.
+7. Job tugagach, qamrov, source-status va model baholashini ko‘ring. Yetarli kuzatuv bo‘lmasa, model prognoz bermaydi.
+
+**Muhim:** SIAT panelidagi viloyat qatori alohida rasmiy statistik reference sifatida ko‘rsatiladi; u siz chizgan dala CSV’ingiz o‘rnini bosmaydi.
 
 ## Juda muhim ilmiy cheklovlar
 
