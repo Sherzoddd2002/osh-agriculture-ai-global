@@ -2,13 +2,13 @@
   "project": "OSH Agriculture AI Global",
   "snapshot_date": "2026-11-10",
   "snapshot_scope": "Public demo catalogue for open spatial crop and environmental reference data. No FAOSTAT data rows or national time-series output are included in this public catalogue.",
-  "combined_summary_rows": 228620,
+  "combined_summary_rows": 237774,
   "datasets": [
     {
       "id": "mapspam-2020-v2r2",
       "name": "IFPRI MAPSPAM 2020 v2r2",
       "status": "CENTRAL_REFERENCE_ARCHIVE",
-      "records": 228620,
+      "records": 237774,
       "reference_year": 2020,
       "countries": 153,
       "crops": 46,
@@ -43,7 +43,22 @@
         "Yield is a harvested-area-weighted estimate and must not be summed.",
         "ADM0, ADM1 and ADM2 are separate hierarchy summaries and must not be added as if they were mutually exclusive areas.",
         "Missing raster coverage is NULL, not zero."
-      ]
+      ],
+      "admin_areas": 5169,
+      "levels": {
+        "ADM0": {
+          "areas": 143,
+          "summary_rows": 6578
+        },
+        "ADM1": {
+          "areas": 2347,
+          "summary_rows": 107962
+        },
+        "ADM2": {
+          "areas": 2679,
+          "summary_rows": 123234
+        }
+      }
     },
     {
       "id": "CROPGRIDS-2020-v1.08",
