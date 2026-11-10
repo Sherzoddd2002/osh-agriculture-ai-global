@@ -7,6 +7,7 @@ let drawingAOI = false, drawingPoints = [];
 let boundaryManifest = null;
 let pendingLocationSave = localStorage.getItem('osh_pending_aoi_save') === '1';
 let pendingAOIRasterAnalysis = false;
+let savingLocationInProgress = false;
 const AOI_STORAGE_KEY = 'osh_pending_aoi_v1';
 const locations = [];
 
@@ -645,6 +646,7 @@ $('country-iso3').addEventListener('keydown',e=>{if(e.key==='Enter')loadBoundari
 
 async function saveSelectedLocation(){
   if(!selectedFeature)return;
+  if(savingLocationInProgress)return;
   if(!token){
     pendingLocationSave=true;
     localStorage.setItem('osh_pending_aoi_save','1');
@@ -653,6 +655,7 @@ async function saveSelectedLocation(){
     openAuth();
     return;
   }
+  savingLocationInProgress=true;
   try{
     const code=$('country-iso3').value.toUpperCase();
     const level=selectedFeature.properties?.__custom_aoi?'CUSTOM':$('admin-level').value;
@@ -678,6 +681,8 @@ async function saveSelectedLocation(){
     if(selectedFeature.properties?.__custom_aoi)await analyzeCustomAOI();
   }catch(e){
     toast($('saved-location-status'),'Hudud saqlanmadi: '+e.message);
+  }finally{
+    savingLocationInProgress=false;
   }
 }
 $('save-location').addEventListener('click',saveSelectedLocation);
