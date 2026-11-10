@@ -1033,12 +1033,15 @@ async function updateCountryCoverage(countryIso){
   }else{
    const available=country.available_levels||[];
    const packages=country.levels||{};
-   const staticLevels=Object.keys(packages);
-   const count=Object.values(packages).reduce((sum,item)=>sum+Number(item.feature_count||0),0);
-   $("country-adm-levels").textContent=available.length?available.join(" / "):"—";
+   const publishedLevels=iso==="UZB"?["ADM1","ADM2"]:Object.keys(packages);
+   const packageCount=Object.values(packages).reduce((sum,item)=>sum+Number(item.feature_count||0),0);
+   const fallbackCount=Object.values(country.availability_levels||{}).filter(item=>item.static_package).reduce((sum,item)=>sum+Number(item.feature_count||0),0);
+   const count=packageCount||fallbackCount;
+   $("country-adm-levels").textContent=publishedLevels.length?publishedLevels.join(" / "):"Paket yo‘q";
    $("country-boundary-count").textContent=count?count.toLocaleString("en-US"):"Paket yo‘q";
    status.textContent=iso+" · "+(country.name||countryName(selected))+" · "+
-    (staticLevels.length?"Saytga joylangan: "+staticLevels.join(", "):"Ma’muriy daraja katalogda bor, lekin statik geometriya paketi yo‘q")+
+    "Manbada: "+(available.length?available.join(", "):"—")+
+    " · Saytda yuklanadigan: "+(publishedLevels.length?publishedLevels.join(", "):"yo‘q")+
     (count?" · "+count.toLocaleString("en-US")+" poligon":"");
   }
   let mapInfo=null;
