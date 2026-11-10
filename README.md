@@ -39,6 +39,8 @@
 
 For Uzbek setup instructions, see [README_UZ.md](README_UZ.md).
 
+To publish the licensed global MAPSPAM country/province/district summaries from the maintainer's local PostgreSQL archive, follow [Public global MAPSPAM package export](docs/PUBLIC_MAPSPAM_EXPORT.md). Only validated aggregate packages are committed; FAOSTAT rows and user data are not included.
+
 ## Architecture
 
 - **Frontend:** vanilla HTML/CSS/JS + MapLibre GL JS.
