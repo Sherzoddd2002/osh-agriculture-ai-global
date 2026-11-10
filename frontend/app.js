@@ -24,7 +24,22 @@ const UZB_ADMIN_NAMES = {
   "Tashkent": "Toshkent viloyati", "Tashkent region": "Toshkent viloyati",
   "Fergana": "Farg‘ona viloyati", "Fergana region": "Farg‘ona viloyati",
   "Khorezm": "Xorazm viloyati", "Khorezm region": "Xorazm viloyati",
-  "Tashkent City": "Toshkent shahri"
+  "Tashkent City": "Toshkent shahri",
+  "tashkent city": "Toshkent shahri",
+  "andijan region": "Andijon viloyati",
+  "bukhara region": "Buxoro viloyati",
+  "jizzakh region": "Jizzax viloyati",
+  "kashkadarya region": "Qashqadaryo viloyati",
+  "navoi region": "Navoiy viloyati",
+  "namangan region": "Namangan viloyati",
+  "samarkand region": "Samarqand viloyati",
+  "surkhandarya region": "Surxondaryo viloyati",
+  "syrdarya region": "Sirdaryo viloyati",
+  "tashkent region": "Toshkent viloyati",
+  "ferghana region": "Farg‘ona viloyati",
+  "fergana region": "Farg‘ona viloyati",
+  "khorezm region": "Xorazm viloyati",
+  "karakalpakstan republic": "Qoraqalpog‘iston Respublikasi"
 };
 const UZB_CROP_SEASONS = {
   WHEAT:["10-01","06-30"], BARLEY:["10-01","06-15"], COTTON:["04-01","09-30"],
@@ -296,7 +311,13 @@ $('draw-aoi-start').addEventListener('click',startAOIDrawing);
 $('draw-aoi-finish').addEventListener('click',finishAOIDrawing);
 $('draw-aoi-cancel').addEventListener('click',cancelAOIDrawing);
 
-function featureName(f){const p=f?.properties||{};return p.shapeName||p.shape_name||p.shapeNameEn||p.NAME_1||p.NAME_2||p.name||p.NAME||p.admin||'Tanlangan hudud';}
+function featureName(f){
+  if(f?.properties?.__custom_aoi){
+    const p=f.properties||{};
+    return p.name_uz||p.shapeName||p.name||'Foydalanuvchi chizgan dala';
+  }
+  return uzbekAdminName(f);
+}
 function coordsCenter(geom){let x=0,y=0,n=0;const walk=v=>{if(Array.isArray(v)&&typeof v[0]==='number'&&typeof v[1]==='number'){x+=v[0];y+=v[1];n++;}else if(Array.isArray(v))v.forEach(walk);};walk(geom.coordinates);return n?{lat:y/n,lon:x/n}:null;}
 function featureBounds(features){let minX=180,minY=90,maxX=-180,maxY=-90;const walk=v=>{if(Array.isArray(v)&&typeof v[0]==='number'&&typeof v[1]==='number'){minX=Math.min(minX,v[0]);maxX=Math.max(maxX,v[0]);minY=Math.min(minY,v[1]);maxY=Math.max(maxY,v[1]);}else if(Array.isArray(v))v.forEach(walk);};features.forEach(f=>walk(f.geometry?.coordinates));return minX<=maxX?[[minX,minY],[maxX,maxY]]:null;}
 
@@ -347,7 +368,8 @@ function refreshBoundaryAvailability(){
 function uzbekAdminName(feature){
   const props=feature?.properties||{};
   const raw=String(props.name_uz||props.shapeName_uz||props.NAME_UZ||props.shapeName||props.name||props.NAME||'Tanlangan hudud').trim();
-  return UZB_ADMIN_NAMES[raw]||raw;
+  const normalized=raw.toLocaleLowerCase('en').replace(/\\s+/g,' ').trim();
+  return UZB_ADMIN_NAMES[raw]||UZB_ADMIN_NAMES[normalized]||raw;
 }
 function populateUzbAdminSelector(){
   const select=$('uzb-admin-unit'), filter=($('uzb-admin-filter')?.value||'').trim().toLocaleLowerCase('uz');
