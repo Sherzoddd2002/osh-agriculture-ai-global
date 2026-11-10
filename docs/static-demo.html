@@ -821,10 +821,6 @@ function renderCountryMapspamSummary(countryIso){
  const iso=String(countryIso||"").toUpperCase();
  const out=$("country-data-insights");
  if(!out)return;
- if(iso==="UZB"){
-  out.innerHTML="<b>O‘zbekiston MAPSPAM 2020</b><br>14 ta viloyat va 199 ta tuman kesimida 46 ekin bo‘yicha tarixiy fazoviy xulosalar. Hudud tanlanganda ishlab chiqarish, maydon va hosildorlik alohida ko‘rsatiladi.";
-  return;
- }
  loadPublicMapspamCountry(iso).then(payload=>{
   if($("country-code").textContent!==iso)return;
   const areas=(payload.levels&&payload.levels.ADM0&&payload.levels.ADM0.areas)||{};
@@ -832,7 +828,8 @@ function renderCountryMapspamSummary(countryIso){
   if(!national){
    const levels=Object.keys(payload.levels||{});
    out.innerHTML="<b>MAPSPAM 2020 · "+regionEscape(iso)+"</b><br>"+
-    "Paket mavjud, "+levels.join(" / ")+" hududiy darajalarda. Mamlakat bo‘yicha ADM0 yig‘ma qatori yo‘q; tegishli viloyat yoki tuman poligonini tanlang.";
+    (iso==="UZB"?"14 ta viloyat va 199 ta tuman kesimida 46 ekin bo‘yicha tarixiy fazoviy xulosalar. ":"Paket mavjud, ")+
+    levels.join(" / ")+" hududiy darajalarda. Mamlakat bo‘yicha ADM0 yig‘ma qatori yo‘q; tegishli viloyat yoki tuman poligonini tanlang.";
    return;
   }
   const rows=Object.entries(national.crops||{}).map(([code,value])=>({code,value,name:(cropList.find(item=>item[0]===code)||[code,code.toUpperCase()])[1]}))
