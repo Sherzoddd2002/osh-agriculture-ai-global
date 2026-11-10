@@ -436,6 +436,8 @@ $("region-crop-select").addEventListener("change",()=>{
  syncCropSelection();
  updateYieldModelButton();
  if(!$("region-results").hidden&&selectedAOI)renderMapspamReference(selectedAOI,$("region-crop-select").value).catch(error=>{$("region-mapspam-result").textContent="MAPSPAM: "+error.message;});
+ const modelButton=$("region-run-model");
+ if(selectedAOI&&modelButton&&!modelButton.disabled)modelButton.click();
 });
 renderCropList("");
 syncCropSelection();
@@ -800,6 +802,8 @@ function selectRegionFeature(feature,sourceLabel){
  $("region-status").textContent="Hudud tanlandi. Iqlim, sun’iy yo‘ldosh sahnalari va mavjud ekin ma’lumotlari avtomatik yuklanmoqda…";
  const analyzeButton=$("region-analyze");
  if(center&&analyzeButton)analyzeButton.click();
+ const modelButton=$("region-run-model");
+ if(center&&modelButton&&!modelButton.disabled)modelButton.click();
 }
 function updateRegionDraft(){
  if(!map||!map.getSource("region-draft"))return;
@@ -1310,8 +1314,10 @@ function runRegionRidge(series,targetYear,climateByYear){
 $("region-yield-file").addEventListener("change",()=>{
  updateYieldModelButton();
  $("region-model-result").textContent=$("region-yield-file").files.length
-  ?"CSV tanlandi. Yil/yield ustunlari va mavsum sanalarini tekshirib, iqlim bilan ML hisoblang."
+  ?"CSV tanlandi. Mos hudud/ekin qatori uchun AI ssenariysi avtomatik boshlanadi."
   :(canUseOfficialProvinceCrop()?"Rasmiy SIAT viloyat/ekin qatori tanlandi. CSV majburiy emas.":"CSV tanlanmagan.");
+ const modelButton=$("region-run-model");
+ if(selectedAOI&&modelButton&&!modelButton.disabled)modelButton.click();
 });
 async function loadOfficialProvinceCropSeries(){
  const selectedFeature=selectedAOI;
