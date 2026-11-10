@@ -152,7 +152,7 @@
 <main class="main">
   <header class="topbar">
     <div><div class="top-eyebrow">OPEN AGRICULTURAL DATA</div><h1 id="page-title">Global data workspace</h1></div>
-    <div class="top-right"><span class="status-pill"><i></i> GITHUB PAGES · PUBLIC DEMO</span><span class="date-pill">SNAPSHOT · 08 NOV 2026</span></div>
+    <div class="top-right"><span class="status-pill"><i></i> GITHUB PAGES · PUBLIC DEMO</span><span class="date-pill">SNAPSHOT · 10 NOV 2026</span></div>
   </header>
 
   <div class="content">
@@ -1072,7 +1072,9 @@ async function loadPublicMapspamCountry(countryIso){
  if(mapspamReferenceCache[iso])return mapspamReferenceCache[iso];
  let mapInfo=null;
  try{mapInfo=((await loadPublicMapspamManifest()).countries||{})[iso]||null;}catch(_){}
+ if(iso!=="UZB"&&(!mapInfo||!mapInfo.file))throw new Error(iso+" uchun tekshirilgan MAPSPAM public paketi hali nashr qilinmagan.");
  const fileName=mapInfo&&mapInfo.file?mapInfo.file:(iso+".json.gz");
+ if(fileName!==iso+".json.gz")throw new Error("MAPSPAM manifest filename kutilgan formatga mos emas.");
  let response=await fetch("./data/mapspam/global/"+fileName,{cache:"force-cache",headers:{Accept:"application/gzip, application/octet-stream"}});
  let payload=null;
  if(response.ok){
@@ -1123,7 +1125,12 @@ async function renderMapspamReference(feature,cropCode){
  }
  if(selectedAOI!==feature||$("region-crop-select").value!==cropCode)return {status:"STALE_SELECTION"};
  const levelData=payload.levels&&payload.levels[level];
- const areas=levelData&&levelData.areas||{};
+ if(!levelData||!levelData.areas){
+  const publishedLevels=Object.keys(payload.levels||{}).join(" / ")||"—";
+  output.textContent=countryIso+" uchun MAPSPAM 2020 paketi bor, ammo "+level+" darajasida mos hududiy xulosa yo‘q. E’lon qilingan darajalar: "+publishedLevels+".";
+  return {status:"ADMIN_LEVEL_NOT_AVAILABLE",published_levels:publishedLevels};
+ }
+ const areas=levelData.areas||{};
  let area=adminId?areas[adminId]:null;
  let matchedBy="shapeID";
  if(!area){
