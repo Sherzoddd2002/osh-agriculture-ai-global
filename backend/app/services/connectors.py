@@ -1,6 +1,50 @@
 """Environmental source registry. Unconfigured sources are explicitly unavailable."""
 
 SOURCE_REGISTRY = {
+    "UZB_SIAT_PROVINCIAL_YIELD": {
+        "status": "ACTIVE",
+        "status_label": "O‘ZBEKISTON SIAT · 3 EKIN · 13 HUDUD · 2010–2024",
+        "coverage": "Official Uzbekistan ADM1 annual series for wheat, potato and raw seed cotton. The public site bundle is built from paired SIAT production and sown-area series.",
+        "outputs": ["gross production (tonnes)", "sown area (hectares)", "derived production / sown area (t/ha)"],
+        "note": "This is an official province-level statistical ratio, not district-level or field-measured yield. Tashkent city is excluded from the 13 agricultural-region bundle. CC BY 4.0.",
+        "url": "https://siat.stat.uz/",
+        "license": "CC BY 4.0",
+        "geographic_level": "ADM1",
+        "years": [2010, 2024],
+        "crop_codes": ["whea", "pota", "cott"],
+    },
+    "UZB_AGRO_GEO_PORTAL": {
+        "status": "CATALOG_AVAILABLE_NOT_IMPORTED",
+        "status_label": "VAZIRLIK GEOAXBOROT PORTALI · IMPORT VA API RUXSATI TEKSHIRILMAGAN",
+        "coverage": "Uzbekistan Ministry of Agriculture geospatial portal for agricultural land, crop contours and monitoring layers.",
+        "outputs": ["agricultural parcel/crop contours", "satellite and field monitoring context", "spatial source metadata"],
+        "note": "The portal is listed as an official source, but its layers are not yet ingested into the OSH AOI pipeline. Do not mark data as connected until an accessible service, licence and district/parcel identifiers are verified.",
+        "url": "https://gov.uz/oz/agro/pages/geoaxborot-tizimi",
+    },
+    "UZB_OPEN_DATA_REGISTRY": {
+        "status": "CATALOG_AVAILABLE_NOT_IMPORTED",
+        "status_label": "OPEN DATA KATALOGI · DATASETLAR IMPORT QILINMAGAN",
+        "coverage": "Uzbekistan open-data entries for crop-area contours, crop yield and agricultural water-resource use.",
+        "outputs": ["crop area / contour dataset catalogue", "crop yield dataset catalogue", "agricultural water-resource dataset catalogue"],
+        "note": "Catalogue records are not the same as normalized observations. Each dataset must be checked for current download URL, format, dates, spatial identifiers, units and licence before ingestion.",
+        "url": "https://data.egov.uz/",
+        "datasets": [
+            "https://data.egov.uz/data/60faa9032a2e256d868e8245",
+            "https://data.egov.uz/data/6108023c2a2e256d868e879c",
+            "https://data.egov.uz/data/610802fc2a2e256d868e87a1",
+        ],
+    },
+    "IFPRI_MAPSPAM_2020_UZB": {
+        "status": "REFERENCE_RASTER",
+        "status_label": "2020 RASTER REFERENCE · DALA O‘LCHOVI EMAS",
+        "coverage": "Uzbekistan AOI zonal summaries from IFPRI MAPSPAM 2020 v2r2, 46 crop layers at approximately 5 arc-minute (~9.3 km at the equator) grid spacing.",
+        "outputs": ["physical area", "harvested area", "production", "area-weighted yield", "valid raster-cell count"],
+        "note": "A historical gridded estimate for 2020, not current-season yield or a field measurement. Small parcels may intersect only part of a coarse cell or no valid cell.",
+        "url": "https://doi.org/10.7910/DVN/SWPENT",
+        "license": "CC BY-SA 4.0",
+        "reference_year": 2020,
+        "spatial_resolution_arcminutes": 5,
+    },
     "NASA_POWER": {
         "status": "ACTIVE",
         "coverage": "Global point / grid weather time series",
