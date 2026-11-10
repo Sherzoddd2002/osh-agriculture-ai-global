@@ -9,18 +9,18 @@
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.css">
 <style>
 :root{color-scheme:dark;--bg:#07131f;--panel:#0d1d2b;--panel2:#102638;--panel3:#122c3d;--line:#1e394b;--line2:#2b4d5f;--text:#e9f2f6;--muted:#8fa7b7;--soft:#b7c9d3;--mint:#3cddb0;--mint2:#1ba889;--gold:#eac477;--blue:#7db6e8;--red:#df8d7e;--radius:18px}
-*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:86px}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--mint);outline-offset:3px}body{margin:0;background:radial-gradient(ellipse at 72% -12%,#153c4c66,transparent 38%),radial-gradient(ellipse at 20% 35%,#10263855,transparent 40%),var(--bg);color:var(--text);font:14px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{cursor:pointer}.app{min-height:100vh}.sidebar{width:220px;position:fixed;inset:0 auto 0 0;z-index:20;padding:20px 13px 16px;background:linear-gradient(180deg,#0b1a27f5,#081521f8);border-right:1px solid #20394a;display:flex;flex-direction:column;gap:20px}.brand{display:flex;align-items:center;gap:12px;padding:2px 8px}.brand-mark{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:23px;background:linear-gradient(145deg,#173a3c,#10232f);border:1px solid #3cddb066;box-shadow:0 8px 25px #0005}.brand b{display:block;letter-spacing:1.5px;font-size:15px}.brand small{display:block;color:var(--mint);font-size:9px;letter-spacing:2px;font-weight:850}.nav-label{color:#597183;font-size:9px;font-weight:900;letter-spacing:1.8px;padding:0 12px;margin-bottom:4px}.nav{display:grid;gap:4px}.nav a{padding:9px 10px;border-radius:10px;color:#9db2c0;display:flex;align-items:center;gap:9px;font-size:11px;border:1px solid transparent;transition:.2s}.nav a:hover,.nav a.active{background:#14303c;border-color:#295248;color:#ebfbf6}.nav a.active .nav-icon{color:var(--mint)}.nav-icon{font-size:16px;width:18px;text-align:center;color:#7793a4}.side-card{margin-top:auto;border:1px solid #274355;border-radius:15px;padding:14px;background:linear-gradient(145deg,#102a38,#0c1c29)}.side-card small{color:#7792a1;font-size:9px;letter-spacing:1.2px;font-weight:800}.side-card b{display:block;margin:7px 0 2px;font-size:13px}.side-card p{margin:0;color:#8fa6b4;font-size:10px}.side-foot{color:#637c8c;font-size:9px;padding:0 9px}
-.main{margin-left:220px;min-width:0}.topbar{height:76px;position:sticky;top:0;z-index:15;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(18px,3vw,42px);background:#081622e8;backdrop-filter:blur(18px);border-bottom:1px solid #1e394b}.top-eyebrow{font-size:9px;letter-spacing:2px;color:var(--mint);font-weight:900}.topbar h1{font-size:19px;margin:2px 0 0;letter-spacing:-.3px}.top-right{display:flex;align-items:center;gap:10px}.status-pill,.date-pill{border:1px solid var(--line2);border-radius:999px;padding:7px 11px;color:#abc0cc;font-size:10px;white-space:nowrap}.status-pill i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--mint);margin-right:7px;box-shadow:0 0 10px var(--mint)}.content{max-width:1600px;margin:auto;padding:26px clamp(16px,3vw,42px) 48px}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:86px}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--mint);outline-offset:3px}body{margin:0;background:radial-gradient(ellipse at 72% -12%,#153c4c66,transparent 38%),radial-gradient(ellipse at 20% 35%,#10263855,transparent 40%),var(--bg);color:var(--text);font:14px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{cursor:pointer}.app{min-height:100vh}.sidebar{width:200px;position:fixed;inset:0 auto 0 0;z-index:20;padding:20px 13px 16px;background:linear-gradient(180deg,#0b1a27f5,#081521f8);border-right:1px solid #20394a;display:flex;flex-direction:column;gap:20px}.brand{display:flex;align-items:center;gap:12px;padding:2px 8px}.brand-mark{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:23px;background:linear-gradient(145deg,#173a3c,#10232f);border:1px solid #3cddb066;box-shadow:0 8px 25px #0005}.brand b{display:block;letter-spacing:1.5px;font-size:15px}.brand small{display:block;color:var(--mint);font-size:9px;letter-spacing:2px;font-weight:850}.nav-label{color:#597183;font-size:9px;font-weight:900;letter-spacing:1.8px;padding:0 12px;margin-bottom:4px}.nav{display:grid;gap:4px}.nav a{padding:9px 10px;border-radius:10px;color:#9db2c0;display:flex;align-items:center;gap:9px;font-size:11px;border:1px solid transparent;transition:.2s}.nav a:hover,.nav a.active{background:#14303c;border-color:#295248;color:#ebfbf6}.nav a.active .nav-icon{color:var(--mint)}.nav-icon{font-size:16px;width:18px;text-align:center;color:#7793a4}.side-card{margin-top:auto;border:1px solid #274355;border-radius:15px;padding:14px;background:linear-gradient(145deg,#102a38,#0c1c29)}.side-card small{color:#7792a1;font-size:9px;letter-spacing:1.2px;font-weight:800}.side-card b{display:block;margin:7px 0 2px;font-size:13px}.side-card p{margin:0;color:#8fa6b4;font-size:10px}.side-foot{color:#637c8c;font-size:9px;padding:0 9px}
+.main{margin-left:200px;min-width:0}.topbar{height:76px;position:sticky;top:0;z-index:15;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(18px,3vw,42px);background:#081622e8;backdrop-filter:blur(18px);border-bottom:1px solid #1e394b}.top-eyebrow{font-size:9px;letter-spacing:2px;color:var(--mint);font-weight:900}.topbar h1{font-size:19px;margin:2px 0 0;letter-spacing:-.3px}.top-right{display:flex;align-items:center;gap:10px}.status-pill,.date-pill{border:1px solid var(--line2);border-radius:999px;padding:7px 11px;color:#abc0cc;font-size:10px;white-space:nowrap}.status-pill i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--mint);margin-right:7px;box-shadow:0 0 10px var(--mint)}.content{max-width:1600px;margin:auto;padding:26px clamp(16px,3vw,42px) 48px}
 .hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(290px,.8fr);gap:20px;align-items:stretch;margin:8px 0 19px}.hero-copy{padding:24px 4px 22px}.kicker{color:var(--mint);font-size:9px;letter-spacing:2px;font-weight:900}.hero h2{font-size:clamp(34px,4.4vw,59px);line-height:1.03;letter-spacing:-2.3px;margin:14px 0 16px;max-width:800px}.hero h2 span{color:var(--mint)}.hero-copy p{max-width:720px;color:#a8bdc9;font-size:14px;line-height:1.75;margin:0}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:23px}.btn-primary,.btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 15px;border-radius:11px;font-size:11px;font-weight:850;transition:.2s}.btn-primary{background:linear-gradient(120deg,#52e6b7,#20ae91);color:#062019;border:0;box-shadow:0 10px 28px #39d9a622}.btn-primary:hover{transform:translateY(-2px);filter:brightness(1.06)}.btn-secondary{background:#102637;border:1px solid #2b4b5d;color:#c1d2dc}.btn-secondary:hover{border-color:var(--mint);color:#fff}.hero-panel{position:relative;overflow:hidden;border:1px solid #285165;border-radius:20px;padding:21px;background:radial-gradient(circle at 92% 2%,#20796855,transparent 43%),linear-gradient(145deg,#102b3b,#0b1c29);box-shadow:0 24px 55px #0004;display:flex;flex-direction:column;justify-content:space-between;min-height:225px}.hero-panel:after{content:"";position:absolute;width:210px;height:210px;right:-55px;top:20px;border-radius:50%;border:1px solid #3cddb044;box-shadow:0 0 0 18px #3cddb00a,0 0 0 38px #3cddb008}.hero-panel small{font-size:9px;letter-spacing:1.8px;color:#91b9c6;font-weight:900;position:relative;z-index:1}.hero-panel strong{font-size:38px;letter-spacing:-1.5px;position:relative;z-index:1}.hero-panel strong em{font-size:13px;letter-spacing:0;color:var(--mint);font-style:normal}.hero-panel p{font-size:11px;color:#9cb5c1;max-width:300px;margin:0;position:relative;z-index:1}
 .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:18px 0 28px}.metric{position:relative;overflow:hidden;padding:16px 17px;border-radius:15px;border:1px solid #244154;background:linear-gradient(145deg,#102537,#0b1b29);min-height:113px}.metric:after{content:"";position:absolute;width:85px;height:85px;right:-28px;bottom:-39px;border-radius:50%;background:#3cddb00e}.metric .label{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#8ca5b4;font-weight:850}.metric strong{display:block;font-size:29px;letter-spacing:-1px;margin:7px 0 1px;font-variant-numeric:tabular-nums}.metric span{font-size:10px;color:#86a0af}.metric.green strong{color:var(--mint)}.metric.gold strong{color:var(--gold)}.section{margin:32px 0 0;scroll-margin-top:90px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:14px}.section-head .eyebrow{color:var(--mint);font-size:9px;letter-spacing:1.9px;font-weight:900}.section-head h2{font-size:23px;letter-spacing:-.6px;margin:3px 0 4px}.section-head p{color:#8ea5b3;font-size:11px;margin:0;max-width:760px}.section-index{font-size:10px;color:#678394;border:1px solid #254153;padding:7px 10px;border-radius:999px;white-space:nowrap}
 .panel{border:1px solid #244154;border-radius:var(--radius);background:linear-gradient(145deg,#102536,#0a1b28);box-shadow:0 16px 42px #0002}.globe-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(260px,.7fr);gap:13px}.map-panel{overflow:hidden}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 19px;border-bottom:1px solid #1b3546}.panel-head h3{margin:2px 0 0;font-size:15px}.panel-head small{color:#8ba3b1;font-size:10px}.tag{font-size:9px;border-radius:999px;padding:6px 9px;border:1px solid #2a5a50;color:var(--mint);background:#39ddb00b;font-weight:850;letter-spacing:.8px;white-space:nowrap}.globe{height:485px;position:relative;background:radial-gradient(ellipse at 50% 50%,#153c51,#07121e 72%)}#map{position:absolute;inset:0}.map-hud{position:absolute;z-index:2;top:14px;left:16px;right:16px;display:flex;justify-content:space-between;gap:10px;pointer-events:none;color:#9ab1be;text-shadow:0 1px 8px #000;font-size:8px;letter-spacing:1.3px;font-weight:900}.map-hud .live{color:var(--mint)}.map-foot{position:absolute;z-index:2;bottom:12px;left:16px;right:16px;display:flex;justify-content:space-between;color:#819aaa;pointer-events:none;text-shadow:0 1px 8px #000;font-size:8px;letter-spacing:1px}.map-note{padding:11px 17px;color:#7893a2;font-size:9px;border-top:1px solid #1b3546}
-.selection{padding:20px;display:flex;flex-direction:column;gap:15px;background:radial-gradient(circle at 100% 0%,#1a58472b,transparent 43%),linear-gradient(145deg,#102737,#0a1b28)}.selection h3{font-size:18px;margin:2px 0 0}.selection p{color:#8fa8b6;font-size:11px;margin:0;line-height:1.6}.selection-box{border:1px solid #34746488;background:linear-gradient(135deg,#39ddb015,#39ddb004);border-radius:14px;padding:14px}.selection-box small{display:block;color:#87a7b3;font-size:8px;letter-spacing:1.3px;font-weight:900}.selection-box strong{display:block;font-size:23px;margin:3px 0}.selection-box span{font-size:10px;color:var(--mint)}.mini-facts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mini-fact{padding:11px;border-radius:11px;background:#0b1e2b;border:1px solid #203d50}.mini-fact small{display:block;color:#7e98a7;font-size:8px;text-transform:uppercase;letter-spacing:.8px}.mini-fact b{display:block;font-size:14px;margin-top:3px}.field{display:grid;gap:6px}.field label{font-size:9px;color:#9cb2bf;font-weight:800}.field select,.field input{width:100%;background:#091a27;border:1px solid #294557;color:#e7f0f4;padding:10px 11px;border-radius:9px;font-size:11px;outline:none}.field select:focus,.field input:focus{border-color:var(--mint)}.selection-actions{display:grid;gap:8px}.selection-actions button{width:100%}.hint{font-size:9px;color:#7893a3;line-height:1.55;margin-top:auto}
+.selection{padding:17px;display:flex;flex-direction:column;gap:12px;background:radial-gradient(circle at 100% 0%,#1a58472b,transparent 43%),linear-gradient(145deg,#102737,#0a1b28)}.selection h3{font-size:18px;margin:2px 0 0}.selection p{color:#8fa8b6;font-size:11px;margin:0;line-height:1.6}.selection-box{border:1px solid #34746488;background:linear-gradient(135deg,#39ddb015,#39ddb004);border-radius:14px;padding:14px}.selection-box small{display:block;color:#87a7b3;font-size:8px;letter-spacing:1.3px;font-weight:900}.selection-box strong{display:block;font-size:23px;margin:3px 0}.selection-box span{font-size:10px;color:var(--mint)}.mini-facts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mini-fact{padding:11px;border-radius:11px;background:#0b1e2b;border:1px solid #203d50}.mini-fact small{display:block;color:#7e98a7;font-size:8px;text-transform:uppercase;letter-spacing:.8px}.mini-fact b{display:block;font-size:14px;margin-top:3px}.country-data-status{padding:10px 11px;border:1px solid #29485a;border-radius:10px;background:#0a1c2a;color:#a9beca;font-size:9px;line-height:1.6}.country-data-insights{padding:11px;border:1px solid #29485a;border-radius:10px;background:#0a1c2a;color:#a9beca;font-size:9px;line-height:1.6}.country-data-insights b{color:#e9f2f6}.country-data-insights .insight-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}.country-data-insights .insight-cell{padding:8px;border-radius:8px;background:#102638;border:1px solid #264456}.country-data-insights .insight-cell small{display:block;color:#8fa7b7;font-size:8px}.country-data-insights .insight-cell strong{display:block;color:var(--mint);font-size:12px;margin-top:3px}.field{display:grid;gap:6px}.field label{font-size:9px;color:#9cb2bf;font-weight:800}.field select,.field input{width:100%;background:#091a27;border:1px solid #294557;color:#e7f0f4;padding:10px 11px;border-radius:9px;font-size:11px;outline:none}.field select:focus,.field input:focus{border-color:var(--mint)}.selection-actions{display:grid;gap:8px}.selection-actions button{width:100%}.hint{font-size:9px;color:#7893a3;line-height:1.55;margin-top:auto}
 .archive-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.dataset-card{padding:19px;position:relative;overflow:hidden}.dataset-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.dataset-top small{font-size:9px;letter-spacing:1.4px;color:var(--mint);font-weight:900}.data-type{border:1px solid #28465a;border-radius:999px;padding:5px 8px;font-size:8px;color:#a5bbc7}.dataset-card h3{font-size:17px;margin:13px 0 6px}.dataset-card p{font-size:10px;color:#91a9b7;margin:0;line-height:1.65}.dataset-number{font-size:32px;letter-spacing:-1.2px;font-weight:900;margin:14px 0 2px;font-variant-numeric:tabular-nums}.dataset-number span{font-size:11px;color:#8ca6b5;font-weight:600;letter-spacing:0}.facts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:15px}.fact{padding:10px;border-radius:10px;background:#0b1d2a;border:1px solid #1e394b}.fact b{display:block;font-size:14px;color:#e7f1f5}.fact small{color:#7f9aa9;font-size:8px}.dataset-footer{margin-top:14px;padding-top:12px;border-top:1px solid #1c3748;display:flex;justify-content:space-between;gap:9px;align-items:center;flex-wrap:wrap}.dataset-footer a{font-size:9px;color:var(--mint);font-weight:850}.dataset-footer span{font-size:9px;color:#7e98a8}.info-note{margin-top:12px;padding:12px 14px;border-radius:11px;background:#10283a;border:1px solid #28465b;color:#a3b9c5;font-size:10px;line-height:1.65}.info-note b{color:var(--gold)}
 .spatial-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);gap:13px}.spatial-card{padding:19px}.spatial-card h3{font-size:14px;margin:0 0 3px}.spatial-card>p{font-size:10px;color:#819baa;margin:0 0 17px}.level-row{display:grid;grid-template-columns:42px 1fr 88px;align-items:center;gap:10px;margin:16px 0}.level-row label{font-size:11px;color:#b5c8d1;font-weight:850}.bar-track{height:10px;border-radius:99px;background:#071622;overflow:hidden;border:1px solid #1e3b4e}.bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1e9b83,#4bdfb5);box-shadow:0 0 14px #39ddb044}.level-value{text-align:right}.level-value b{display:block;font-size:12px;font-variant-numeric:tabular-nums}.level-value small{color:#7e98a7;font-size:8px}.total-line{border-top:1px solid #1d384a;margin-top:17px;padding-top:13px;display:flex;justify-content:space-between;color:#92aab8;font-size:10px}.total-line b{color:var(--text);font-size:15px}.crop-browser{padding:19px}.crop-browser-top{display:flex;justify-content:space-between;gap:12px;align-items:center}.crop-browser h3{margin:0;font-size:14px}.crop-browser-top span{color:var(--mint);font-size:9px;font-weight:900}.crop-search{margin:13px 0 11px}.crop-search input{width:100%;padding:10px 12px;border:1px solid #29485a;border-radius:10px;background:#091a27;color:#e8f0f4;font-size:10px;outline:none}.crop-chips{display:flex;flex-wrap:wrap;gap:6px;max-height:225px;overflow:auto;padding-right:3px}.crop-chip{padding:6px 8px;border:1px solid #254558;border-radius:8px;background:#0b202d;color:#a8bdc8;font-size:9px}.crop-chip b{color:var(--mint);font-size:8px;margin-right:4px}.crop-chip:hover{border-color:var(--mint);color:#fff}.crop-chip.selected{border-color:var(--mint);background:#123a36;color:#effff9;box-shadow:inset 0 0 0 1px #3cddb044}.crop-chip[hidden]{display:none}.crop-detail{margin-top:12px;background:#0b202c;border:1px solid #274758;border-radius:10px;padding:10px;color:#90a8b6;font-size:9px;line-height:1.6}.crop-detail b{color:#eaf2f5}
 .model-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.model-card{padding:15px;border-radius:14px;border:1px solid #264457;background:linear-gradient(145deg,#102637,#0a1b29);min-height:111px}.model-symbol{font-size:10px;color:var(--mint);font-weight:900;letter-spacing:1px}.model-card b{display:block;font-size:12px;margin:9px 0 3px}.model-card small{font-size:9px;color:#829baa}.benchmark-card{border-color:#725f3b;background:linear-gradient(145deg,#302b20,#111e28)}.benchmark-card .model-symbol{color:var(--gold)}.pipeline{padding:18px;margin-top:13px}.pipeline h3{font-size:13px;margin:0 0 13px}.pipeline-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.pipe-step{padding:10px;border-radius:10px;background:#0a1b28;border:1px solid #1e394a}.pipe-step small{display:block;color:var(--mint);font-size:8px;font-weight:900}.pipe-step b{display:block;margin-top:4px;font-size:10px}.pipe-step span{display:block;margin-top:4px;color:#819aa8;font-size:8px}.model-rules{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:11px}.rule{padding:12px;border:1px solid #253f50;border-radius:11px;background:#0c1e2b}.rule b{display:block;color:var(--gold);font-size:14px}.rule small{color:#879eac;font-size:8px}
 .source-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.source-card{padding:15px;border-radius:14px;border:1px solid #254456;background:linear-gradient(145deg,#102637,#0b1b28);min-height:155px}.source-status{font-size:8px;letter-spacing:1px;font-weight:900;color:var(--mint)}.source-status.planned{color:var(--gold)}.source-status.auth{color:var(--gold)}.source-status.limited{color:#e3aa78}.source-status.catalog{color:var(--mint)}.source-card h3{font-size:12px;margin:9px 0 5px;word-break:break-word}.source-card p{font-size:9px;color:#8ea7b5;margin:0;line-height:1.6}.source-card a{display:inline-block;color:var(--mint);font-size:8px;margin-top:9px;font-weight:850}.library-row{margin-top:12px;padding:16px;border:1px solid #254557;border-radius:14px;background:#0d202e}.library-row strong{display:block;font-size:11px;margin-bottom:9px}.library-tags{display:flex;flex-wrap:wrap;gap:6px}.library-tags span{padding:6px 8px;border-radius:8px;background:#112b3a;border:1px solid #25495b;color:#a8bdc8;font-size:9px}
 .footer{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;border-top:1px solid #1f394a;margin-top:33px;padding:17px 2px;color:#708a99;font-size:9px}.footer a{color:var(--mint)}
-@media(max-width:1180px){.sidebar{width:210px}.main{margin-left:210px}.source-grid{grid-template-columns:repeat(3,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}.model-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:1180px){.sidebar{width:190px}.main{margin-left:190px}.source-grid{grid-template-columns:repeat(3,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}.model-grid{grid-template-columns:repeat(2,1fr)}}
 @media(min-width:601px) and (max-width:900px){
  .nav a{position:relative;min-height:42px}
  .nav a:hover .nav-text,.nav a:focus-visible .nav-text{
@@ -44,7 +44,7 @@
 .region-status{font-size:9px;color:#8da5b4;margin-left:5px;min-width:180px;flex:1}
 .region-selected{display:grid;grid-template-columns:1.4fr 1fr auto;align-items:center;gap:15px;border:1px solid #2a4c5d;border-radius:13px;background:#0a1e2b;padding:14px}
 .region-selected small,.region-coords small{display:block;color:#7e99a9;font-size:8px;letter-spacing:1.1px;font-weight:900}
-.region-selected strong{display:block;font-size:16px;margin:3px 0}
+.region-selected strong{display:block;font-size:16px;margin:3px 0}.region-coords b+small{margin-top:8px}
 .region-selected span{color:#8ca5b5;font-size:9px}
 .region-coords b{display:block;font-size:11px;margin-top:4px}
 .region-results{margin-top:13px}
@@ -73,7 +73,7 @@
 .region-mapspam-kpi small{display:block;color:#8da8b7;font-size:8px;letter-spacing:.6px}
 .region-mapspam-kpi strong{display:block;color:#65dfba;font-size:17px;overflow-wrap:anywhere;margin-top:4px}
 .region-mapspam-status{font-size:10px;color:#b8cbd5;line-height:1.65;margin-top:10px}
-@media(max-width:600px){.region-mapspam-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.region-mapspam-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.country-data-insights .insight-grid{grid-template-columns:1fr 1fr}}
 .region-yield-controls{display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:9px;align-items:end}
 .region-yield-controls button{width:100%;min-height:39px}
 .region-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0 0 13px}
@@ -138,12 +138,11 @@
     <div class="nav-label">WORKSPACE</div>
     <nav class="nav">
       <a class="active" href="#overview" title="Bosh sahifa" aria-label="Bosh sahifa"><span class="nav-icon">⌂</span><span class="nav-text">Bosh sahifa</span></a>
-      <a href="#globe" title="Global 3D xarita" aria-label="Global 3D xarita"><span class="nav-icon">◎</span><span class="nav-text">Global 3D xarita</span></a>
-      <a href="#archive" title="Data arxivi" aria-label="Data arxivi"><span class="nav-icon">▤</span><span class="nav-text">Data arxivi</span></a>
-      <a href="#field-analysis" title="Maydon tahlili" aria-label="Maydon tahlili"><span class="nav-icon">⌖</span><span class="nav-text">Maydon tahlili</span></a>
-      <a href="#spatial" title="MAPSPAM va 46 ekin" aria-label="MAPSPAM va 46 ekin"><span class="nav-icon">▦</span><span class="nav-text">MAPSPAM / 46 ekin</span></a>
-      <a href="#models" title="Model laboratoriyasi" aria-label="Model laboratoriyasi"><span class="nav-icon">⌘</span><span class="nav-text">Model laboratoriyasi</span></a>
-      <a href="#environment" title="Iqlim manbalari" aria-label="Iqlim manbalari"><span class="nav-icon">☁</span><span class="nav-text">Iqlim manbalari</span></a>
+      <a href="#globe" title="Global xarita" aria-label="Global xarita"><span class="nav-icon">◎</span><span class="nav-text">Xarita</span></a>
+      <a href="#field-analysis" title="Hudud va dala tahlili" aria-label="Maydon tahlili"><span class="nav-icon">⌖</span><span class="nav-text">Hudud tahlili</span></a>
+      <a href="#archive" title="Global ma’lumotlar" aria-label="Global ma’lumotlar"><span class="nav-icon">▤</span><span class="nav-text">Ma’lumotlar</span></a>
+      <a href="#spatial" title="Ekinlar va fazoviy tahlil" aria-label="Ekinlar va fazoviy tahlil"><span class="nav-icon">▦</span><span class="nav-text">Ekinlar</span></a>
+      <a href="#models" title="AI laboratoriyasi" aria-label="AI laboratoriyasi"><span class="nav-icon">⌘</span><span class="nav-text">AI laboratoriya</span></a>
     </nav>
   </div>
   <div class="side-card"><small>GLOBAL MAPSPAM REFERENCE</small><b>228,620 xulosa</b><p>IFPRI MAPSPAM · 2020 · 46 ekin</p></div>
@@ -191,11 +190,13 @@
           <div><div class="eyebrow">SELECTED COUNTRY</div><h3 id="country-name">O‘zbekiston</h3><p>Tanlangan mamlakat bo‘yicha manbalar va dataset qamrovi haqida ma’lumot.</p></div>
           <div class="selection-box"><small>COUNTRY ISO-3</small><strong id="country-code">UZB</strong><span>Global ADM boundary · MAPSPAM 2020 reference</span></div>
           <div class="mini-facts">
-            <div class="mini-fact"><small>Global ADM coverage</small><b>245</b></div>
-            <div class="mini-fact"><small>MAPSPAM countries</small><b>153</b></div>
-            <div class="mini-fact"><small>MAPSPAM snapshot</small><b>2020</b></div>
-            <div class="mini-fact"><small>MAPSPAM countries</small><b>153</b></div>
+            <div class="mini-fact"><small>ADM darajalari</small><b id="country-adm-levels">Tekshirilmoqda</b></div>
+            <div class="mini-fact"><small>Boundary poligonlari</small><b id="country-boundary-count">—</b></div>
+            <div class="mini-fact"><small>MAPSPAM qamrovi</small><b id="country-mapspam-levels">—</b></div>
+            <div class="mini-fact"><small>Ekin qatlamlari</small><b id="country-crop-layers">46</b></div>
           </div>
+          <div class="country-data-status" id="country-data-status" role="status" aria-live="polite">Mamlakat tanlang — chegaralar va MAPSPAM 2020 qamrovi tekshiriladi.</div>
+          <div class="country-data-insights" id="country-data-insights" aria-live="polite">Tanlangan mamlakat uchun e’lon qilingan ma’lumotlar shu yerda ko‘rsatiladi.</div>
           <div class="field"><label for="crop-select">MAPSPAM crop layer · barcha 46 ta ekin</label><select id="crop-select"><option value="whea">Wheat</option></select></div>
           <div class="selection-actions"><a class="btn-primary" href="#spatial">46 ta ekin qatlamini ko‘rish →</a><a class="btn-secondary" href="#archive">Dataset qamroviga o‘tish ↗</a></div>
           <div class="hint">Muhim: MAPSPAM 2020 tarixiy fazoviy bahodir. Mamlakatni bosish ma’muriy chegaralarni yuklaydi; keyin viloyat yoki tumanni tanlasangiz shu hududning mavjud ma’lumotlari ochiladi.</div>
@@ -225,13 +226,14 @@
         </div>
         <div class="region-draw-row">
           <button class="btn-secondary" type="button" id="region-draw-start">＋ Maydon chizish</button>
+          <button class="btn-secondary" type="button" id="region-draw-undo" disabled>↶ Oxirgi nuqta</button>
           <button class="btn-secondary" type="button" id="region-draw-finish" disabled>Poligonni tugatish</button>
           <button class="btn-secondary" type="button" id="region-draw-cancel" disabled>Bekor qilish</button>
           <span class="region-status" id="region-status" role="status">GitHub Pages statik paketida global mamlakatlarning mavjud ADM1/ADM2 qatlamlari bor; O‘zbekistonning alohida tekshirilgan chegaralari ham saqlangan.</span>
         </div>
         <div class="region-selected">
           <div><small>TANLANGAN AOI</small><strong id="region-name">Hudud tanlanmagan</strong><span id="region-meta">O‘zbekiston ADM1/ADM2 yoki qo‘lda chizilgan dala poligoni</span></div>
-          <div class="region-coords"><small>TAXMINIY MARKAZ KOORDINATASI</small><b id="region-center">—</b></div>
+          <div class="region-coords"><small>TAXMINIY MARKAZ KOORDINATASI</small><b id="region-center">—</b><small style="margin-top:9px">MAYDON YUZASI · TAXMINIY</small><b id="region-area">—</b></div>
           <button class="btn-primary" id="region-analyze" disabled>Hududni tahlil qilish →</button>
         </div>
       </div>
@@ -292,8 +294,8 @@
           <div class="dataset-top"><small>IFPRI · MAPSPAM 2020 v2r2</small><span class="data-type">SPATIAL CROP DATA</span></div>
           <h3>Global crop production reference</h3>
           <p>46 ekin bo‘yicha fizik maydon, yig‘ib olingan maydon, ishlab chiqarish va hosildorlikning 2020-yil fazoviy baholari.</p>
-          <div class="dataset-number" id="mapspam-count">228,620 <span>administrative summaries</span></div>
-          <div class="facts-grid"><div class="fact"><b id="country-count">153</b><small>countries</small></div><div class="fact"><b id="mapspam-crops">46</b><small>crop layers</small></div><div class="fact"><b>5′</b><small>grid resolution</small></div></div>
+          <div class="dataset-number" id="archive-mapspam-count">228,620 <span>administrative summaries</span></div>
+          <div class="facts-grid"><div class="fact"><b id="archive-country-count">153</b><small>countries</small></div><div class="fact"><b id="archive-mapspam-crops">46</b><small>crop layers</small></div><div class="fact"><b>5′</b><small>grid resolution</small></div></div>
           <div class="dataset-footer"><a href="https://cgiar-climate-data-hub.github.io/catalog/spam2020/" target="_blank" rel="noopener">MAPSPAM data hub ↗</a><span>Reference year · 2020</span></div>
         </article>
         <article class="panel dataset-card">
@@ -456,8 +458,11 @@ fetch("./data/catalog.json").then(r=>{if(!r.ok)throw new Error("manifest "+r.sta
  if(!spam)throw new Error("MAPSPAM dataset metadata missing");
  $("combined-records").innerHTML=comma(data.combined_summary_rows||spam.records)+' <em>summaries</em>';
  $("mapspam-count").textContent=comma(spam.records);
+ $("archive-mapspam-count").textContent=comma(spam.records)+" administrative summaries";
  $("country-count").textContent=comma(spam.countries);
+ $("archive-country-count").textContent=comma(spam.countries);
  $("mapspam-crops").textContent=comma(spam.crops);
+ $("archive-mapspam-crops").textContent=comma(spam.crops);
 }).catch(function(error){console.warn("Global data manifest could not load",error);});
 
 let map=null,features=[],selected=null;
@@ -516,6 +521,8 @@ function choose(f,animate){
  $("country-name").textContent=countryName(f);
  $("country-code").textContent=iso3(f);
  $("map-status").textContent="Tanlandi: "+countryName(f)+" · "+iso3(f);
+ updateCountryCoverage(iso3(f));
+ renderCountryMapspamSummary(iso3(f));
  if(map&&map.getSource("countries")&&features.includes(f)){
   if(previous&&previous.id!==f.id&&features.includes(previous))map.setFeatureState({source:"countries",id:previous.id},{selected:false});
   map.setFeatureState({source:"countries",id:f.id},{selected:true});
@@ -595,7 +602,7 @@ if(window.maplibregl){
     $("region-select").innerHTML='<option value="">Avval tanlangan mamlakat ADM1/ADM2 qatlamini yuklang</option>';
     $("region-search").value="";
     $("region-name").textContent="Hudud tanlanmagan";
-    $("region-center").textContent="—";
+    $("region-center").textContent="—";$("region-area").textContent="—";
     $("region-analyze").disabled=true;
     $("region-results").hidden=true;
     $("region-status").textContent=code+" tanlandi. Mavjud ma’muriy hududlar yuklanmoqda…";
@@ -778,6 +785,67 @@ function regionBounds(feature){
  points.forEach(p=>{minX=Math.min(minX,p[0]);maxX=Math.max(maxX,p[0]);minY=Math.min(minY,p[1]);maxY=Math.max(maxY,p[1]);});
  return [[minX,minY],[maxX,maxY]];
 }
+function regionRingAreaM2(ring){
+ if(!Array.isArray(ring)||ring.length<4)return 0;
+ const radius=6371008.8,rad=Math.PI/180;
+ let total=0;
+ for(let i=0;i<ring.length-1;i++){
+  const lon1=Number(ring[i][0])*rad,lon2=Number(ring[i+1][0])*rad;
+  const lat1=Number(ring[i][1])*rad,lat2=Number(ring[i+1][1])*rad;
+  if(![lon1,lon2,lat1,lat2].every(Number.isFinite))return 0;
+  total+=(lon2-lon1)*(2+Math.sin(lat1)+Math.sin(lat2));
+ }
+ return Math.abs(total*radius*radius/2);
+}
+function regionAreaHa(feature){
+ const geometry=feature&&feature.geometry;
+ if(!geometry)return null;
+ const polygons=geometry.type==="Polygon"?[geometry.coordinates]:
+  geometry.type==="MultiPolygon"?geometry.coordinates:[];
+ if(!polygons.length)return null;
+ let squareMeters=0;
+ for(const rings of polygons){
+  if(!Array.isArray(rings)||!rings.length)continue;
+  let area=regionRingAreaM2(rings[0]);
+  for(let i=1;i<rings.length;i++)area-=regionRingAreaM2(rings[i]);
+  squareMeters+=Math.max(0,area);
+ }
+ return Number.isFinite(squareMeters)&&squareMeters>0?squareMeters/10000:null;
+}
+function formatRegionArea(hectares){
+ if(!Number.isFinite(hectares)||hectares<=0)return "Hisoblanmadi";
+ if(hectares>=10000)return "≈ "+(hectares/100).toLocaleString("uz-UZ",{maximumFractionDigits:1})+" km²";
+ return "≈ "+hectares.toLocaleString("uz-UZ",{maximumFractionDigits:1})+" ha";
+}
+function renderCountryMapspamSummary(countryIso){
+ const iso=String(countryIso||"").toUpperCase();
+ const out=$("country-data-insights");
+ if(!out)return;
+ if(iso==="UZB"){
+  out.innerHTML="<b>O‘zbekiston MAPSPAM 2020</b><br>14 ta viloyat va 199 ta tuman kesimida 46 ekin bo‘yicha tarixiy fazoviy xulosalar. Hudud tanlanganda ishlab chiqarish, maydon va hosildorlik alohida ko‘rsatiladi.";
+  return;
+ }
+ loadPublicMapspamCountry(iso).then(payload=>{
+  if($("country-code").textContent!==iso)return;
+  const areas=(payload.levels&&payload.levels.ADM0&&payload.levels.ADM0.areas)||{};
+  const national=areas[iso]||Object.values(areas).find(item=>String(item.name||"").toLowerCase()===String(payload.country_name||"").toLowerCase());
+  if(!national){
+   const levels=Object.keys(payload.levels||{});
+   out.innerHTML="<b>MAPSPAM 2020 · "+regionEscape(iso)+"</b><br>"+
+    "Paket mavjud, "+levels.join(" / ")+" hududiy darajalarda. Mamlakat bo‘yicha ADM0 yig‘ma qatori yo‘q; tegishli viloyat yoki tuman poligonini tanlang.";
+   return;
+  }
+  const rows=Object.entries(national.crops||{}).map(([code,value])=>({code,value,name:(cropList.find(item=>item[0]===code)||[code,code.toUpperCase()])[1]}))
+   .sort((a,b)=>Number(b.value.production_t||0)-Number(a.value.production_t||0)).slice(0,5);
+  const fmt=value=>Number(value||0).toLocaleString("en-US",{maximumFractionDigits:0});
+  out.innerHTML="<b>MAPSPAM 2020 · "+regionEscape(payload.country_name||iso)+"</b>"+
+   "<div class='insight-grid'><div class='insight-cell'><small>Hududdagi ekinlar</small><strong>"+Object.keys(national.crops||{}).length+"</strong></div>"+
+   "<div class='insight-cell'><small>Ma’lumot yili</small><strong>2020</strong></div></div>"+
+   (rows.length?"<div style='margin-top:9px'><b>Yetakchi ekinlar · ishlab chiqarish</b><br>"+rows.map(row=>regionEscape(row.name)+": "+fmt(row.value.production_t)+" t").join("<br>")+"</div>":"");
+ }).catch(error=>{
+  if($("country-code").textContent===iso)out.textContent="MAPSPAM paketi yuklanmadi: "+error.message;
+ });
+}
 function selectRegionFeature(feature,sourceLabel){
  if(!feature)return;
  if(selectedAOI!==feature)clearYieldInputOnContextChange("Hudud tanlovi o‘zgardi.");
@@ -789,6 +857,7 @@ function selectRegionFeature(feature,sourceLabel){
  $("region-name").textContent=regionFeatureName(feature);
  $("region-meta").textContent=(sourceLabel||"CUSTOM AOI")+" · "+(feature.geometry.type||"Polygon")+" · "+(feature.properties&&feature.properties.shapeID||"ID not assigned");
  $("region-center").textContent=center?center.lat.toFixed(5)+", "+center.lon.toFixed(5):"—";
+ $("region-area").textContent=formatRegionArea(regionAreaHa(feature));
  $("region-analyze").disabled=!center;
  updateYieldModelButton();
  $("region-results").hidden=true;
@@ -812,6 +881,8 @@ function updateRegionDraft(){
  if(regionDraftPoints.length>=3)drawing.push({type:"Feature",properties:{kind:"draft-polygon"},geometry:{type:"Polygon",coordinates:[[...regionDraftPoints,regionDraftPoints[0]]]}});
  map.getSource("region-draft").setData({type:"FeatureCollection",features:drawing});
  map.getSource("region-draft-points").setData({type:"FeatureCollection",features:regionDraftPoints.map((point,index)=>({type:"Feature",properties:{index:index+1},geometry:{type:"Point",coordinates:point}}))});
+ const undo=$("region-draw-undo");
+ if(undo)undo.disabled=!regionDrawing||regionDraftPoints.length===0;
 }
 function renderRegionOptions(filter){
  const query=normalizeRegionSearch(filter);
@@ -872,7 +943,7 @@ async function loadRegionBoundaries(){
   map.getSource("admin-areas").setData({type:"FeatureCollection",features:adminFeatures});
   if(map.getSource("region-selected"))map.getSource("region-selected").setData({type:"FeatureCollection",features:[]});
   $("region-select").disabled=false;$("region-search").value="";renderRegionOptions("");
-  selectedAOI=null;$("region-name").textContent="Hudud tanlanmagan";$("region-center").textContent="—";
+  selectedAOI=null;$("region-name").textContent="Hudud tanlanmagan";$("region-center").textContent="—";$("region-area").textContent="—";$("region-area").textContent="—";
   $("region-analyze").disabled=true;$("region-results").hidden=true;
   $("region-status").textContent=adminFeatures.length.toLocaleString("en-US")+" ta "+level+" polygon yuklandi · "+(isUzbekistan?"UZB validated static bundle":"global geoBoundaries country bundle")+" · "+(metadata.boundary_year||"boundary year n/a");
   $("region-meta").textContent=(metadata.source||"geoBoundaries")+" · "+iso+" · "+level+" · "+(metadata.boundary_year||"year n/a")+" · "+(metadata.license||"license metadata unavailable");
@@ -900,6 +971,12 @@ $("region-draw-start").addEventListener("click",()=>{
  map.getCanvas().style.cursor="crosshair";
  $("region-status").textContent="Mayda dala uchun xaritani avval 2 barmoq/g‘ildirak bilan yaqinlashtiring. So‘ng chegara bo‘ylab kamida 3 burchakni bosing.";
 });
+$("region-draw-undo").addEventListener("click",()=>{
+ if(!regionDrawing||!regionDraftPoints.length)return;
+ regionDraftPoints.pop();
+ updateRegionDraft();
+ $("region-status").textContent="Oxirgi nuqta olib tashlandi · "+regionDraftPoints.length+" ta nuqta qoldi.";
+});
 $("region-draw-cancel").addEventListener("click",()=>{
  regionDrawing=false;regionDraftPoints=[];updateRegionDraft();
  $("region-draw-start").disabled=false;$("region-draw-finish").disabled=true;$("region-draw-cancel").disabled=true;
@@ -911,6 +988,11 @@ $("region-draw-finish").addEventListener("click",()=>{
  if(regionDraftPoints.length<3){$("region-status").textContent="Poligon uchun kamida 3 ta nuqta kerak.";return;}
  const ring=[...regionDraftPoints,regionDraftPoints[0]];
  const feature={type:"Feature",properties:{shapeName:"Foydalanuvchi chizgan dala",__custom_aoi:true,boundarySource:"USER_DRAWN"},geometry:{type:"Polygon",coordinates:[ring]}};
+ const hectares=regionAreaHa(feature);
+ if(!Number.isFinite(hectares)||hectares<0.01){
+  $("region-status").textContent="Chizilgan poligon juda kichik yoki geometriyasi noto‘g‘ri. Nuqtalarni qayta belgilang.";
+  return;
+ }
  regionDrawing=false;regionDraftPoints=[];updateRegionDraft();
  $("region-draw-start").disabled=false;$("region-draw-finish").disabled=true;$("region-draw-cancel").disabled=true;
  if(map)map.getCanvas().style.cursor="";
@@ -922,11 +1004,79 @@ function regionFmt(value,digits){
  return Number(value).toLocaleString("en-US",{minimumFractionDigits:digits||0,maximumFractionDigits:digits||0});
 }
 const mapspamReferenceCache=Object.create(null);
+let publicBoundaryManifest=null,publicMapspamManifest=null;
+async function loadPublicBoundaryManifest(){
+ if(publicBoundaryManifest)return publicBoundaryManifest;
+ const response=await fetch("./data/boundaries/global/manifest.json",{cache:"force-cache"});
+ if(!response.ok)throw new Error("Global ADM katalogi HTTP "+response.status);
+ publicBoundaryManifest=await response.json();
+ return publicBoundaryManifest;
+}
+async function loadPublicMapspamManifest(){
+ if(publicMapspamManifest)return publicMapspamManifest;
+ const response=await fetch("./data/mapspam/global/manifest.json",{cache:"force-cache"});
+ if(!response.ok)throw new Error("MAPSPAM global katalogi HTTP "+response.status);
+ publicMapspamManifest=await response.json();
+ return publicMapspamManifest;
+}
+async function updateCountryCoverage(countryIso){
+ const iso=String(countryIso||"").trim().toUpperCase();
+ if(!/^[A-Z]{3}$/.test(iso))return;
+ const status=$("country-data-status"),insights=$("country-data-insights");
+ status.textContent=iso+" · ADM va MAPSPAM 2020 qamrovi tekshirilmoqda…";
+ insights.textContent="Mamlakat ma’lumotlari yuklanmoqda…";
+ try{
+  const boundaryManifest=await loadPublicBoundaryManifest();
+  if($("country-code").textContent!==iso)return;
+  const country=(boundaryManifest.countries||{})[iso];
+  if(!country){
+   $("country-adm-levels").textContent="—";
+   $("country-boundary-count").textContent="—";
+   status.textContent=iso+" uchun global ADM katalogida mos yozuv topilmadi.";
+  }else{
+   const available=country.available_levels||[];
+   const packages=country.levels||{};
+   const staticLevels=Object.keys(packages);
+   const count=Object.values(packages).reduce((sum,item)=>sum+Number(item.feature_count||0),0);
+   $("country-adm-levels").textContent=available.length?available.join(" / "):"—";
+   $("country-boundary-count").textContent=count?count.toLocaleString("en-US"):"Paket yo‘q";
+   status.textContent=iso+" · "+(country.name||countryName(selected))+" · "+
+    (staticLevels.length?"Saytga joylangan: "+staticLevels.join(", "):"Ma’muriy daraja katalogda bor, lekin statik geometriya paketi yo‘q")+
+    (count?" · "+count.toLocaleString("en-US")+" poligon":"");
+  }
+  let mapInfo=null;
+  try{const mapManifest=await loadPublicMapspamManifest();mapInfo=(mapManifest.countries||{})[iso]||null;}catch(_){}
+  if($("country-code").textContent!==iso)return;
+  if(mapInfo){
+   const levels=Object.keys(mapInfo.levels||{});
+   $("country-mapspam-levels").textContent=levels.length?levels.join(" / "):"—";
+   $("country-crop-layers").textContent=String(mapInfo.crop_count||46);
+   status.textContent+=" · MAPSPAM 2020: "+Number(mapInfo.row_count||0).toLocaleString("en-US")+" xulosa";
+   insights.innerHTML="<b>MAPSPAM 2020 · "+regionEscape(iso)+"</b><br>"+
+    "Tanlangan mamlakat uchun "+Number(mapInfo.row_count||0).toLocaleString("en-US")+
+    " ta tekshirilgan hudud/ekin yozuvi ommaviy paketda mavjud. ADM1 yoki ADM2 hududini tanlang — ekinlar bo‘yicha ko‘rsatkichlar ochiladi.";
+  }else if(iso==="UZB"){
+   $("country-mapspam-levels").textContent="ADM1 / ADM2";
+   $("country-crop-layers").textContent="46";
+   insights.innerHTML="<b>O‘zbekiston · MAPSPAM 2020</b><br>14 ta viloyat va 199 ta tuman uchun 46 ekin bo‘yicha tarixiy fazoviy xulosa mavjud.";
+  }else{
+   $("country-mapspam-levels").textContent="E’lon qilinmagan";
+   insights.innerHTML="<b>MAPSPAM 2020 paketi hali ommaviy emas.</b><br>Bu mamlakat uchun xarita chegaralari mavjud bo‘lishi mumkin, lekin ekin xulosalari paketini nashr qilish hali yakunlanmagan. Ob-havo va Sentinel-2 katalog tahlili ishlashi mumkin.";
+  }
+ }catch(error){
+  if($("country-code").textContent!==iso)return;
+  status.textContent="Qamrov katalogini yuklashda xatolik: "+(error&&error.message?error.message:String(error));
+  insights.textContent="Chegara katalogi vaqtincha ochilmadi. Mamlakat chegarasini qayta yuklab ko‘ring.";
+ }
+}
 async function loadPublicMapspamCountry(countryIso){
  const iso=String(countryIso||"").trim().toUpperCase();
  if(!/^[A-Z]{3}$/.test(iso))throw new Error("Tanlangan mamlakat ISO-3 kodi noto‘g‘ri.");
  if(mapspamReferenceCache[iso])return mapspamReferenceCache[iso];
- let response=await fetch("./data/mapspam/global/"+iso+".json.gz",{cache:"force-cache",headers:{Accept:"application/gzip, application/octet-stream"}});
+ let mapInfo=null;
+ try{mapInfo=((await loadPublicMapspamManifest()).countries||{})[iso]||null;}catch(_){}
+ const fileName=mapInfo&&mapInfo.file?mapInfo.file:(iso+".json.gz");
+ let response=await fetch("./data/mapspam/global/"+fileName,{cache:"force-cache",headers:{Accept:"application/gzip, application/octet-stream"}});
  let payload=null;
  if(response.ok){
   if(typeof DecompressionStream==="undefined")throw new Error("Brauzer gzip siqilgan ma’lumotni ochishni qo‘llamaydi. Yangilangan brauzerdan foydalaning.");
