@@ -28,6 +28,14 @@ assert.ok(!page.includes('src="/app.js"')&&!page.includes('href="/styles.css"'),
 assert.ok(app.includes("const API_BASE = String(window.OSH_API_BASE || '')"),"app does not support Pages/Fly API base");
 assert.ok(app.includes("./data/boundaries/global/"),"full app does not use global static boundaries");
 assert.ok(app.includes("./data/boundaries/"),"full app does not use the validated UZB boundary bundle");
+assert.ok(app.includes("refreshBoundaryAvailability"),"country-specific ADM availability UI is missing");
+assert.ok(app.includes("availability_levels"),"app does not read country ADM availability metadata");
+assert.ok(app.includes("persistPendingAOI")&&app.includes("restorePendingAOI"),"drawn AOI is not persisted/restored");
+assert.ok(app.includes("/global-raster-summary/mapspam"),"custom AOI raster summary is not wired to the zonal endpoint");
+assert.ok(app.includes("dataset_id")&&app.includes("location_id"),"dataset-to-location model scope is not surfaced");
+for(const id of ["boundary-level-status","aoi-profile","aoi-crop-code","analyze-aoi-mapspam"]){
+ assert.ok(page.includes('id="'+id+'"'),"full app page is missing "+id);
+}
 assert.ok(i18n.includes('["uz", "en", "ru"]')||i18n.includes('["uz","en","ru"]'),
  "the app must retain the supported Uzbek/English/Russian language selector");
 assert.ok(css.includes("url('./assets/hero-field.jpg')"),"hero image path is not relative");
