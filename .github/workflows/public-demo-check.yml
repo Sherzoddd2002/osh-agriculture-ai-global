@@ -6,6 +6,7 @@ on:
     paths:
       - "docs/static-demo.html"
       - "docs/index.html"
+      - "docs/ui-refresh.css"
       - ".github/workflows/demo-gif.yml"
       - "scripts/assemble_public_frontend.py"
       - "scripts/test_public_static_demo.mjs"
