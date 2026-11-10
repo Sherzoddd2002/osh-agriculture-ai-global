@@ -1,6 +1,6 @@
 # Dunyo bo‘yicha hosil prognozi, NASA ma’lumotlari asosida
 
-**OSH Agriculture AI Global** — FAOSTAT tarixiy statistikasi, MAPSPAM fazoviy ekin qatlamlari, iqlim manbalari va ML tahlilini birlashtiruvchi global agrar research platforma.
+**OSH Agriculture AI Global** — global ma’muriy chegaralar, MAPSPAM fazoviy ekin qatlamlari, iqlim manbalari va tekshiriladigan AI research ssenariylarini birlashtiruvchi global agrar demo.
 
 🌍 **[Global data dashboard’ni ochish](https://sherzoddd2002.github.io/osh-agriculture-ai-global/)** · [GitHub repository](https://github.com/Sherzoddd2002/osh-agriculture-ai-global) · [JSON data manifest](docs/data/catalog.json)
 
@@ -8,10 +8,17 @@
 
 [Qisqa demo: 3D globus, data archive va model laboratoriyasi](docs/assets/demo-walkthrough.gif)
 
-## Ma’lumotlar inventarizatsiyasi · 2026-11-08
+## Public demo data coverage · 2026-11-10
 
-| Arxiv | Bazadagi qatorlar | Qamrov |
-|---|---:|---|
+| Public layer | Coverage |
+|---|---:|
+| Global administrative boundaries | 245 country/territory codes · ADM1 + ADM2 catalogue |
+| IFPRI MAPSPAM 2020 v2r2 reference | 153 countries · 46 crops · 228,620 administrative summaries in the reference archive |
+| Uzbekistan public MAPSPAM package | 14 ADM1 · 199 ADM2 · 46 crops |
+| CROPGRIDS v1.08 catalogue | 173 crop layers (catalogue only; not a prediction input) |
+
+> **Scientific scope:** MAPSPAM 2020 is a single reference-year gridded estimate (~9.3 km at the equator), not a current-year observation, field measurement, or future forecast. The public Pages bundle currently includes the Uzbekistan MAPSPAM package; other-country reference summaries must be exported, reviewed, and published separately. Private database rows and user uploads are not included.
+---|---:|---|
 | FAOSTAT QCL | **610,299** | 1961–2024 · 202 mamlakat/hudud · 169 item kodi |
 | IFPRI MAPSPAM 2020 v2r2 | **228,620** | 153 mamlakat · 46 ekin · ADM0/ADM1/ADM2 |
 | **Jami** | **838,919** | Ikki alohida manbaning yozuvlari |
@@ -28,7 +35,7 @@
 
 **A location-first agricultural data and yield-forecasting platform.** Users select a country and administrative area, upload historical crop observations, enrich the selected area with environmental datasets, run quality checks, and receive a clearly labelled yield estimate.
 
-> **Public-site architecture:** the public dashboard is hosted entirely by GitHub Pages. GitHub Actions packages and validates Uzbekistan's 14 ADM1 and 199 ADM2 geoBoundaries polygons as static GeoJSON during each Pages build (and on a weekly refresh). The browser reads these files directly; it does not call Fly.io, FastAPI, or PostgreSQL. The selected area's weather and Sentinel-2 scene metadata are retrieved from their public providers. A user's real historical yield CSV is processed locally in the browser by a Ridge + ERA5-Land research scenario and is never uploaded. This is not a pre-trained universal district-yield service: a location-specific CSV is required for a location-specific estimate.
+> **Public-site architecture:** the public dashboard is hosted entirely by GitHub Pages. GitHub Actions builds static ADM1/ADM2 boundary packages for up to 245 country/territory codes. The browser reads these files directly; it does not call Fly.io, FastAPI, or PostgreSQL. Selecting an administrative area retrieves Open-Meteo history/forecast, Sentinel-2 scene metadata, and MAPSPAM summaries when a matching public country package exists. A user's real historical yield CSV is processed locally in the browser by a Ridge + ERA5-Land research scenario and is never uploaded. Uzbekistan ADM1 wheat, potato and raw-cotton series can use official SIAT data; other area/crop combinations require matching observed yield history. This is not a validated universal global-yield service.
 
 For Uzbek setup instructions, see [README_UZ.md](README_UZ.md).
 
@@ -36,11 +43,11 @@ For Uzbek setup instructions, see [README_UZ.md](README_UZ.md).
 
 - **Frontend:** vanilla HTML/CSS/JS + MapLibre GL JS.
 - **Public frontend:** vanilla HTML/CSS/JavaScript + MapLibre GL JS, hosted on GitHub Pages.
-- **Public boundaries:** static Uzbekistan ADM1/ADM2 GeoJSON generated and validated by GitHub Actions; 14 viloyat and 199 tuman features.
+- **Public boundaries:** static ADM1/ADM2 GeoJSON packages for 245 country/territory codes, generated and validated by GitHub Actions; 14 Uzbekistan provinces and 199 districts are specifically validated.
 - **Browser-side analysis:** Open-Meteo weather retrieval, Copernicus Sentinel-2 scene discovery, local CSV parsing, Ridge model and expanding-window OOF benchmark.
 - **Research backend:** FastAPI, SQLAlchemy, PostgreSQL/PostGIS and a background worker remain in the repository for optional local/private deployments; they are not part of the public Pages runtime.
 - **Environmental source status:** Sentinel-2 scene discovery is connected but NDVI pixels are not computed; SMAP and SoilGrids zonal raster inputs are not yet integrated.
-- **Public deployment:** GitHub Pages + GitHub Actions only. No Fly.io service or public database is required.
+- **Public deployment:** GitHub Pages + GitHub Actions only. No Fly.io service or public database is required. Automatic Fly deployment has been removed.
 
 ## Optional: shared central Windows + PostgreSQL server
 
