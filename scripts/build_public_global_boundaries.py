@@ -26,6 +26,7 @@ WB_CATALOG_URL = "https://datacatalog.worldbank.org/search/dataset/0038272/world
 WB_UPDATED = "2026-10-21"
 API_BASE = "https://geoboundaries-dev.org/api/current/gbOpen/ALL"
 LEVELS = ("ADM1", "ADM2")
+CATALOG_LEVELS = tuple(f"ADM{i}" for i in range(6))
 MIN_COUNTRIES_PER_LEVEL = 100
 MAX_TOTAL_BYTES = 850 * 1024 * 1024
 MAX_CONCURRENCY = 12
@@ -194,6 +195,75 @@ def old_level_records(old_manifest: dict | None, level: str) -> dict[str, dict]:
         if record:
             result[iso] = record
     return result
+
+
+async def build_availability_catalog(
+    client: httpx.AsyncClient,
+    semaphore: asyncio.Semaphore,
+    old_manifest: dict | None,
+) -> tuple[dict[str, dict], list[str]]:
+    """Collect country-by-country ADM0–ADM5 availability without downloading geometry."""
+    catalog: dict[str, dict] = {}
+    failures: list[str] = []
+
+    for level in CATALOG_LEVELS:
+        try:
+            records = await get_json(client, f"{API_BASE}/{level}/", semaphore)
+            if isinstance(records, dict):
+                records = [records]
+            if not isinstance(records, list):
+                raise ValueError("global availability response is not a list")
+        except Exception as exc:
+            failures.append(f"{level}: {exc}")
+            continue
+
+        seen: set[str] = set()
+        for record in records:
+            if not isinstance(record, dict):
+                continue
+            iso = str(record.get("boundaryISO") or "").strip().upper()
+            if not re.fullmatch(r"[A-Z]{3}", iso):
+                continue
+            if iso in seen:
+                raise ValueError(f"{level}: duplicate availability record for {iso}")
+            seen.add(iso)
+
+            country = catalog.setdefault(
+                iso,
+                {
+                    "name": str(record.get("boundaryName") or iso),
+                    "continent": str(record.get("Continent") or "Unknown"),
+                    "levels": {},
+                },
+            )
+            country["levels"][level] = {
+                "available": True,
+                "boundary_year": str(record.get("boundaryYearRepresented") or ""),
+                "boundary_id": str(record.get("boundaryID") or ""),
+                "boundary_source": str(record.get("boundarySource") or "geoBoundaries gbOpen"),
+                "boundary_license": str(record.get("boundaryLicense") or ""),
+                "source_url": str(record.get("boundarySourceURL") or ""),
+                "has_simplified_geometry": bool(record.get("simplifiedGeometryGeoJSON")),
+                "has_full_geometry": bool(record.get("gjDownloadURL")),
+            }
+
+    # Preserve the last validated availability information during upstream outages.
+    old_countries = (old_manifest or {}).get("countries") or {}
+    for iso, old_country in old_countries.items():
+        for level, old_info in (old_country.get("availability_levels") or {}).items():
+            if level not in CATALOG_LEVELS:
+                continue
+            catalog_country = catalog.setdefault(
+                iso,
+                {
+                    "name": str(old_country.get("name") or iso),
+                    "continent": str(old_country.get("continent") or "Unknown"),
+                    "levels": {},
+                },
+            )
+            catalog_country["levels"].setdefault(level, old_info)
+
+    return catalog, failures
 
 
 async def build_level(
@@ -510,6 +580,10 @@ async def main() -> None:
                 print(f"WARN WORLD BANK FALLBACK {level}: service query unavailable; retaining validated gbOpen packages: {exc}")
                 world_bank_fallback_summary[level] = {"country_count": 0, "feature_count": 0, "error": str(exc)}
 
+    availability_catalog, availability_failures = await build_availability_catalog(
+        client, semaphore, old_manifest
+    )
+
     countries: dict[str, dict] = {}
     for level, packages in level_results.items():
         for iso, metadata in packages.items():
@@ -519,9 +593,68 @@ async def main() -> None:
                     "name": metadata.get("country_name") or iso,
                     "continent": metadata.get("continent") or "Unknown",
                     "levels": {},
+                    "availability_levels": {},
                 },
             )
             country["levels"][level] = metadata
+
+    for iso, catalog_country in availability_catalog.items():
+        country = countries.setdefault(
+            iso,
+            {
+                "name": catalog_country.get("name") or iso,
+                "continent": catalog_country.get("continent") or "Unknown",
+                "levels": {},
+                "availability_levels": {},
+            },
+        )
+        if catalog_country.get("name"):
+            country["name"] = catalog_country["name"]
+        if catalog_country.get("continent"):
+            country["continent"] = catalog_country["continent"]
+        country["availability_levels"] = dict(catalog_country.get("levels") or {})
+
+    # A level is available if upstream metadata exists or a validated static
+    # geometry package exists. The latter also covers the special UZB snapshot.
+    for iso, country in countries.items():
+        country.setdefault("availability_levels", {})
+        for level, package in (country.get("levels") or {}).items():
+            item = country["availability_levels"].setdefault(level, {"available": True})
+            item.update({
+                "available": True,
+                "static_package": True,
+                "feature_count": int(package.get("feature_count") or 0),
+                "boundary_year": str(package.get("boundary_year") or item.get("boundary_year") or ""),
+                "boundary_id": str(package.get("boundary_id") or item.get("boundary_id") or ""),
+                "boundary_source": str(package.get("source") or item.get("boundary_source") or "geoBoundaries / World Bank"),
+                "boundary_license": str(package.get("license") or item.get("boundary_license") or ""),
+            })
+
+        if iso == "UZB":
+            for level in ("ADM1", "ADM2"):
+                path = OUTPUT.parent / f"UZB_{level}.geojson"
+                payload = read_json(path)
+                if payload and payload.get("type") == "FeatureCollection":
+                    metadata = payload.get("metadata") or {}
+                    country["availability_levels"][level] = {
+                        "available": True,
+                        "static_package": True,
+                        "feature_count": len(payload.get("features") or []),
+                        "boundary_year": str(metadata.get("boundary_year") or ""),
+                        "boundary_id": str(metadata.get("boundary_id") or ""),
+                        "boundary_source": str(metadata.get("source") or "geoBoundaries"),
+                        "boundary_license": str(metadata.get("license") or ""),
+                    }
+
+        levels = sorted(
+            (level for level, info in country["availability_levels"].items() if info.get("available")),
+            key=lambda value: int(value[-1]),
+        )
+        country["available_levels"] = levels
+        country["max_available_level"] = levels[-1] if levels else None
+        for level, info in country["availability_levels"].items():
+            info.setdefault("static_package", False)
+            info.setdefault("feature_count", None)
 
     total_bytes = sum(path.stat().st_size for path in OUTPUT.glob("*.geojson"))
     if total_bytes > MAX_TOTAL_BYTES:
@@ -544,7 +677,15 @@ async def main() -> None:
             "added_by_level": world_bank_fallback_summary,
         },
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "delivery": "GitHub Pages static per-country GeoJSON; browser downloads only the selected country and level",
+        "availability_catalog": {
+            "source": "geoBoundaries gbOpen country-level metadata",
+            "levels": list(CATALOG_LEVELS),
+            "country_count": len(availability_catalog),
+            "country_level_records": sum(len(item.get("levels") or {}) for item in availability_catalog.values()),
+            "status": "CURRENT" if not availability_failures else "PARTIAL_WITH_CACHED_FALLBACK",
+            "refresh_failures": availability_failures,
+        },
+        "delivery": "GitHub Pages static per-country ADM1/ADM2 GeoJSON plus ADM0–ADM5 country availability metadata; browser downloads only the selected country and level",
         "uzb_policy": "UZB retains the separately validated ADM1/ADM2 snapshot used by the public MAPSPAM shapeID join",
         "coverage_note": (
             "Country-specific gbOpen boundaries are preferred. Missing country/level packages "
@@ -570,6 +711,13 @@ async def main() -> None:
     (OUTPUT / "manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2),
         encoding="utf-8",
+    )
+    print(
+        "PASS ADM availability catalog: "
+        + ", ".join(
+            f"{level}={sum(level in country.get('available_levels', []) for country in countries.values())} countries"
+            for level in CATALOG_LEVELS
+        )
     )
     print(
         "PASS global boundary package: "
